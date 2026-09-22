@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_strength_log_list" model="ir.ui.view">
+        <field name="name">gym.strength_log.list</field>
+        <field name="model">gym.strength_log</field>
+        <field name="arch" type="xml">
+            <tree string="Exercises" default_order="date desc, id desc">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="exercise_id"/>
+                <field name="summary"/>
+                <field name="chart_value" string="Best"/>
+                <field name="notes" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gym_strength_log_form" model="ir.ui.view">
+        <field name="name">gym.strength_log.form</field>
+        <field name="model">gym.strength_log</field>
+        <field name="arch" type="xml">
+            <form string="Exercise">
+                <sheet>
+                    <!-- Person and day fill themselves in (you, today), so they stay out of sight. -->
+                    <field name="user_id" invisible="1"/>
+                    <field name="date" invisible="1"/>
+                    <field name="metric" invisible="1"/>
+                    <group>
+                        <field name="exercise_id" options="{'no_open': True}"
+                               placeholder="Choose, or type a new exercise"/>
+                    </group>
+                    <!-- One row per set: weight on the left, reps on the right. The graph shows
+                         the heaviest set of the session. -->
+                    <field name="set_ids" nolabel="1">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="weight" column_invisible="parent.metric == 'reps'"/>
+                            <field name="reps"/>
+                        </tree>
+                    </field>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_strength_log_graph" model="ir.ui.view">
+        <field name="name">gym.strength_log.graph</field>
+        <field name="model">gym.strength_log</field>
+        <field name="arch" type="xml">
+            <graph string="Exercise progress" type="line" stacked="0" js_class="gym_exercise_graph">
+                <field name="date" interval="day"/>
+                <field name="user_id"/>
+                <field name="chart_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_gym_strength_log_search" model="ir.ui.view">
+        <field name="name">gym.strength_log.search</field>
+        <field name="model">gym.strength_log</field>
+        <field name="arch" type="xml">
+            <search string="Search Exercises">
+                <field name="exercise_id"/>
+                <field name="user_id"/>
+                <field name="notes"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Exercise" name="groupby_exercise" context="{'group_by': 'exercise_id'}"/>
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gym_strength_log" model="ir.actions.act_window">
+        <field name="name">Exercises</field>
+        <field name="res_model">gym.strength_log</field>
+        <field name="view_mode">graph,tree,form</field>
+        <field name="search_view_id" ref="view_gym_strength_log_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log your first exercise</p>
+            <p>Press <b>Add</b>, pick the exercise (type a new name to create it) and add a line per
+               set: weight and reps. The graph shows your heaviest set of each day - choose an
+               exercise and a period to see how it goes up.</p>
+        </field>
+    </record>
+
+</odoo>

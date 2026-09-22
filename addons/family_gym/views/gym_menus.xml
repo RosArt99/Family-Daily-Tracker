@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_gym_root" name="Gym &amp; Fit" sequence="30"/>
+
+    <!-- Order: Meals, Weight, Calendar, Exercises (Reports/Goals are desktop extras). -->
+    <menuitem id="menu_gym_meals" name="Meals" parent="menu_gym_root"
+              action="action_gym_meals_diary" sequence="10"/>
+    <menuitem id="menu_gym_weight" name="Weight" parent="menu_gym_root"
+              action="action_gym_weight_log" sequence="20"/>
+    <menuitem id="menu_gym_calendar" name="Calendar" parent="menu_gym_root"
+              action="action_gym_workout" sequence="30"/>
+    <menuitem id="menu_gym_exercises" name="Exercises" parent="menu_gym_root"
+              action="action_gym_strength_log" sequence="40"/>
+    <menuitem id="menu_gym_meal_reports" name="Meal Reports" parent="menu_gym_root"
+              action="action_gym_meal_log" sequence="60"/>
+    <menuitem id="menu_gym_goals" name="Goals" parent="menu_gym_root"
+              action="action_gym_profile" sequence="70"/>
+    <menuitem id="menu_gym_exercise_types" name="Exercise Types" parent="menu_gym_root"
+              action="action_gym_exercise" sequence="80"/>
+
+</odoo>

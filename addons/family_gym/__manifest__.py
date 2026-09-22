@@ -1,0 +1,33 @@
+{
+    'name': 'Family Gym & Fit',
+    'version': '17.0.1.1.0',
+    'category': 'Productivity',
+    'summary': 'Workout calendar, strength & weight progress and meal/calorie log for the family',
+    'author': 'Ros',
+    'license': 'LGPL-3',
+    'depends': ['family_tracker'],
+    'data': [
+        'security/ir.model.access.csv',
+        'security/gym_security.xml',
+        'data/gym_exercise_data.xml',
+        'views/gym_workout_views.xml',
+        'views/gym_strength_log_views.xml',
+        'views/gym_weight_log_views.xml',
+        'views/gym_meal_log_views.xml',
+        'views/gym_profile_views.xml',
+        'views/gym_exercise_views.xml',
+        'views/gym_menus.xml',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'family_gym/static/src/js/gym_app.js',
+            'family_gym/static/src/js/gym_graph.js',
+            'family_gym/static/src/js/meals_diary.js',
+            'family_gym/static/src/xml/meals_diary.xml',
+            'family_gym/static/src/xml/gym_graph.xml',
+            'family_gym/static/src/scss/gym.scss',
+        ],
+    },
+    'installable': True,
+    'application': True,
+}

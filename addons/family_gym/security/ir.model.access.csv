@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gym_exercise,gym.exercise,model_gym_exercise,base.group_user,1,1,1,1
+access_gym_workout,gym.workout,model_gym_workout,base.group_user,1,1,1,1
+access_gym_strength_log,gym.strength_log,model_gym_strength_log,base.group_user,1,1,1,1
+access_gym_weight_log,gym.weight_log,model_gym_weight_log,base.group_user,1,1,1,1
+access_gym_meal_log,gym.meal_log,model_gym_meal_log,base.group_user,1,1,1,1
+access_gym_profile,gym.profile,model_gym_profile,base.group_user,1,1,1,1
+access_gym_strength_set,gym.strength_set,model_gym_strength_set,base.group_user,1,1,1,1

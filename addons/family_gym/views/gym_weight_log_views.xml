@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_weight_log_list" model="ir.ui.view">
+        <field name="name">gym.weight_log.list</field>
+        <field name="model">gym.weight_log</field>
+        <field name="arch" type="xml">
+            <tree string="Weight Log" default_order="date desc, id desc">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="weight"/>
+                <field name="source" optional="show"/>
+                <field name="notes" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gym_weight_log_form" model="ir.ui.view">
+        <field name="name">gym.weight_log.form</field>
+        <field name="model">gym.weight_log</field>
+        <field name="arch" type="xml">
+            <form string="Weight Entry">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="weight"/>
+                            <field name="notes"/>
+                            <field name="source"/>
+                            <field name="measured_at" invisible="not measured_at"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_weight_log_graph" model="ir.ui.view">
+        <field name="name">gym.weight_log.graph</field>
+        <field name="model">gym.weight_log</field>
+        <field name="arch" type="xml">
+            <graph string="Body weight" type="line" stacked="0" js_class="gym_weight_graph">
+                <field name="date" interval="day"/>
+                <field name="user_id"/>
+                <field name="weight" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_gym_weight_log_search" model="ir.ui.view">
+        <field name="name">gym.weight_log.search</field>
+        <field name="model">gym.weight_log</field>
+        <field name="arch" type="xml">
+            <search string="Search Weight Log">
+                <field name="user_id"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gym_weight_log" model="ir.actions.act_window">
+        <field name="name">Weight</field>
+        <field name="res_model">gym.weight_log</field>
+        <field name="view_mode">graph,tree,form</field>
+        <field name="search_view_id" ref="view_gym_weight_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log your first weigh-in</p>
+            <p>Press <b>Add</b>, enter the date and your weight (or let the scale do it: weigh-ins from
+               Zepp Life arrive automatically once the iPhone Shortcut is set up). The graph follows
+               both of you over time.</p>
+        </field>
+    </record>
+
+</odoo>

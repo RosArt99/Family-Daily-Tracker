@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_profile_form" model="ir.ui.view">
+        <field name="name">gym.profile.form</field>
+        <field name="model">gym.profile</field>
+        <field name="arch" type="xml">
+            <form string="Goals">
+                <sheet>
+                    <group>
+                        <group string="Daily goals">
+                            <field name="user_id" readonly="1"/>
+                            <field name="calorie_goal"/>
+                            <field name="protein_goal"/>
+                            <field name="carbs_goal"/>
+                            <field name="fat_goal"/>
+                        </group>
+                        <group string="Body">
+                            <field name="height_cm"/>
+                            <field name="target_weight"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_profile_list" model="ir.ui.view">
+        <field name="name">gym.profile.list</field>
+        <field name="model">gym.profile</field>
+        <field name="arch" type="xml">
+            <tree string="Goals">
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="calorie_goal"/>
+                <field name="protein_goal"/>
+                <field name="carbs_goal"/>
+                <field name="fat_goal"/>
+                <field name="target_weight"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_gym_profile" model="ir.actions.act_window">
+        <field name="name">Goals</field>
+        <field name="res_model">gym.profile</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

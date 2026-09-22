@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_gym.GymGraph.Buttons">
+        <div class="d-flex flex-wrap align-items-center gap-2 w-100">
+            <div class="btn-group" role="toolbar" aria-label="Interval">
+                <t t-foreach="intervals" t-as="option" t-key="option.value">
+                    <button class="btn btn-secondary o_graph_button"
+                            t-att-class="{ active: currentInterval === option.value }"
+                            t-on-click="() => this.onIntervalSelected(option.value)">
+                        <t t-esc="option.label"/>
+                    </button>
+                </t>
+            </div>
+            <select t-if="isExerciseGraph" class="form-select form-select-sm w-auto o_gym_exercise_select"
+                    t-on-change="onExerciseChange">
+                <t t-foreach="exercises" t-as="exercise" t-key="exercise.id">
+                    <option t-att-value="exercise.id" t-att-selected="exercise.id === selectedExerciseId">
+                        <t t-esc="exercise.name"/>
+                    </option>
+                </t>
+            </select>
+            <div class="d-flex align-items-center gap-1">
+                <label class="mb-0 text-muted">From</label>
+                <input type="date" class="form-control form-control-sm w-auto o_gym_date_from"
+                       t-att-value="dateFrom" t-on-change="onFromChange"/>
+                <label class="mb-0 text-muted ms-1">To</label>
+                <input type="date" class="form-control form-control-sm w-auto o_gym_date_to"
+                       t-att-value="dateTo" t-on-change="onToChange"/>
+            </div>
+            <button class="btn btn-primary ms-auto o_gym_add_entry" t-on-click="onAddClicked">
+                <i class="fa fa-plus me-1"/>Add
+            </button>
+        </div>
+    </t>
+
+</templates>

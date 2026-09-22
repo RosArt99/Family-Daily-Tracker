@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_gym.MealsDiary">
+        <div class="o_gym_diary" t-if="state.data">
+
+            <!-- day navigation -->
+            <div class="o_gym_diary_day">
+                <button type="button" class="o_gym_diary_nav" t-on-click="() => this.shift(-1)" aria-label="Previous day">
+                    <i class="fa fa-chevron-left"/>
+                </button>
+                <button type="button" class="o_gym_diary_date" t-on-click="goToday">
+                    <t t-esc="dateLabel"/>
+                </button>
+                <button type="button" class="o_gym_diary_nav" t-on-click="() => this.shift(1)" aria-label="Next day">
+                    <i class="fa fa-chevron-right"/>
+                </button>
+            </div>
+
+            <!-- calories remaining / consumed -->
+            <div class="o_gym_diary_summary">
+                <div class="o_gym_diary_row">
+                    <span>Calories Remaining</span>
+                    <b t-att-class="{'o_over': state.data.remaining lt 0}" t-esc="state.data.remaining"/>
+                </div>
+                <div class="o_gym_diary_row">
+                    <span>Calories Consumed</span>
+                    <b t-esc="state.data.totals.calories"/>
+                </div>
+                <div class="o_gym_diary_bar">
+                    <div class="o_gym_diary_bar_fill" t-att-class="{'o_over': state.data.remaining lt 0}"
+                         t-att-style="'width:' + percent(state.data.totals.calories, state.data.goals.calories) + '%'"/>
+                </div>
+                <div class="o_gym_diary_goal">
+                    Goal <t t-esc="state.data.goals.calories"/> kcal
+                    <button type="button" class="o_gym_diary_link" t-on-click="editGoals">Edit goals</button>
+                </div>
+                <div class="o_gym_diary_macros">
+                    <div t-foreach="macros" t-as="macro" t-key="macro.key" class="o_gym_diary_macro">
+                        <div class="o_gym_diary_macro_head">
+                            <span t-esc="macro.label"/>
+                            <span><t t-esc="macro.value"/> / <t t-esc="macro.goal"/> g</span>
+                        </div>
+                        <div class="o_gym_diary_bar o_small">
+                            <div class="o_gym_diary_bar_fill" t-att-style="'width:' + percent(macro.value, macro.goal) + '%'"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- meals -->
+            <div t-foreach="state.data.sections" t-as="section" t-key="section.key" class="o_gym_diary_meal">
+                <div class="o_gym_diary_meal_head">
+                    <span class="o_gym_diary_meal_icon" t-att-style="'color:' + mealStyle(section.key).color">
+                        <i t-attf-class="fa fa-lg {{ mealStyle(section.key).icon }}" role="img"/>
+                    </span>
+                    <span class="o_gym_diary_meal_name" t-esc="section.label"/>
+                    <span class="o_gym_diary_meal_kcal" t-if="section.calories"><t t-esc="section.calories"/> kcal</span>
+                    <button type="button" class="o_gym_diary_add" t-on-click="() => this.addFood(section.key)"
+                            t-att-aria-label="'Add to ' + section.label">
+                        <i class="fa fa-plus"/>
+                    </button>
+                </div>
+                <div t-foreach="section.entries" t-as="entry" t-key="entry.id" class="o_gym_diary_entry">
+                    <button type="button" class="o_gym_diary_entry_main" t-on-click="() => this.editEntry(entry)">
+                        <span class="o_gym_diary_entry_name" t-esc="entry.name"/>
+                        <span class="o_gym_diary_entry_amount"><t t-esc="entry.amount"/> g</span>
+                    </button>
+                    <span class="o_gym_diary_entry_kcal"><t t-esc="entry.calories"/></span>
+                    <button type="button" class="o_gym_diary_entry_delete" t-on-click="() => this.deleteEntry(entry)"
+                            aria-label="Delete">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+                <button type="button" class="o_gym_diary_link o_gym_diary_quick" t-on-click="() => this.quickAdd(section.key)">
+                    Quick add (type a food)
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

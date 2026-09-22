@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_workout_calendar" model="ir.ui.view">
+        <field name="name">gym.workout.calendar</field>
+        <field name="model">gym.workout</field>
+        <field name="arch" type="xml">
+            <calendar string="Workouts" date_start="date" color="user_id" mode="month"
+                      quick_create="0" event_open_popup="1" hide_time="1">
+                <field name="user_id" filters="1" avatar_field="avatar_128"/>
+                <field name="workout_type"/>
+                <field name="notes"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_gym_workout_list" model="ir.ui.view">
+        <field name="name">gym.workout.list</field>
+        <field name="model">gym.workout</field>
+        <field name="arch" type="xml">
+            <tree string="Workouts" default_order="date desc, id desc">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="workout_type" widget="badge"/>
+                <field name="duration_min" optional="show"/>
+                <field name="notes" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gym_workout_form" model="ir.ui.view">
+        <field name="name">gym.workout.form</field>
+        <field name="model">gym.workout</field>
+        <field name="arch" type="xml">
+            <form string="Workout">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="workout_type"/>
+                            <field name="duration_min"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Comment" name="comment">
+                            <field name="notes" nolabel="1"
+                                   placeholder="e.g. pressed 120 kg on legs - new personal record"/>
+                        </page>
+                        <page string="Exercises" name="sets">
+                            <!-- Exercises are entered right here, while logging the workout: tap a
+                                 row to see or edit its sets. They feed the Exercises graph. -->
+                            <field name="strength_ids" context="{'default_user_id': user_id, 'default_date': date}">
+                                <tree>
+                                    <field name="exercise_id"/>
+                                    <field name="summary"/>
+                                    <field name="chart_value" string="Best"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_workout_search" model="ir.ui.view">
+        <field name="name">gym.workout.search</field>
+        <field name="model">gym.workout</field>
+        <field name="arch" type="xml">
+            <search string="Search Workouts">
+                <field name="user_id"/>
+                <field name="notes"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Chest" name="filter_chest" domain="[('workout_type', '=', 'chest')]"/>
+                <filter string="Back" name="filter_back" domain="[('workout_type', '=', 'back')]"/>
+                <filter string="Legs" name="filter_legs" domain="[('workout_type', '=', 'legs')]"/>
+                <filter string="Cardio" name="filter_cardio" domain="[('workout_type', '=', 'cardio')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Type" name="groupby_type" context="{'group_by': 'workout_type'}"/>
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gym_workout" model="ir.actions.act_window">
+        <field name="name">Calendar</field>
+        <field name="res_model">gym.workout</field>
+        <field name="view_mode">calendar,tree,form</field>
+        <field name="search_view_id" ref="view_gym_workout_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log your first workout</p>
+            <p>Pick a day, choose the type (chest, back, legs, cardio...) and add a comment.</p>
+        </field>
+    </record>
+
+</odoo>

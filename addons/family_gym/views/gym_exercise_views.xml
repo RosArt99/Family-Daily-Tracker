@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_exercise_list" model="ir.ui.view">
+        <field name="name">gym.exercise.list</field>
+        <field name="model">gym.exercise</field>
+        <field name="arch" type="xml">
+            <tree string="Exercises">
+                <field name="name"/>
+                <field name="muscle_group"/>
+                <field name="metric"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gym_exercise_form" model="ir.ui.view">
+        <field name="name">gym.exercise.form</field>
+        <field name="model">gym.exercise</field>
+        <field name="arch" type="xml">
+            <form string="Exercise">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="muscle_group"/>
+                        </group>
+                        <group>
+                            <field name="metric"/>
+                            <field name="code" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_gym_exercise" model="ir.actions.act_window">
+        <field name="name">Exercises</field>
+        <field name="res_model">gym.exercise</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

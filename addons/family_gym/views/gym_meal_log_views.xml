@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The day-to-day Meals screen is the diary (client action, see meals_diary.js);
+         these views are the form used by its "+" dialogs and the reports. -->
+
+    <record id="view_gym_meal_log_list" model="ir.ui.view">
+        <field name="name">gym.meal_log.list</field>
+        <field name="model">gym.meal_log</field>
+        <field name="arch" type="xml">
+            <tree string="Meals" default_order="date desc, id desc">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="meal_type" widget="badge"/>
+                <field name="name"/>
+                <field name="quantity_g" optional="show"/>
+                <field name="calories" sum="Total kcal"/>
+                <field name="proteins" sum="Total protein" optional="show"/>
+                <field name="carbs" sum="Total carbs" optional="hide"/>
+                <field name="fat" sum="Total fat" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gym_meal_log_form" model="ir.ui.view">
+        <field name="name">gym.meal_log.form</field>
+        <field name="model">gym.meal_log</field>
+        <field name="arch" type="xml">
+            <form string="Food">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="meal_type"/>
+                            <field name="date"/>
+                            <field name="user_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="product_id" placeholder="Search your pantry..."/>
+                            <field name="name" placeholder="or type any food, e.g. Restaurant pizza"/>
+                            <field name="quantity_g"/>
+                        </group>
+                    </group>
+                    <group string="Nutrition (filled from the food and amount; edit freely for free-text foods)">
+                        <group>
+                            <field name="calories"/>
+                            <field name="proteins"/>
+                        </group>
+                        <group>
+                            <field name="carbs"/>
+                            <field name="fat"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_meal_log_graph" model="ir.ui.view">
+        <field name="name">gym.meal_log.graph</field>
+        <field name="model">gym.meal_log</field>
+        <field name="arch" type="xml">
+            <graph string="Calories per day" type="bar" stacked="0">
+                <field name="date" interval="day"/>
+                <field name="user_id"/>
+                <field name="calories" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_gym_meal_log_search" model="ir.ui.view">
+        <field name="name">gym.meal_log.search</field>
+        <field name="model">gym.meal_log</field>
+        <field name="arch" type="xml">
+            <search string="Search Meals">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <filter string="Today" name="filter_today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Day" name="groupby_day" context="{'group_by': 'date:day'}"/>
+                    <filter string="Meal" name="groupby_meal" context="{'group_by': 'meal_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gym_meal_log" model="ir.actions.act_window">
+        <field name="name">Meal Reports</field>
+        <field name="res_model">gym.meal_log</field>
+        <field name="view_mode">tree,graph,form</field>
+        <field name="search_view_id" ref="view_gym_meal_log_search"/>
+    </record>
+
+    <record id="action_gym_meals_diary" model="ir.actions.client">
+        <field name="name">Meals</field>
+        <field name="tag">family_gym.meals_diary</field>
+    </record>
+
+</odoo>

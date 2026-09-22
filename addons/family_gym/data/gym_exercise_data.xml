@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: exercises you rename or add later are never overwritten by a module upgrade. -->
+    <data noupdate="1">
+        <record id="exercise_dumbbell_press" model="gym.exercise">
+            <field name="name">Dumbbell Press</field>
+            <field name="code">dumbbell_press</field>
+            <field name="muscle_group">chest</field>
+            <field name="metric">strength</field>
+        </record>
+        <record id="exercise_squat" model="gym.exercise">
+            <field name="name">Squat</field>
+            <field name="code">squat</field>
+            <field name="muscle_group">legs</field>
+            <field name="metric">strength</field>
+        </record>
+        <record id="exercise_pull_up" model="gym.exercise">
+            <field name="name">Pull-ups</field>
+            <field name="code">pull_up</field>
+            <field name="muscle_group">back</field>
+            <field name="metric">reps</field>
+        </record>
+    </data>
+</odoo>
