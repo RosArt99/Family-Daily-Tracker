@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_tracker.FamilyBottomNav">
+        <nav t-if="tabs.length" class="o_family_bottom_nav" t-att-class="{'o_dense': tabs.length > 5}">
+            <button t-foreach="tabs" t-as="tab" t-key="tab.xmlid" type="button"
+                    class="o_family_tab" t-att-class="{'active': tab.active}"
+                    t-on-click="() => this.onTabClick(tab.menu)">
+                <span t-if="tab.svg" class="o_family_tab_svg" role="img"
+                      t-attf-style="--fam-icon: url('{{ tab.svg }}')"/>
+                <i t-else="" t-attf-class="fa {{ tab.icon }}" role="img"/>
+                <span t-esc="tab.menu.name"/>
+            </button>
+        </nav>
+    </t>
+</templates>

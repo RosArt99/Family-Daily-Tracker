@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_groceries_product_list" model="ir.ui.view">
+        <field name="name">groceries.product.list</field>
+        <field name="model">groceries.product</field>
+        <field name="arch" type="xml">
+            <tree string="Products"
+                  decoration-danger="is_low_stock"
+                  decoration-muted="not is_essential">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="category_ids" widget="many2many_tags"/>
+                <field name="stock_quantity"/>
+                <field name="min_quantity"/>
+                <field name="default_uom_id"/>
+                <field name="is_essential" widget="boolean_toggle"/>
+                <field name="auto_reorder" widget="boolean_toggle"/>
+                <field name="is_low_stock" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_groceries_product_form" model="ir.ui.view">
+        <field name="name">groceries.product.form</field>
+        <field name="model">groceries.product</field>
+        <field name="arch" type="xml">
+            <form string="Product">
+                <header>
+                    <button name="action_refresh_from_off" type="object" class="btn-primary"
+                            string="Refresh from Open Food Facts" invisible="not barcode"
+                            help="Re-read this product from Open Food Facts (e.g. after you added it there). Manual names and photos are kept."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_stock_entries" type="object"
+                                class="oe_stat_button" icon="fa-list">
+                            <field name="stock_entry_count" widget="statinfo" string="Stock Entries"/>
+                        </button>
+                    </div>
+                    <div class="o_groceries_product_photo">
+                        <field name="image" widget="image"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Milk 1L Łaciate"/></h1>
+                        <img invisible="nutriscore_grade != 'a'" src="/family_tracker/static/src/img/nutriscore_a.svg" style="height:64px;" alt="Nutri-Score A"/>
+                        <img invisible="nutriscore_grade != 'b'" src="/family_tracker/static/src/img/nutriscore_b.svg" style="height:64px;" alt="Nutri-Score B"/>
+                        <img invisible="nutriscore_grade != 'c'" src="/family_tracker/static/src/img/nutriscore_c.svg" style="height:64px;" alt="Nutri-Score C"/>
+                        <img invisible="nutriscore_grade != 'd'" src="/family_tracker/static/src/img/nutriscore_d.svg" style="height:64px;" alt="Nutri-Score D"/>
+                        <img invisible="nutriscore_grade != 'e'" src="/family_tracker/static/src/img/nutriscore_e.svg" style="height:64px;" alt="Nutri-Score E"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="barcode"/>
+                            <field name="category_ids" widget="many2many_tags"/>
+                            <field name="default_uom_id"/>
+                        </group>
+                        <group>
+                            <field name="stock_quantity"/>
+                            <field name="is_essential"/>
+                            <field name="min_quantity" invisible="not is_essential"/>
+                            <field name="auto_reorder" invisible="not is_essential"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Stock Entries">
+                            <field name="stock_entry_ids" readonly="1">
+                                <tree>
+                                    <field name="state"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="purchase_date"/>
+                                    <field name="expiration_date"/>
+                                    <field name="user_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Nutrition" invisible="not nutriscore_grade and not energy_kcal_100g">
+                            <group>
+                                <group string="Nutri-Score">
+                                    <field name="nutriscore_grade"/>
+                                    <field name="nutriscore_negative_points" string="Negative Points"/>
+                                    <field name="nutriscore_positive_points" string="Positive Points"/>
+                                </group>
+                                <group string="Nutrition Facts (per 100g/100ml)">
+                                    <field name="energy_kcal_100g"/>
+                                    <field name="energy_kj_100g"/>
+                                    <field name="fat_100g"/>
+                                    <field name="saturated_fat_100g"/>
+                                    <field name="carbohydrates_100g"/>
+                                    <field name="sugars_100g"/>
+                                    <field name="fiber_100g"/>
+                                    <field name="proteins_100g"/>
+                                    <field name="salt_100g"/>
+                                    <field name="sodium_100g"/>
+                                    <field name="fruits_vegetables_100g"/>
+                                </group>
+                            </group>
+                            <field name="nutriscore_breakdown" widget="html" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_groceries_product_search" model="ir.ui.view">
+        <field name="name">groceries.product.search</field>
+        <field name="model">groceries.product</field>
+        <field name="arch" type="xml">
+            <search string="Search Products">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="category_ids"/>
+                <filter string="Essential" name="filter_essential" domain="[('is_essential', '=', True)]"/>
+                <filter string="Low Stock" name="filter_low_stock" domain="[('is_low_stock', '=', True)]"/>
+                <separator/>
+                <filter string="Auto Reorder" name="filter_auto_reorder" domain="[('auto_reorder', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Category" name="groupby_category" context="{'group_by': 'category_ids'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_groceries_product" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">groceries.product</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_groceries_product_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your first product to the catalog
+            </p>
+            <p>
+                Products are the catalog of items you buy (e.g. "Milk 1L"), identified by barcode.
+                Actual purchased packs are tracked separately as Stock Entries.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_server_groceries_product_bulk_refresh_off" model="ir.actions.server">
+        <field name="name">Refresh from Open Food Facts</field>
+        <field name="model_id" ref="model_groceries_product"/>
+        <field name="binding_model_id" ref="model_groceries_product"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_refresh_from_off_bulk()</field>
+    </record>
+
+</odoo>

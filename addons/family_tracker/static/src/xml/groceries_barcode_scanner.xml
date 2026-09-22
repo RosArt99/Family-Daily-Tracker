@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_tracker.GroceriesBarcodeScanner">
+        <div class="o_groceries_scanner p-4" style="max-width: 480px; margin: 0 auto;">
+            <h2>Scan Barcode</h2>
+
+            <div class="mb-3">
+                <label class="form-label">Action</label>
+                <select class="form-select" t-model="state.action">
+                    <option value="to_buy">Add to shopping list</option>
+                    <option value="in_stock">Scanned in store (Mark Purchased)</option>
+                    <option value="consumed">Scanned before throwing away (Mark Consumed)</option>
+                </select>
+            </div>
+
+            <div t-if="isCameraSupported"
+                 style="position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:4px;overflow:hidden;">
+                <canvas t-ref="canvas" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+                <div t-if="state.cameraActive" class="o_groceries_scan_line"
+                     t-att-class="{'o_scanning': state.scanning}"/>
+                <video t-ref="video" muted="true" autoplay="true" playsinline="true" webkit-playsinline="true"
+                       style="position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
+            </div>
+
+            <button t-if="isCameraSupported and !state.cameraActive"
+                    class="btn btn-primary btn-lg w-100 my-3"
+                    t-att-disabled="state.starting"
+                    t-on-click="onStartCamera">
+                <i class="fa fa-camera me-1"/> Start Camera
+            </button>
+            <button t-elif="isCameraSupported" class="btn btn-secondary btn-lg w-100 my-3" t-on-click="stopCamera">
+                <i class="fa fa-stop me-1"/> Stop Camera
+            </button>
+            <div t-else="" class="alert alert-warning my-3">
+                Camera scanning isn't supported in this browser. Use manual entry below.
+            </div>
+
+            <form t-on-submit="onManualSubmit" class="input-group mb-4">
+                <input type="text" class="form-control" placeholder="Enter barcode manually"
+                       t-model="state.manualBarcode"/>
+                <button type="submit" class="btn btn-secondary">Submit</button>
+            </form>
+
+            <div t-if="state.history.length">
+                <h5>Recent Scans</h5>
+                <ul class="list-group">
+                    <li t-foreach="state.history" t-as="item" t-key="item.time + item.barcode"
+                        class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <strong t-esc="item.product_name"/>
+                            <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
+                        </span>
+                        <span class="badge bg-secondary" t-esc="item.state"/>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </t>
+</templates>

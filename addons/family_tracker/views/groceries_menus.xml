@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_groceries_root" name="Groceries" sequence="10"/>
+
+    <menuitem id="menu_groceries_scan"
+              name="Scan Barcode"
+              parent="menu_groceries_root"
+              action="action_groceries_barcode_scanner"
+              sequence="5"/>
+
+    <menuitem id="menu_groceries_shopping"
+              name="Shopping List &amp; Stock"
+              parent="menu_groceries_root"
+              action="action_groceries_stock_entry"
+              sequence="10"/>
+
+    <menuitem id="menu_groceries_products"
+              name="Products"
+              parent="menu_groceries_root"
+              action="action_groceries_product"
+              sequence="20"/>
+
+</odoo>

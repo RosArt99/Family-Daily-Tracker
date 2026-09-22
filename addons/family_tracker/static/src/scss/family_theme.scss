@@ -1,0 +1,244 @@
+// Shared look of every family app (Groceries, Gym & Fit, Home, ...).
+// The colours are NOT hard-coded here: family_theme.js sets these CSS variables on <body>
+// from the active app's registry entry:
+//   --fam-color         base colour            --fam-color-dark    ~8% darker
+//   --fam-color-darker  ~12% darker            --fam-rgb           "r, g, b" (for rgba())
+//   --fam-pattern       url(...) of the navbar pattern image (or none)
+
+body.o_family_theme {
+    .o_main_navbar {
+        background: var(--fam-color) var(--fam-pattern) repeat-x left center;
+        background-size: auto 100%;
+        // Solid (not transparent) so the text never sits directly on the pattern lines.
+        --NavBar-entry-backgroundColor: var(--fam-color);
+        --NavBar-entry-backgroundColor--hover: var(--fam-color-dark);
+        --NavBar-entry-backgroundColor--focus: var(--fam-color-dark);
+        --NavBar-entry-backgroundColor--active: var(--fam-color-darker);
+
+        // Menu entries + app name: solid rounded "pills" with small gaps, so the pattern
+        // stays visible around them. Home Menu button and the right-hand systray are
+        // deliberately left transparent (pattern shows through).
+        .o_menu_brand,
+        .o_menu_sections .o_nav_entry,
+        .o_menu_sections .dropdown-toggle {
+            $pill-height: calc(var(--o-navbar-height) - 20px);
+            height: $pill-height;
+            line-height: $pill-height;
+            margin: 10px 3px;
+            border-radius: 10px;
+        }
+
+        .o_menu_brand {
+            padding-left: 0.8em;
+            padding-right: 0.8em;
+            background-color: var(--fam-color);
+
+            &:hover,
+            &:focus {
+                background-color: var(--fam-color-dark);
+            }
+        }
+
+        .o_navbar_apps_menu .dropdown-toggle,
+        .o_menu_systray .o_nav_entry,
+        .o_menu_systray .dropdown-toggle {
+            background-color: transparent;
+
+            &:hover,
+            &:focus {
+                background-color: rgba(0, 0, 0, 0.25);
+            }
+        }
+
+        // The line-art pattern sits right behind the white text: bold + a soft dark shadow keeps it readable.
+        .o_menu_brand,
+        .o_nav_entry,
+        .dropdown-toggle {
+            font-weight: 700;
+            text-shadow: -3px 0px 5px rgba(0, 0, 0, 0.6);
+        }
+    }
+
+    .btn-primary {
+        background-color: var(--fam-color);
+        border-color: var(--fam-color);
+        color: #fff;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            background-color: var(--fam-color-dark);
+            border-color: var(--fam-color-darker);
+            color: #fff;
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 0.2rem rgba(var(--fam-rgb), 0.35);
+        }
+
+        &:disabled,
+        &.disabled {
+            background-color: var(--fam-color);
+            border-color: var(--fam-color);
+        }
+    }
+
+    // Bootstrap re-colours these states with Odoo's purple at higher specificity (e.g. the
+    // open "Measures" dropdown on graphs); keep them in the app colour too.
+    .show > .btn-primary.dropdown-toggle,
+    .btn-check:checked + .btn-primary,
+    .btn-check:active + .btn-primary,
+    .btn-primary:not(:disabled):not(.disabled):active {
+        background-color: var(--fam-color-darker);
+        border-color: var(--fam-color-darker);
+        color: #fff;
+    }
+}
+
+// Phone tab bar (rendered by family_bottom_nav.js: Home button + the current app's tabs).
+.o_family_bottom_nav {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    body.o_family_theme {
+        // Keep the last rows of every screen clear of the fixed bar.
+        .o_action_manager {
+            padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .o_family_bottom_nav {
+            display: flex;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1030;
+            padding: 0 0 calc(8px + env(safe-area-inset-bottom, 0px));
+            background: var(--fam-color) var(--fam-pattern) repeat-x left center;
+            background-size: auto 100%;
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.25);
+
+            .o_family_tab {
+                flex: 1 1 0;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                margin: 0;
+                padding: 10px 4px;
+                border: 0;
+                border-radius: 0;
+                background-color: var(--fam-color);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+
+                .fa {
+                    font-size: 24px;
+                }
+
+                // FontAwesome 4 has no bathroom scale or dumbbell, so those tabs bring their own
+                // SVG; a mask lets it take the tab's text colour like a font icon does.
+                .o_family_tab_svg {
+                    display: block;
+                    width: 26px;
+                    height: 24px;
+                    background-color: currentColor;
+                    -webkit-mask: var(--fam-icon) center / contain no-repeat;
+                    mask: var(--fam-icon) center / contain no-repeat;
+                }
+
+                &.active {
+                    background-color: var(--fam-color-darker);
+                    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+                }
+            }
+
+            // Six tabs (Home + a five-item app such as Gym) need smaller labels to fit a phone.
+            &.o_dense .o_family_tab {
+                padding: 10px 2px;
+                font-size: 11px;
+
+                .fa {
+                    font-size: 22px;
+                }
+
+                .o_family_tab_svg {
+                    width: 24px;
+                    height: 22px;
+                }
+            }
+        }
+    }
+}
+
+// Home page (family_home.js): one big tile per app, each in the app's own colour/pattern.
+.o_family_home {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 16px 32px;
+
+    .o_family_home_title {
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+
+    .o_family_home_hello {
+        margin-bottom: 20px;
+        color: #6c757d;
+    }
+
+    .o_family_home_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
+    }
+
+    .o_family_tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 170px;
+        padding: 18px 12px;
+        border: 0;
+        border-radius: 18px;
+        color: #fff;
+        text-align: center;
+        // Plain colour on purpose: icons/text on top of a pattern were hard to read.
+        background: var(--tile-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+        .o_family_tile_icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .o_family_tile_name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .o_family_tile_desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+}

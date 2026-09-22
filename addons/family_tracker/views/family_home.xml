@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_family_home" model="ir.actions.client">
+        <field name="name">Home</field>
+        <field name="tag">family_tracker.home</field>
+    </record>
+
+    <!-- Lowest sequence: Odoo opens the first app by default, so Home is the landing page. -->
+    <menuitem id="menu_home_root" name="Home" action="action_family_home" sequence="1"/>
+
+</odoo>

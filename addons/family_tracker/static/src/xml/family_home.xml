@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_tracker.FamilyHome">
+        <div class="o_family_home">
+            <h2 class="o_family_home_title">Family</h2>
+            <p class="o_family_home_hello" t-if="userName">Hi, <t t-esc="userName"/></p>
+            <div class="o_family_home_grid">
+                <button t-foreach="apps" t-as="app" t-key="app.key" type="button"
+                        class="o_family_tile" t-att-style="tileStyle(app)"
+                        t-on-click="() => this.open(app)">
+                    <span class="o_family_tile_icon"><i t-attf-class="fa fa-2x {{ app.icon }}" role="img"/></span>
+                    <span class="o_family_tile_name" t-esc="app.menu.name"/>
+                    <span class="o_family_tile_desc" t-if="app.description" t-esc="app.description"/>
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

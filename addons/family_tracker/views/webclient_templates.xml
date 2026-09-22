@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Home-screen / PWA identity for iOS Safari: name, icon, theme colour. -->
+    <template id="webclient_bootstrap_family" inherit_id="web.webclient_bootstrap">
+        <xpath expr="//meta[@name='theme-color']" position="attributes">
+            <attribute name="content">#3B4A54</attribute>
+        </xpath>
+        <xpath expr="//link[@rel='apple-touch-icon']" position="attributes">
+            <attribute name="href">/family_tracker/static/src/img/pwa/apple-touch-icon.png?v=2</attribute>
+        </xpath>
+        <xpath expr="//link[@rel='apple-touch-icon']" position="after">
+            <meta name="apple-mobile-web-app-capable" content="yes"/>
+            <meta name="mobile-web-app-capable" content="yes"/>
+            <meta name="apple-mobile-web-app-title" content="Family"/>
+        </xpath>
+    </template>
+
+</odoo>

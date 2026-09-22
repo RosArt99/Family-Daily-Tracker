@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_groceries_stock_entry_list" model="ir.ui.view">
+        <field name="name">groceries.stock_entry.list</field>
+        <field name="model">groceries.stock_entry</field>
+        <field name="arch" type="xml">
+            <tree string="Stock Entries" default_order="purchase_date desc">
+                <field name="product_image" widget="image" string=" "/>
+                <field name="product_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'to_buy'"
+                       decoration-success="state == 'in_stock'"
+                       decoration-muted="state == 'consumed'"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="purchase_date"/>
+                <field name="expiration_date"/>
+                <field name="user_id"/>
+                <button name="action_open_product" type="object" icon="fa-external-link"
+                        title="Open product card" string=" "/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_groceries_stock_entry_form" model="ir.ui.view">
+        <field name="name">groceries.stock_entry.form</field>
+        <field name="model">groceries.stock_entry</field>
+        <field name="arch" type="xml">
+            <form string="Stock Entry">
+                <header>
+                    <button name="action_mark_purchased" type="object" string="Mark Purchased"
+                            class="oe_highlight" invisible="state != 'to_buy'"/>
+                    <button name="action_mark_consumed" type="object" string="Mark Consumed / Discarded"
+                            invisible="state != 'in_stock'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="to_buy,in_stock,consumed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_product" type="object" class="oe_stat_button" icon="fa-external-link">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Product card</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="purchase_date"/>
+                            <field name="expiration_date"/>
+                            <field name="consumed_date" invisible="state != 'consumed'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_groceries_stock_entry_kanban" model="ir.ui.view">
+        <field name="name">groceries.stock_entry.kanban</field>
+        <field name="model">groceries.stock_entry</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="expiration_date"/>
+                <field name="user_id"/>
+                <field name="state"/>
+                <field name="product_image"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="d-flex">
+                                <a type="object" name="action_open_product" role="button" class="text-reset flex-shrink-0"
+                                   title="Open product card">
+                                    <img t-if="record.product_image.raw_value"
+                                         t-att-src="kanban_image('groceries.stock_entry', 'product_image', record.id.raw_value)"
+                                         alt="Product photo" class="o_groceries_kanban_thumb me-2"/>
+                                    <div t-else="" class="o_groceries_kanban_thumb o_groceries_kanban_thumb_empty me-2 text-muted">
+                                        <i class="fa fa-shopping-basket fa-lg" role="img" title="No photo"/>
+                                    </div>
+                                </a>
+                                <div class="flex-grow-1">
+                                    <div class="o_kanban_record_top">
+                                        <a type="object" name="action_open_product" role="button" class="text-reset"
+                                           title="Open product card"><strong><field name="product_id"/></strong></a>
+                                    </div>
+                                    <div>
+                                        <field name="quantity"/> <field name="uom_id"/>
+                                    </div>
+                                    <div t-if="record.expiration_date.raw_value" class="text-muted">
+                                        Exp: <field name="expiration_date"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <a t-if="record.state.raw_value == 'to_buy'" role="button"
+                                       type="object" name="action_mark_purchased" class="btn btn-sm btn-primary">
+                                        Mark Purchased
+                                    </a>
+                                    <a t-if="record.state.raw_value == 'in_stock'" role="button"
+                                       type="object" name="action_mark_consumed" class="btn btn-sm btn-secondary">
+                                        Mark Consumed
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_groceries_stock_entry_search" model="ir.ui.view">
+        <field name="name">groceries.stock_entry.search</field>
+        <field name="model">groceries.stock_entry</field>
+        <field name="arch" type="xml">
+            <search string="Search Stock Entries">
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <filter string="To Buy" name="filter_to_buy" domain="[('state', '=', 'to_buy')]"/>
+                <filter string="In Stock" name="filter_in_stock" domain="[('state', '=', 'in_stock')]"/>
+                <filter string="Consumed" name="filter_consumed" domain="[('state', '=', 'consumed')]"/>
+                <separator/>
+                <filter string="My Entries" name="filter_my_entries" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="groupby_state" context="{'group_by': 'state'}"/>
+                    <filter string="Added By" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_groceries_stock_entry" model="ir.actions.act_window">
+        <field name="name">Shopping List &amp; Stock</field>
+        <field name="res_model">groceries.stock_entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_groceries_stock_entry_search"/>
+        <field name="context">{'search_default_filter_to_buy': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add something to the shopping list
+            </p>
+            <p>
+                Track items from "to buy" through "in stock" to "consumed / discarded"
+                by scanning the same product's barcode at each stage.
+            </p>
+        </field>
+    </record>
+
+    <!-- Bulk actions: select multiple rows in the list view (checkboxes) and apply
+         via the "Action" (gear) menu, instead of dragging cards one by one in kanban. -->
+    <record id="action_server_groceries_bulk_mark_purchased" model="ir.actions.server">
+        <field name="name">Mark Purchased</field>
+        <field name="model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.filtered(lambda r: r.state == 'to_buy').action_mark_purchased()</field>
+    </record>
+
+    <record id="action_server_groceries_bulk_mark_consumed" model="ir.actions.server">
+        <field name="name">Mark Consumed / Discarded</field>
+        <field name="model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.filtered(lambda r: r.state == 'in_stock').action_mark_consumed()</field>
+    </record>
+
+    <record id="action_server_groceries_bulk_refresh_off" model="ir.actions.server">
+        <field name="name">Refresh products from Open Food Facts</field>
+        <field name="model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_model_id" ref="model_groceries_stock_entry"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.mapped('product_id').action_refresh_from_off_bulk()</field>
+    </record>
+
+</odoo>

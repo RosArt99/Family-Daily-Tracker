@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_groceries_product,groceries.product,model_groceries_product,base.group_user,1,1,1,1
+access_groceries_stock_entry,groceries.stock_entry,model_groceries_stock_entry,base.group_user,1,1,1,1
+access_groceries_product_category,groceries.product.category,model_groceries_product_category,base.group_user,1,1,1,1

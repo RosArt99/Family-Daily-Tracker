@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_groceries_barcode_scanner" model="ir.actions.client">
+        <field name="name">Scan Barcode</field>
+        <field name="tag">family_tracker.barcode_scanner</field>
+    </record>
+
+</odoo>
