@@ -10,5 +10,17 @@ services:
     volumes:
       - odoo_db_data:/var/lib/postgresql/data
 
+  odoo:
+    image: odoo:17.0
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./addons:/mnt/extra-addons
+      - odoo_web_data:/var/lib/odoo
+    command: -d family_tracker_db
+
 volumes:
   odoo_db_data:
+  odoo_web_data:
