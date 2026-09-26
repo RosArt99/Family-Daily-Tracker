@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 MEAL_TYPES = [
     ('breakfast', 'Breakfast'),
@@ -20,6 +21,10 @@ class GymMealLog(models.Model):
     # Pick a product from the pantry (Groceries) to get its nutrition automatically, or leave it
     # empty and type the name/values by hand for something that isn't in the catalog.
     product_id = fields.Many2one('groceries.product', string='Food', ondelete='set null')
+    # A saved recipe eaten by servings (see gym.recipe). Nutrition is a snapshot taken when the
+    # entry is saved, so editing the recipe later does not rewrite past days.
+    recipe_id = fields.Many2one('gym.recipe', string='Recipe', ondelete='set null')
+    servings = fields.Float(string='Servings eaten', default=1.0)
     name = fields.Char(compute='_compute_name', store=True, readonly=False)
     quantity_g = fields.Float(string='Amount (g/ml)', default=100.0)
     calories = fields.Float(string='kcal', compute='_compute_nutrition', store=True, readonly=False)
@@ -31,23 +36,47 @@ class GymMealLog(models.Model):
         ('quantity_positive', 'check(quantity_g >= 0)', 'Amount cannot be negative.'),
     ]
 
-    @api.depends('product_id')
+    @api.depends('product_id', 'recipe_id')
     def _compute_name(self):
         for meal in self:
-            if meal.product_id:
+            if meal.recipe_id:
+                meal.name = meal.recipe_id.name
+            elif meal.product_id:
                 meal.name = meal.product_id.name
 
-    @api.depends('product_id', 'quantity_g')
+    @api.depends('product_id', 'quantity_g', 'recipe_id', 'servings')
     def _compute_nutrition(self):
-        # Values are only (re)computed from a product; without one they stay as typed.
+        # Values are only (re)computed from a recipe or a product; without either they stay as
+        # typed. Deliberately no dependency on the recipe's own nutrition (see recipe_id).
         for meal in self:
             product = meal.product_id
-            if product:
+            if meal.recipe_id:
+                per = meal.recipe_id._per_serving()
+                meal.calories = round(per['calories'] * meal.servings, 1)
+                meal.proteins = round(per['protein'] * meal.servings, 1)
+                meal.carbs = round(per['carbs'] * meal.servings, 1)
+                meal.fat = round(per['fat'] * meal.servings, 1)
+            elif product:
                 factor = meal.quantity_g / 100.0
                 meal.calories = round(product.energy_kcal_100g * factor, 1)
                 meal.proteins = round(product.proteins_100g * factor, 1)
                 meal.carbs = round(product.carbohydrates_100g * factor, 1)
                 meal.fat = round(product.fat_100g * factor, 1)
+
+    @api.model
+    def log_recipe(self, recipe_id, meal_type, date, servings):
+        """Put `servings` of a saved recipe into the current user's diary."""
+        if servings <= 0:
+            raise UserError(_('Eat at least a part of a serving.'))
+        return self.create({
+            'recipe_id': recipe_id, 'meal_type': meal_type, 'date': date, 'servings': servings,
+        }).id
+
+    def set_servings(self, servings):
+        if servings <= 0:
+            raise UserError(_('Eat at least a part of a serving.'))
+        self.write({'servings': servings})
+        return True
 
     @api.model
     def get_diary(self, date=None):
@@ -75,7 +104,10 @@ class GymMealLog(models.Model):
                 'entries': [{
                     'id': e.id,
                     'name': e.name or e.product_id.name or '',
-                    'amount': round(e.quantity_g),
+                    'amount_label': ('%g serving%s' % (e.servings, '' if e.servings == 1 else 's'))
+                    if e.recipe_id else '%d g' % round(e.quantity_g),
+                    'recipe_id': e.recipe_id.id,
+                    'servings': e.servings,
                     'calories': round(e.calories),
                 } for e in items],
             })

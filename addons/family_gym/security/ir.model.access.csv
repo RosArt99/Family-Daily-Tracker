@@ -6,3 +6,5 @@ access_gym_weight_log,gym.weight_log,model_gym_weight_log,base.group_user,1,1,1,
 access_gym_meal_log,gym.meal_log,model_gym_meal_log,base.group_user,1,1,1,1
 access_gym_profile,gym.profile,model_gym_profile,base.group_user,1,1,1,1
 access_gym_strength_set,gym.strength_set,model_gym_strength_set,base.group_user,1,1,1,1
+access_gym_recipe,gym.recipe,model_gym_recipe,base.group_user,1,1,1,1
+access_gym_recipe_ingredient,gym.recipe.ingredient,model_gym_recipe_ingredient,base.group_user,1,1,1,1

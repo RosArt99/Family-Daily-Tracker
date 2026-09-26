@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================== New / edit recipe ============================== -->
+    <t t-name="family_gym.RecipeFormDialog">
+        <Dialog title="title" size="'lg'" contentClass="'o_gym_recipe_dialog'">
+            <div class="o_gym_ui_form">
+                <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
+
+                <div class="o_gym_ui_hero">
+                    <span class="o_gym_ui_hero_icon"><i class="fa fa-cutlery" role="img"/></span>
+                    <div class="o_gym_ui_hero_text">
+                        <label for="o_gym_ui_hero_input">Recipe name</label>
+                        <input id="o_gym_ui_hero_input" type="text" class="o_gym_ui_hero_input"
+                               placeholder="e.g. Chicken with rice"
+                               t-model="state.name" autocomplete="off"/>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Description</div>
+                    <textarea class="o_gym_ui_textarea" rows="3"
+                              placeholder="How it is cooked, tips, what it goes with..."
+                              t-model="state.description"/>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Number of servings</div>
+                    <div class="o_gym_ui_stepper">
+                        <button type="button" class="o_gym_ui_step" aria-label="Fewer servings"
+                                t-on-click="() => this.stepServings(-1)"><i class="fa fa-minus"/></button>
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="o_gym_ui_number"
+                               t-att-value="state.servings" t-on-input="onServingsInput" t-on-blur="onServingsBlur"/>
+                        <button type="button" class="o_gym_ui_step" aria-label="More servings"
+                                t-on-click="() => this.stepServings(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Ingredients</div>
+                    <div t-if="!state.ingredients.length" class="o_gym_ui_empty">
+                        Add food from your Groceries and set how much of it goes in.
+                    </div>
+                    <div t-foreach="state.ingredients" t-as="line" t-key="line.key" class="o_gym_recipe_ing">
+                        <img class="o_gym_recipe_ing_img" alt=""
+                             t-att-src="'/web/image/groceries.product/' + line.product_id + '/image/96x96'"/>
+                        <div class="o_gym_recipe_ing_info">
+                            <div class="o_gym_recipe_ing_name" t-esc="line.name"/>
+                            <div class="o_gym_recipe_ing_kcal">
+                                <t t-esc="lineKcal(line)"/> kcal
+                                <span t-if="line.missing" class="o_gym_recipe_warn">
+                                    <i class="fa fa-exclamation-triangle"/> no nutrition data
+                                </span>
+                            </div>
+                        </div>
+                        <div class="o_gym_recipe_weight">
+                            <input type="text" inputmode="decimal" t-att-value="line.quantity"
+                                   t-on-input="(ev) => this.onWeightInput(ev, line)" aria-label="Weight in grams"/>
+                            <span>g</span>
+                        </div>
+                        <button type="button" class="o_gym_recipe_remove" aria-label="Remove"
+                                t-on-click="() => this.removeIngredient(line)"><i class="fa fa-times"/></button>
+                    </div>
+                    <button type="button" class="o_gym_ui_add" t-on-click="addIngredients">
+                        <i class="fa fa-plus"/> Add ingredient
+                    </button>
+                </div>
+
+                <div class="o_gym_ui_card o_gym_recipe_nutrition" t-if="state.ingredients.length">
+                    <div class="o_gym_ui_label">Per serving</div>
+                    <div class="o_gym_ui_bignumber"><b t-esc="perServing.calories"/> <span>kcal</span></div>
+                    <div class="o_gym_ui_split">
+                        <div t-foreach="macroSplit" t-as="macro" t-key="macro.key" class="o_gym_ui_split_part"
+                             t-att-style="'width:' + macro.percent + '%; background:' + macro.color"/>
+                    </div>
+                    <div class="o_gym_ui_legend">
+                        <span t-foreach="macroSplit" t-as="macro" t-key="macro.key">
+                            <i class="o_gym_ui_dot" t-att-style="'background:' + macro.color"/>
+                            <t t-esc="macro.label"/> <b><t t-esc="macro.grams"/> g</b>
+                        </span>
+                    </div>
+                    <div class="o_gym_ui_footnote">
+                        Whole recipe: <b><t t-esc="fmt(totals.calories)"/> kcal</b>
+                        · <t t-esc="fmt(totals.weight)"/> g
+                    </div>
+                </div>
+
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary o_gym_recipe_save" t-att-disabled="state.saving"
+                        t-on-click="save">Save recipe</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- ===================== "+" on a meal: where does the food come from ===================== -->
+    <t t-name="family_gym.AddFoodDialog">
+        <Dialog title="title" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
+            <div class="o_gym_addfood">
+
+                <button t-if="state.step !== 'menu' and !props.entry" type="button" class="o_gym_addfood_back"
+                        t-on-click="back"><i class="fa fa-chevron-left"/> Back</button>
+
+                <!-- 1. the two sources -->
+                <div t-if="state.step === 'menu'" class="o_gym_addfood_menu">
+                    <button type="button" class="o_gym_addfood_tile" t-on-click="pantry">
+                        <span class="o_gym_addfood_tile_icon"><i class="fa fa-shopping-basket" role="img"/></span>
+                        <span class="o_gym_addfood_tile_text">
+                            <b>From Groceries</b>
+                            <span>Food you have in stock</span>
+                        </span>
+                        <i class="fa fa-chevron-right"/>
+                    </button>
+                    <button type="button" class="o_gym_addfood_tile" t-on-click="openSaved">
+                        <span class="o_gym_addfood_tile_icon o_saved"><i class="fa fa-bookmark" role="img"/></span>
+                        <span class="o_gym_addfood_tile_text">
+                            <b>My Saved Food</b>
+                            <span>Your recipes and saved meals</span>
+                        </span>
+                        <i class="fa fa-chevron-right"/>
+                    </button>
+                </div>
+
+                <!-- 2. saved recipes -->
+                <div t-if="state.step === 'saved'" class="o_gym_addfood_saved">
+                    <button type="button" class="o_gym_addfood_new" t-on-click="newRecipe">
+                        <i class="fa fa-plus"/> Add New Recipe
+                    </button>
+                    <input type="search" class="o_gym_addfood_search" placeholder="Search saved food..."
+                           t-att-value="state.search" t-on-input="onSearchInput"/>
+                    <div t-if="!state.recipes.length" class="o_gym_addfood_empty">
+                        <t t-if="state.search">Nothing matches your search.</t>
+                        <t t-else="">No saved food yet. Add your first recipe!</t>
+                    </div>
+                    <div t-foreach="state.recipes" t-as="recipe" t-key="recipe.id" class="o_gym_saved_card">
+                        <button type="button" class="o_gym_saved_main" t-on-click="() => this.pick(recipe)">
+                            <span class="o_gym_saved_name" t-esc="recipe.name"/>
+                            <span class="o_gym_saved_meta">
+                                <t t-esc="recipe.servings"/> serving<t t-if="recipe.servings !== 1">s</t>
+                                · <t t-esc="recipe.ingredient_count"/> ingredient<t t-if="recipe.ingredient_count !== 1">s</t>
+                                <t t-if="!recipe.mine"> · by <t t-esc="recipe.owner"/></t>
+                            </span>
+                            <span class="o_gym_saved_macros">
+                                <b><t t-esc="fmt(recipe.per_serving.calories)"/> kcal</b> per serving
+                                · P <t t-esc="fmt(recipe.per_serving.protein)"/>
+                                · C <t t-esc="fmt(recipe.per_serving.carbs)"/>
+                                · F <t t-esc="fmt(recipe.per_serving.fat)"/>
+                            </span>
+                        </button>
+                        <span t-if="recipe.mine" class="o_gym_saved_actions">
+                            <button type="button" aria-label="Edit recipe" t-on-click="() => this.editRecipe(recipe)"><i class="fa fa-pencil"/></button>
+                            <button type="button" aria-label="Delete recipe" t-on-click="() => this.deleteRecipe(recipe)"><i class="fa fa-trash-o"/></button>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 3. how much did you eat -->
+                <div t-if="state.step === 'servings'" class="o_gym_addfood_servings">
+                    <div class="o_gym_ui_label">Servings eaten</div>
+                    <div class="o_gym_ui_stepper">
+                        <button type="button" class="o_gym_ui_step" aria-label="Less"
+                                t-on-click="() => this.stepServings(-1)"><i class="fa fa-minus"/></button>
+                        <input type="text" inputmode="decimal" class="o_gym_ui_number"
+                               t-att-value="state.servings" t-on-input="onServingsInput"/>
+                        <button type="button" class="o_gym_ui_step" aria-label="More"
+                                t-on-click="() => this.stepServings(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                    <div class="o_gym_ui_bignumber"><b t-esc="preview.calories"/> <span>kcal</span></div>
+                    <div class="o_gym_ui_legend">
+                        <span><i class="o_gym_ui_dot" style="background:#1e88e5"/> Protein <b><t t-esc="preview.protein"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#f0a30a"/> Carbs <b><t t-esc="preview.carbs"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#ef7b5d"/> Fat <b><t t-esc="preview.fat"/> g</b></span>
+                    </div>
+                    <p t-if="state.recipe.description" class="o_gym_addfood_desc" t-esc="state.recipe.description"/>
+                    <button type="button" class="btn btn-primary o_gym_addfood_confirm"
+                            t-att-disabled="state.busy or servingsEaten lte 0" t-on-click="confirm">
+                        <t t-if="props.entry">Save</t>
+                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

@@ -60,6 +60,28 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
+    <record id="rule_gym_recipe_own" model="ir.rule">
+        <field name="name">Recipes: change only your own</field>
+        <field name="model_id" ref="model_gym_recipe"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="rule_gym_recipe_ingredient_own" model="ir.rule">
+        <field name="name">Recipe ingredients: change only your own</field>
+        <field name="model_id" ref="model_gym_recipe_ingredient"/>
+        <field name="domain_force">[('recipe_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
     <record id="rule_gym_profile_own" model="ir.rule">
         <field name="name">Profile &amp; goals: change only your own</field>
         <field name="model_id" ref="model_gym_profile"/>

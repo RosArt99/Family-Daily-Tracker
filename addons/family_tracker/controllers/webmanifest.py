@@ -5,9 +5,10 @@ from odoo.http import request
 from odoo.addons.web.controllers.webmanifest import WebManifest
 
 HOME_COLOR = '#3B4A54'
+SPLASH_COLOR = '#FFF6E8'  # the logo's own background
 ICON_DIR = '/family_tracker/static/src/img/pwa'
 # Bump when the icon files change: iOS and Safari cache home-screen icons by URL.
-ICON_VERSION = 2
+ICON_VERSION = 4
 
 
 class GroceriesWebManifest(WebManifest):
@@ -25,13 +26,15 @@ class GroceriesWebManifest(WebManifest):
             'short_name': 'Family',
             # Opens the Home page (tiles for every family app).
             'start_url': '/web#menu_id=%s' % menu_id if menu_id else '/web',
-            'background_color': HOME_COLOR,
+            'background_color': SPLASH_COLOR,
             'theme_color': HOME_COLOR,
             'orientation': 'portrait',
             'icons': [
                 {'src': '%s/icon-192.png?v=%s' % (ICON_DIR, ICON_VERSION), 'sizes': '192x192', 'type': 'image/png'},
                 {'src': '%s/icon-512.png?v=%s' % (ICON_DIR, ICON_VERSION), 'sizes': '512x512', 'type': 'image/png',
-                 'purpose': 'any maskable'},
+                 'purpose': 'any'},
+                {'src': '%s/icon-512-maskable.png?v=%s' % (ICON_DIR, ICON_VERSION), 'sizes': '512x512',
+                 'type': 'image/png', 'purpose': 'maskable'},
             ],
             'shortcuts': [],
         })

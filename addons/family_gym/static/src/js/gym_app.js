@@ -9,8 +9,8 @@ registry.category("family_apps").add(
         key: "gym",
         menuXmlid: "family_gym.menu_gym_root",
         icon: "fa-heartbeat",
-        color: "#9E2923",
-        pattern: "/family_gym/static/src/img/navbar_pattern_gym.png",
+        color: "#c41e3f",
+        pattern: "/family_gym/static/src/img/navbar_pattern_gym.png?v=2",
         modelPrefix: "gym.",
         description: "Workouts, strength, weight & meals",
         tabs: [

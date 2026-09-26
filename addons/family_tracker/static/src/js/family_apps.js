@@ -62,13 +62,22 @@ export function darken(hex, amount) {
     return hslToHex([h, s, Math.max(0, l - amount)]);
 }
 
-export const THEME_VARS = ["--fam-color", "--fam-color-dark", "--fam-color-darker", "--fam-rgb", "--fam-pattern"];
+// Counterpart of darken(): raise HSL lightness by `amount` (0..1).
+export function lighten(hex, amount) {
+    const [h, s, l] = rgbToHsl(hexToRgb(hex));
+    return hslToHex([h, s, Math.min(1, l + amount)]);
+}
+
+export const THEME_VARS = [
+    "--fam-color", "--fam-color-dark", "--fam-color-darker", "--fam-color-lighter", "--fam-rgb", "--fam-pattern",
+];
 
 export function themeVars(app) {
     return {
         "--fam-color": app.color,
         "--fam-color-dark": darken(app.color, 0.08),
         "--fam-color-darker": darken(app.color, 0.12),
+        "--fam-color-lighter": lighten(app.color, 0.1),
         "--fam-rgb": hexToRgb(app.color).join(", "),
         "--fam-pattern": app.pattern ? `url("${app.pattern}")` : "none",
     };

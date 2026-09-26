@@ -1,6 +1,6 @@
 {
     'name': 'Family Gym & Fit',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.3.0',
     'category': 'Productivity',
     'summary': 'Workout calendar, strength & weight progress and meal/calorie log for the family',
     'author': 'Ros',
@@ -21,9 +21,13 @@
     'assets': {
         'web.assets_backend': [
             'family_gym/static/src/js/gym_app.js',
+            'family_gym/static/src/js/gym_entry_dialogs.js',
             'family_gym/static/src/js/gym_graph.js',
+            'family_gym/static/src/js/meals_recipes.js',
             'family_gym/static/src/js/meals_diary.js',
             'family_gym/static/src/xml/meals_diary.xml',
+            'family_gym/static/src/xml/meals_recipes.xml',
+            'family_gym/static/src/xml/gym_entry_dialogs.xml',
             'family_gym/static/src/xml/gym_graph.xml',
             'family_gym/static/src/scss/gym.scss',
         ],

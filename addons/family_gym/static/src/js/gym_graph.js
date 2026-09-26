@@ -7,6 +7,7 @@ import { getGroupBy } from "@web/search/utils/group_by";
 import { graphView } from "@web/views/graph/graph_view";
 import { GraphRenderer } from "@web/views/graph/graph_renderer";
 import { onMounted, onWillStart } from "@odoo/owl";
+import { ExerciseEntryDialog, WeightEntryDialog } from "./gym_entry_dialogs";
 
 // The stock graph view is built for reports (measures, bar/pie, stacking, sorting). The Weight
 // and Exercises graphs are "one line per person over time", so this variant drops all of that
@@ -16,7 +17,7 @@ export class GymGraphRenderer extends GraphRenderer {
     setup() {
         super.setup();
         this.orm = useService("orm");
-        this.actionService = useService("action");
+        this.dialogService = useService("dialog");
         this.exercises = [];
         onWillStart(() => this.loadExercises());
         onMounted(() => this.pickDefaultExercise());
@@ -184,25 +185,18 @@ export class GymGraphRenderer extends GraphRenderer {
     // ------------------------------------------------------------------ add an entry
 
     onAddClicked() {
-        const context = {};
-        if (this.isExerciseGraph && this.selectedExerciseId) {
-            context.default_exercise_id = this.selectedExerciseId;
-        }
-        this.actionService.doAction(
-            {
-                type: "ir.actions.act_window",
-                res_model: this.props.model.metaData.resModel,
-                views: [[false, "form"]],
-                target: "new",
-                context,
-            },
-            {
-                onClose: async () => {
+        if (this.isExerciseGraph) {
+            this.dialogService.add(ExerciseEntryDialog, {
+                exerciseId: this.selectedExerciseId || undefined,
+                onSaved: async ({ exerciseId }) => {
                     await this.loadExercises();
-                    await this.reload();
+                    // Jump to what was just logged so the new point is on screen.
+                    this.applyExercise(exerciseId);
                 },
-            }
-        );
+            });
+        } else {
+            this.dialogService.add(WeightEntryDialog, { onSaved: () => this.reload() });
+        }
     }
 
     // ------------------------------------------------------------------ chart tweaks

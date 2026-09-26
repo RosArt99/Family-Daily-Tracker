@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ================================ Weight ================================ -->
+    <t t-name="family_gym.WeightEntryDialog">
+        <Dialog title="'Add weight'" size="'md'" contentClass="'o_gym_entry_dialog'">
+            <div class="o_gym_ui_form">
+                <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
+
+                <div class="o_gym_ui_hero">
+                    <span class="o_gym_ui_hero_icon"><span class="o_gym_ui_svg" t-att-style="iconStyle" role="img"/></span>
+                    <div class="o_gym_ui_hero_text">
+                        <label for="o_gym_weight_input">Weight</label>
+                        <div class="o_gym_ui_hero_number">
+                            <input id="o_gym_weight_input" type="text" inputmode="decimal" autocomplete="off"
+                                   placeholder="0.0" t-att-value="state.weight" t-on-input="onWeightInput"/>
+                            <span class="o_gym_ui_unit">kg</span>
+                        </div>
+                        <div class="o_gym_ui_hint" t-if="state.last">
+                            Last: <t t-esc="fmt(state.last.weight)"/> kg on <t t-esc="state.last.date"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Fine tune</div>
+                    <div class="o_gym_ui_nudge" style="margin-top:0">
+                        <button type="button" t-on-click="() => this.nudge(-1)">− 1</button>
+                        <button type="button" t-on-click="() => this.nudge(-0.1)">− 0.1</button>
+                        <button type="button" t-on-click="() => this.nudge(0.1)">+ 0.1</button>
+                        <button type="button" t-on-click="() => this.nudge(1)">+ 1</button>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Date</div>
+                    <input type="date" class="o_gym_ui_date" t-model="state.date"/>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Notes</div>
+                    <textarea class="o_gym_ui_textarea" rows="2" placeholder="Optional" t-model="state.notes"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- ================================ Exercise ================================ -->
+    <t t-name="family_gym.ExerciseEntryDialog">
+        <Dialog title="'Add exercise'" size="'md'" contentClass="'o_gym_entry_dialog'">
+            <div class="o_gym_ui_form">
+                <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
+
+                <div class="o_gym_ui_hero">
+                    <span class="o_gym_ui_hero_icon"><span class="o_gym_ui_svg" t-att-style="iconStyle" role="img"/></span>
+                    <div class="o_gym_ui_hero_text">
+                        <label for="o_gym_exercise_input">Exercise</label>
+                        <input id="o_gym_exercise_input" type="text" class="o_gym_ui_hero_input" autocomplete="off"
+                               placeholder="Choose, or type a new one" t-att-value="state.text" t-on-input="onTextInput"/>
+                        <div class="o_gym_ui_hint" t-if="state.last">Last time: <t t-esc="state.last"/></div>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_chips">
+                    <button t-foreach="suggestions" t-as="exercise" t-key="exercise.id" type="button"
+                            class="o_gym_ui_chip" t-att-class="{ o_active: selected and selected.id === exercise.id }"
+                            t-on-click="() => this.pick(exercise)" t-esc="exercise.name"/>
+                    <span t-if="isNew" class="o_gym_ui_chip o_create">
+                        <i class="fa fa-plus"/> New: <t t-esc="typed"/>
+                    </span>
+                </div>
+
+                <div class="o_gym_ui_card" t-if="isNew">
+                    <div class="o_gym_ui_label">New exercise type</div>
+                    <div class="o_gym_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.newMetric === 'strength' }"
+                                t-on-click="() => state.newMetric = 'strength'">Weight × reps</button>
+                        <button type="button" t-att-class="{ o_active: state.newMetric === 'reps' }"
+                                t-on-click="() => state.newMetric = 'reps'">Reps only</button>
+                    </div>
+                    <select class="o_gym_ui_select" t-model="state.newMuscle">
+                        <option t-foreach="muscleGroups" t-as="group" t-key="group[0]" t-att-value="group[0]" t-esc="group[1]"/>
+                    </select>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Sets</div>
+                    <div t-foreach="state.sets" t-as="set" t-key="set.key" class="o_gym_set_row">
+                        <span class="o_gym_set_no" t-esc="set_index + 1"/>
+                        <label t-if="!repsOnly" class="o_gym_set_field">
+                            <input type="text" inputmode="decimal" t-att-value="set.weight" placeholder="0"
+                                   t-on-input="(ev) => this.onSetInput(ev, set, 'weight')"/>
+                            <span>kg</span>
+                        </label>
+                        <span t-if="!repsOnly" class="o_gym_set_times">×</span>
+                        <label class="o_gym_set_field">
+                            <input type="text" inputmode="numeric" t-att-value="set.reps" placeholder="0"
+                                   t-on-input="(ev) => this.onSetInput(ev, set, 'reps')"/>
+                            <span>reps</span>
+                        </label>
+                        <button type="button" class="o_gym_set_remove" aria-label="Remove set"
+                                t-on-click="() => this.removeSet(set)"><i class="fa fa-times"/></button>
+                    </div>
+                    <button type="button" class="o_gym_ui_add" t-on-click="addSet"><i class="fa fa-plus"/> Add set</button>
+                </div>
+
+                <div class="o_gym_ui_card" t-if="best">
+                    <div class="o_gym_ui_label">Best of the session</div>
+                    <div class="o_gym_ui_bignumber">
+                        <b t-esc="fmt(best)"/> <span t-esc="repsOnly ? 'reps' : 'kg'"/>
+                    </div>
+                    <div class="o_gym_ui_footnote" t-if="!repsOnly and volume">
+                        <t t-esc="filledSets.length"/> sets · total <b><t t-esc="fmt(volume)"/> kg</b> lifted
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Notes</div>
+                    <textarea class="o_gym_ui_textarea" rows="2" placeholder="Optional" t-model="state.notes"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

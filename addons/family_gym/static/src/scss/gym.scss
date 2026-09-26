@@ -194,3 +194,709 @@
         font-size: 13px;
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// Recipes (meals_recipes.js): the "+" source picker, My Saved Food and the recipe form.
+// Same language as the diary: white rounded cards with a soft shadow on a light background.
+// ---------------------------------------------------------------------------------------------
+
+$gym-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+// Gradients: the header cards run dark -> base; buttons and accents use the same idea a touch
+// lighter (base -> lighter), so they read as one family without competing with the header.
+$gym-gradient-hero: linear-gradient(135deg, var(--fam-color-darker, #8f162e), var(--fam-color, #c41e3f));
+$gym-gradient-light: linear-gradient(135deg, var(--fam-color, #c41e3f), var(--fam-color-lighter, #e03557));
+$gym-protein: #1e88e5;
+$gym-carbs: #f0a30a;
+$gym-fat: #ef7b5d;
+
+.o_gym_recipe_dialog,
+.o_gym_addfood_dialog {
+    .modal-body {
+        background: #f3f4f6;
+    }
+}
+
+.o_gym_ui_form,
+.o_gym_addfood {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 12px 12px 20px;
+}
+
+.o_gym_ui_label {
+    margin-bottom: 8px;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.o_gym_ui_card {
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: $gym-card-shadow;
+}
+
+// Coloured header that holds the recipe name.
+.o_gym_ui_hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: 16px;
+    color: #fff;
+    background: $gym-gradient-hero;
+    box-shadow: $gym-card-shadow;
+
+    .o_gym_ui_hero_icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 26px;
+    }
+
+    .o_gym_ui_hero_text {
+        flex: 1;
+        min-width: 0;
+
+        label {
+            display: block;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+    }
+
+    .o_gym_ui_hero_input {
+        width: 100%;
+        padding: 4px 0;
+        border: 0;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+        outline: 0;
+        background: transparent;
+        color: #fff;
+        font-size: 22px;
+        font-weight: 700;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 400;
+        }
+
+        &:focus {
+            border-bottom-color: #fff;
+        }
+    }
+}
+
+.o_gym_ui_textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    outline: 0;
+    background: #f5f6f8;
+    resize: vertical;
+}
+
+// − 4 + stepper, used for the recipe's servings and for the servings you ate.
+.o_gym_ui_stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+
+    .o_gym_ui_step {
+        width: 48px;
+        height: 48px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--fam-color, #c41e3f);
+        color: #fff;
+        font-size: 18px;
+        box-shadow: $gym-card-shadow;
+    }
+
+    .o_gym_ui_number {
+        width: 90px;
+        padding: 4px 0;
+        border: 0;
+        border-bottom: 2px solid #dee2e6;
+        outline: 0;
+        background: transparent;
+        text-align: center;
+        font-size: 32px;
+        font-weight: 700;
+
+        &:focus {
+            border-bottom-color: var(--fam-color, #c41e3f);
+        }
+    }
+}
+
+.o_gym_ui_empty,
+.o_gym_addfood_empty {
+    padding: 8px 0 12px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.o_gym_recipe_ing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid #eef0f2;
+
+    .o_gym_recipe_ing_img {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: #f5f6f8;
+        object-fit: contain;
+    }
+
+    .o_gym_recipe_ing_info {
+        flex: 1;
+        min-width: 0;
+
+        .o_gym_recipe_ing_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .o_gym_recipe_ing_kcal {
+            color: #6c757d;
+            font-size: 13px;
+        }
+    }
+
+    .o_gym_recipe_warn {
+        margin-left: 4px;
+        color: #b26a00;
+    }
+
+    .o_gym_recipe_weight {
+        flex: none;
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+
+        input {
+            width: 64px;
+            padding: 6px 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            outline: 0;
+            text-align: right;
+            font-weight: 600;
+
+            &:focus {
+                border-color: var(--fam-color, #c41e3f);
+            }
+        }
+
+        span {
+            color: #6c757d;
+        }
+    }
+
+    .o_gym_recipe_remove {
+        flex: none;
+        padding: 6px;
+        border: 0;
+        background: transparent;
+        color: #adb5bd;
+    }
+}
+
+.o_gym_ui_add {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border: 2px dashed var(--fam-color, #c41e3f);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--fam-color, #c41e3f);
+    font-weight: 700;
+}
+
+.o_gym_ui_bignumber {
+    margin: 4px 0 10px;
+    text-align: center;
+
+    b {
+        font-size: 44px;
+        line-height: 1;
+    }
+
+    span {
+        color: #6c757d;
+        font-size: 16px;
+    }
+}
+
+// How the calories split between protein / carbs / fat.
+.o_gym_ui_split {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.o_gym_ui_legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 16px;
+    margin-top: 10px;
+    font-size: 14px;
+
+    .o_gym_ui_dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        border-radius: 50%;
+    }
+}
+
+.o_gym_ui_footnote {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eef0f2;
+    color: #6c757d;
+    text-align: center;
+    font-size: 13px;
+}
+
+.o_gym_ui_error {
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fdecea;
+    color: #b02a37;
+    font-weight: 600;
+}
+
+// ---- "+" on a meal ----
+.o_gym_addfood {
+    .o_gym_addfood_back {
+        margin-bottom: 8px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--fam-color, #c41e3f);
+        font-weight: 600;
+    }
+
+    .o_gym_addfood_tile {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 16px;
+        border: 0;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+        text-align: left;
+        color: inherit;
+
+        .o_gym_addfood_tile_icon {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #347136;
+            color: #fff;
+            font-size: 22px;
+
+            &.o_saved {
+                background: var(--fam-color, #c41e3f);
+            }
+        }
+
+        .o_gym_addfood_tile_text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+
+            b {
+                font-size: 18px;
+            }
+
+            span {
+                color: #6c757d;
+                font-size: 13px;
+            }
+        }
+
+        > .fa {
+            color: #adb5bd;
+        }
+    }
+
+    .o_gym_addfood_new {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 14px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--fam-color, #c41e3f);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        box-shadow: $gym-card-shadow;
+    }
+
+    .o_gym_addfood_search {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 12px;
+        outline: 0;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+    }
+
+    .o_gym_saved_card {
+        display: flex;
+        align-items: stretch;
+        margin-bottom: 10px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+
+        .o_gym_saved_main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 12px 14px;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            color: inherit;
+
+            .o_gym_saved_name {
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 17px;
+                font-weight: 700;
+            }
+
+            .o_gym_saved_meta {
+                color: #6c757d;
+                font-size: 13px;
+            }
+
+            .o_gym_saved_macros {
+                font-size: 13px;
+
+                b {
+                    color: var(--fam-color, #c41e3f);
+                }
+            }
+        }
+
+        .o_gym_saved_actions {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 6px;
+
+            button {
+                padding: 6px 10px;
+                border: 0;
+                background: transparent;
+                color: #adb5bd;
+            }
+        }
+    }
+
+    .o_gym_addfood_servings {
+        padding: 16px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+
+        .o_gym_ui_label {
+            text-align: center;
+        }
+
+        .o_gym_addfood_desc {
+            margin: 12px 0 0;
+            color: #6c757d;
+            font-size: 13px;
+            white-space: pre-line;
+        }
+
+        .o_gym_addfood_confirm {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Gradient accents (buttons, steppers, progress) - lighter sibling of the header gradient.
+// ---------------------------------------------------------------------------------------------
+.o_gym_ui_step,
+.o_gym_addfood_new,
+.o_gym_addfood_tile .o_gym_addfood_tile_icon.o_saved,
+.o_gym_recipe_dialog .modal-footer .btn-primary,
+.o_gym_entry_dialog .modal-footer .btn-primary,
+.o_gym_addfood_dialog .btn-primary,
+.o_gym_add_entry.btn-primary {
+    border-color: transparent;
+    background: $gym-gradient-light;
+    color: #fff;
+}
+
+.o_gym_diary .o_gym_diary_bar .o_gym_diary_bar_fill:not(.o_over) {
+    background: $gym-gradient-light;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Weight / Exercise entry dialogs (gym_entry_dialogs.js) - built from the same o_gym_ui_* parts.
+// ---------------------------------------------------------------------------------------------
+.o_gym_entry_dialog .modal-body {
+    background: #f3f4f6;
+}
+
+// SVG icon that takes the text colour (same trick as the bottom bar).
+.o_gym_ui_svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+    background-color: currentColor;
+    -webkit-mask: var(--gym-icon) center / contain no-repeat;
+    mask: var(--gym-icon) center / contain no-repeat;
+}
+
+// Big number input inside the coloured header (weight).
+.o_gym_ui_hero .o_gym_ui_hero_number {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+
+    input {
+        width: 100%;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+        outline: 0;
+        background: transparent;
+        color: #fff;
+        font-size: 44px;
+        font-weight: 800;
+        line-height: 1.1;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        &:focus {
+            border-bottom-color: #fff;
+        }
+    }
+
+    .o_gym_ui_unit {
+        font-size: 20px;
+        font-weight: 700;
+        opacity: 0.85;
+    }
+}
+
+.o_gym_ui_hint {
+    margin-top: 6px;
+    color: #6c757d;
+    font-size: 13px;
+    text-align: center;
+}
+
+.o_gym_ui_hero .o_gym_ui_hint {
+    color: rgba(255, 255, 255, 0.85);
+    text-align: left;
+}
+
+// Small ± buttons for fine tuning next to a value.
+.o_gym_ui_nudge {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+
+    button {
+        min-width: 64px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 999px;
+        background: #f1f3f5;
+        color: #343a40;
+        font-weight: 700;
+    }
+}
+
+.o_gym_ui_date {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    outline: 0;
+    background: #f5f6f8;
+    font-size: 16px;
+}
+
+// Exercise picker: suggestion chips under the header.
+.o_gym_ui_chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+
+    .o_gym_ui_chip {
+        padding: 8px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+        color: #343a40;
+        font-weight: 600;
+
+        &.o_active {
+            background: $gym-gradient-light;
+            color: #fff;
+        }
+
+        &.o_create {
+            border: 2px dashed var(--fam-color, #c41e3f);
+            background: transparent;
+            box-shadow: none;
+            color: var(--fam-color, #c41e3f);
+        }
+    }
+}
+
+.o_gym_ui_toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    button {
+        flex: 1;
+        padding: 10px 8px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        background: #fff;
+        font-weight: 600;
+
+        &.o_active {
+            border-color: var(--fam-color, #c41e3f);
+            color: var(--fam-color, #c41e3f);
+        }
+    }
+}
+
+.o_gym_ui_select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: #f5f6f8;
+}
+
+// One row per set: "1   [ 100 ] kg  ×  [ 12 ] reps   ×"
+.o_gym_set_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 1px solid #eef0f2;
+
+    .o_gym_set_no {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #f1f3f5;
+        color: #6c757d;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 26px;
+        text-align: center;
+    }
+
+    .o_gym_set_field {
+        flex: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        min-width: 0;
+
+        input {
+            width: 100%;
+            min-width: 0;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            outline: 0;
+            text-align: right;
+            font-size: 18px;
+            font-weight: 700;
+
+            &:focus {
+                border-color: var(--fam-color, #c41e3f);
+            }
+        }
+
+        span {
+            color: #6c757d;
+            font-size: 13px;
+        }
+    }
+
+    .o_gym_set_times {
+        flex: none;
+        color: #adb5bd;
+    }
+
+    .o_gym_set_remove {
+        flex: none;
+        padding: 6px;
+        border: 0;
+        background: transparent;
+        color: #adb5bd;
+    }
+}

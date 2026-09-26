@@ -6,6 +6,7 @@ import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { SelectCreateDialog } from "@web/views/view_dialogs/select_create_dialog";
 import { Component, onWillStart, useState } from "@odoo/owl";
+import { AddFoodDialog } from "./meals_recipes";
 
 const MEAL_STYLE = {
     breakfast: { icon: "fa-coffee", color: "#f0a30a" },
@@ -95,13 +96,25 @@ class MealsDiary extends Component {
         );
     }
 
-    // "+" : search the pantry (Groceries catalog) first, then confirm the amount.
-    addFood(meal) {
+    // "+" : first choose the source - Groceries (pantry) or My Saved Food (recipes).
+    addFood(meal, mealLabel) {
+        this.dialog.add(AddFoodDialog, {
+            meal,
+            mealLabel,
+            date: this.state.date,
+            onPantry: () => this.addFromPantry(meal),
+            onDone: () => this.load(),
+        });
+    }
+
+    // Search the pantry (Groceries catalog, in-stock food first), then confirm the amount.
+    addFromPantry(meal) {
         this.dialog.add(SelectCreateDialog, {
             title: _t("Add food"),
             resModel: "groceries.product",
             multiSelect: false,
             noCreate: true,
+            context: { search_default_filter_in_stock: 1 },
             onSelected: ([productId]) =>
                 this.openForm(_t("Add food"), {
                     context: {
@@ -120,6 +133,11 @@ class MealsDiary extends Component {
     }
 
     editEntry(entry) {
+        if (entry.recipe_id) {
+            // A recipe entry is only about how many servings you ate.
+            this.dialog.add(AddFoodDialog, { entry, onDone: () => this.load() });
+            return;
+        }
         this.openForm(entry.name || _t("Food"), { resId: entry.id });
     }
 

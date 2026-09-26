@@ -55,7 +55,7 @@
                     </span>
                     <span class="o_gym_diary_meal_name" t-esc="section.label"/>
                     <span class="o_gym_diary_meal_kcal" t-if="section.calories"><t t-esc="section.calories"/> kcal</span>
-                    <button type="button" class="o_gym_diary_add" t-on-click="() => this.addFood(section.key)"
+                    <button type="button" class="o_gym_diary_add" t-on-click="() => this.addFood(section.key, section.label)"
                             t-att-aria-label="'Add to ' + section.label">
                         <i class="fa fa-plus"/>
                     </button>
@@ -63,7 +63,7 @@
                 <div t-foreach="section.entries" t-as="entry" t-key="entry.id" class="o_gym_diary_entry">
                     <button type="button" class="o_gym_diary_entry_main" t-on-click="() => this.editEntry(entry)">
                         <span class="o_gym_diary_entry_name" t-esc="entry.name"/>
-                        <span class="o_gym_diary_entry_amount"><t t-esc="entry.amount"/> g</span>
+                        <span class="o_gym_diary_entry_amount" t-esc="entry.amount_label"/>
                     </button>
                     <span class="o_gym_diary_entry_kcal"><t t-esc="entry.calories"/></span>
                     <button type="button" class="o_gym_diary_entry_delete" t-on-click="() => this.deleteEntry(entry)"

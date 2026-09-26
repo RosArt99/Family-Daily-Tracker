@@ -2,7 +2,8 @@
 // The colours are NOT hard-coded here: family_theme.js sets these CSS variables on <body>
 // from the active app's registry entry:
 //   --fam-color         base colour            --fam-color-dark    ~8% darker
-//   --fam-color-darker  ~12% darker            --fam-rgb           "r, g, b" (for rgba())
+//   --fam-color-darker  ~12% darker            --fam-color-lighter ~10% lighter (gradients)
+//   --fam-rgb           "r, g, b" (for rgba())
 //   --fam-pattern       url(...) of the navbar pattern image (or none)
 
 body.o_family_theme {
