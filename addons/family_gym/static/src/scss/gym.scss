@@ -900,3 +900,86 @@ $gym-fat: #ef7b5d;
         color: #adb5bd;
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// Groceries product picker (groceries_picker.js) - "From Groceries" in the diary, and a
+// recipe's "Add ingredient". The cards themselves reuse family_tracker's .o_gs_card (Shopping
+// List & Stock's List view), which already picks up this app's --fam-color automatically; only
+// the toolbar, selection state and the kcal/100g line are specific to this dialog.
+// ---------------------------------------------------------------------------------------------
+.o_gs_picker_dialog .modal-body {
+    background: #f3f4f6;
+}
+
+.o_gs_picker {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.o_gs_picker_toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .o_gs_picker_search {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 12px;
+        outline: 0;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+    }
+
+    .o_gs_picker_filter {
+        flex: none;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 12px;
+        background: #fff;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 13px;
+        box-shadow: $gym-card-shadow;
+
+        &.o_active {
+            background: $gym-gradient-light;
+            color: #fff;
+        }
+    }
+}
+
+.o_gs_picker_empty {
+    padding: 24px 0;
+    color: #6c757d;
+    text-align: center;
+}
+
+.o_gs_picker_card {
+    position: relative;
+    cursor: pointer;
+
+    &.o_gs_picker_selected {
+        box-shadow: 0 0 0 2px var(--fam-color, #c41e3f), $gym-card-shadow;
+    }
+
+    .o_gs_picker_check {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: var(--fam-color, #c41e3f);
+        font-size: 20px;
+        background: #fff;
+        border-radius: 50%;
+    }
+}
+
+.o_gs_picker_warn {
+    color: #b26a00;
+    font-size: 13px;
+
+    .fa {
+        margin-right: 2px;
+    }
+}

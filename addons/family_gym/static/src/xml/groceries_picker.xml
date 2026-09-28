@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_gym.GroceriesPickerDialog">
+        <Dialog title="title" size="'md'" contentClass="'o_gs_picker_dialog'" footer="props.multiSelect">
+            <div class="o_gs_picker">
+                <div class="o_gs_picker_toolbar">
+                    <input type="search" class="o_gs_picker_search" placeholder="Search products..."
+                           t-att-value="state.search" t-on-input="onSearchInput"/>
+                    <button type="button" class="o_gs_picker_filter" t-att-class="{'o_active': state.inStockOnly}"
+                            t-on-click="toggleInStock">
+                        <t t-if="state.inStockOnly">In Stock</t>
+                        <t t-else="">All Products</t>
+                    </button>
+                </div>
+
+                <div t-if="!state.products.length" class="o_gs_picker_empty">
+                    No products found. <t t-if="state.inStockOnly">Try "All Products".</t>
+                </div>
+
+                <div t-foreach="state.products" t-as="product" t-key="product.id"
+                     class="o_gs_card o_gs_picker_card" t-att-class="{'o_gs_picker_selected': isSelected(product)}"
+                     t-on-click="() => this.onPick(product)">
+                    <img class="o_gs_thumb" t-att-src="imageUrl(product)" alt=""/>
+                    <div class="o_gs_body">
+                        <div class="o_gs_title_row">
+                            <span class="o_gs_name" t-esc="product.name"/>
+                            <i t-if="product.is_essential" class="fa fa-star o_gs_essential"
+                               title="Essential product" role="img"/>
+                            <img t-if="product.nutriscore_grade" class="o_gs_nutriscore"
+                                 t-att-src="'/family_tracker/static/src/img/nutriscore_' + product.nutriscore_grade + '.svg'"
+                                 alt="Nutri-Score"/>
+                        </div>
+                        <div class="o_gs_meta_row">
+                            <span t-if="product.energy_kcal_100g" class="o_gs_qty">
+                                <b t-esc="kcal(product)"/> kcal/100g
+                            </span>
+                            <span t-else="" class="o_gs_picker_warn">
+                                <i class="fa fa-exclamation-triangle"/> no nutrition data
+                            </span>
+                            <span t-if="!state.inStockOnly and product.stock_quantity" class="o_gs_exp">
+                                <t t-esc="Math.round(product.stock_quantity)"/> in stock
+                            </span>
+                        </div>
+                    </div>
+                    <i t-if="props.multiSelect and isSelected(product)" class="fa fa-check-circle o_gs_picker_check" role="img"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="!state.selected.length" t-on-click="confirm">
+                    Add<t t-if="state.selected.length"> (<t t-esc="state.selected.length"/>)</t>
+                </button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

@@ -4,9 +4,9 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
-import { SelectCreateDialog } from "@web/views/view_dialogs/select_create_dialog";
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { AddFoodDialog } from "./meals_recipes";
+import { GroceriesPickerDialog } from "./groceries_picker";
 
 const MEAL_STYLE = {
     breakfast: { icon: "fa-coffee", color: "#f0a30a" },
@@ -109,12 +109,9 @@ class MealsDiary extends Component {
 
     // Search the pantry (Groceries catalog, in-stock food first), then confirm the amount.
     addFromPantry(meal) {
-        this.dialog.add(SelectCreateDialog, {
+        this.dialog.add(GroceriesPickerDialog, {
             title: _t("Add food"),
-            resModel: "groceries.product",
             multiSelect: false,
-            noCreate: true,
-            context: { search_default_filter_in_stock: 1 },
             onSelected: ([productId]) =>
                 this.openForm(_t("Add food"), {
                     context: {

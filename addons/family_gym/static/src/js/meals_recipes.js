@@ -6,7 +6,7 @@ import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_d
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { useDebounced } from "@web/core/utils/timing";
-import { SelectCreateDialog } from "@web/views/view_dialogs/select_create_dialog";
+import { GroceriesPickerDialog } from "./groceries_picker";
 
 // Colours of the three macros, shared by the split bar and its legend.
 const MACRO_COLORS = { protein: "#1e88e5", carbs: "#f0a30a", fat: "#ef7b5d" };
@@ -95,13 +95,9 @@ export class RecipeFormDialog extends Component {
 
     // ---- ingredients ----
     addIngredients() {
-        this.dialog.add(SelectCreateDialog, {
+        this.dialog.add(GroceriesPickerDialog, {
             title: _t("Add ingredients"),
-            resModel: "groceries.product",
             multiSelect: true,
-            noCreate: true,
-            // Start from what is in the pantry; remove the filter to search the whole catalog.
-            context: { search_default_filter_in_stock: 1 },
             onSelected: async (ids) => {
                 const known = new Set(this.state.ingredients.map((line) => line.product_id));
                 const products = await this.orm.read("groceries.product", ids.filter((id) => !known.has(id)), [
