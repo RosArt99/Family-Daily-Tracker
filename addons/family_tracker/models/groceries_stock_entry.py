@@ -8,7 +8,7 @@ class GroceriesStockEntry(models.Model):
     _order = 'purchase_date desc, id desc'
 
     product_id = fields.Many2one(
-        'groceries.product', string='Product', required=True, ondelete='restrict', tracking=True)
+        'groceries.product', string='Product', required=True, ondelete='cascade', tracking=True)
     user_id = fields.Many2one(
         'res.users', string='Added By', default=lambda self: self.env.user, required=True)
 
@@ -37,8 +37,23 @@ class GroceriesStockEntry(models.Model):
     @api.model
     def _read_group_state(self, states, domain, order):
         # Kanban columns otherwise come out alphabetically by value (consumed, in_stock,
-        # to_buy) and empty ones are hidden; always show the whole lifecycle left to right.
-        return [key for key, _label in self._fields['state'].selection]
+        # to_buy) and empty ones are hidden; always show the whole lifecycle left to right -
+        # UNLESS the domain itself already narrows things to one state (the per-category
+        # Kanban opened from the Shopping List & Stock landing page), in which case forcing
+        # the other two empty columns back in would defeat the point of having categories.
+        only = self._domain_single_state(domain)
+        return [only] if only else [key for key, _label in self._fields['state'].selection]
+
+    @api.model
+    def _domain_single_state(self, domain):
+        for leaf in domain or []:
+            if isinstance(leaf, (list, tuple)) and len(leaf) == 3 and leaf[0] == 'state':
+                operator, value = leaf[1], leaf[2]
+                if operator == '=' and isinstance(value, str):
+                    return value
+                if operator == 'in' and isinstance(value, (list, tuple)) and len(value) == 1:
+                    return value[0]
+        return None
 
     def write(self, vals):
         res = super().write(vals)

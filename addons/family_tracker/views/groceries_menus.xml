@@ -12,7 +12,7 @@
     <menuitem id="menu_groceries_shopping"
               name="Shopping List &amp; Stock"
               parent="menu_groceries_root"
-              action="action_groceries_stock_entry"
+              action="action_groceries_stock_landing"
               sequence="10"/>
 
     <menuitem id="menu_groceries_products"

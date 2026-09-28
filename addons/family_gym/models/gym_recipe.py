@@ -134,7 +134,7 @@ class GymRecipeIngredient(models.Model):
     recipe_id = fields.Many2one('gym.recipe', required=True, ondelete='cascade', index=True)
     sequence = fields.Integer(default=10)
     product_id = fields.Many2one(
-        'groceries.product', string='Food', required=True, ondelete='restrict')
+        'groceries.product', string='Food', required=True, ondelete='cascade')
     quantity_g = fields.Float(string='Weight (g/ml)', default=100.0)
 
     _sql_constraints = [

@@ -30,6 +30,9 @@
                     <button name="action_refresh_from_off" type="object" class="btn-primary"
                             string="Refresh from Open Food Facts" invisible="not barcode"
                             help="Re-read this product from Open Food Facts (e.g. after you added it there). Manual names and photos are kept."/>
+                    <button name="action_delete_product" type="object" class="btn-secondary" string="Delete Product"
+                            confirm="Delete this product and its whole stock history (to buy / in stock / consumed)? This cannot be undone. Use this for a wrong scan (e.g. a box's barcode instead of what's inside), not for something you simply finished."
+                            help="Removes this product and every stock entry / recipe ingredient that uses it. Meal diary entries already logged keep their calories, they just lose the product link."/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">

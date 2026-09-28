@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_tracker.GroceriesStockLanding">
+        <div class="o_gsl">
+            <button t-foreach="categories" t-as="category" t-key="category.state" type="button"
+                    t-attf-class="o_gsl_button {{ category.className }}"
+                    t-on-click="() => this.open(category)">
+                <span class="o_gsl_icon"><i t-attf-class="fa fa-2x {{ category.icon }}" role="img"/></span>
+                <span class="o_gsl_text">
+                    <span class="o_gsl_label" t-esc="category.label"/>
+                    <span class="o_gsl_hint" t-esc="category.hint"/>
+                </span>
+                <span class="o_gsl_count">
+                    <b t-esc="countFor(category)"/>
+                </span>
+                <i class="fa fa-chevron-right o_gsl_chevron" role="img"/>
+            </button>
+        </div>
+    </t>
+
+</templates>

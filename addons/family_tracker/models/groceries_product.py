@@ -388,6 +388,22 @@ class GroceriesProduct(models.Model):
             'context': {'default_product_id': self.id},
         }
 
+    def action_delete_product(self):
+        """Delete this catalog entry - for the "scanned the wrong barcode" case (e.g. a
+        coffee tin's box instead of the tin itself). Takes its stock entries and any recipe
+        lines that use it down too (both are ondelete='cascade' onto this model); meal diary
+        entries keep their own snapshot values and just lose the product link.
+        The confirm= on the button already asked; nothing left to check here.
+        """
+        self.ensure_one()
+        self.unlink()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Products',
+            'res_model': 'groceries.product',
+            'view_mode': 'tree,form',
+        }
+
     def action_toggle_restock(self):
         for product in self:
             product.auto_restock = not product.auto_restock

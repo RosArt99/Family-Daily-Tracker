@@ -384,3 +384,87 @@ body.o_family_theme .o_gs_kanban .o_kanban_record {
         }
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// Landing page for Shopping List & Stock (groceries_stock_landing.js): three big buttons, one
+// per lifecycle stage, instead of dropping straight into a mixed Kanban. "In Stock" reuses the
+// app's own gradient (green); the other two get their own colour so the three read apart at a
+// glance - amber for "needs action", grey for "history, done with it".
+// ---------------------------------------------------------------------------------------------
+$gsl-gradient-to-buy: linear-gradient(135deg, #c9820a, #f0a30a);
+$gsl-gradient-consumed: linear-gradient(135deg, #495057, #6c757d);
+
+.o_gsl {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px 32px;
+}
+
+.o_gsl_button {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 22px 20px;
+    border: 0;
+    border-radius: 18px;
+    color: #fff;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+
+    &.o_gsl_to_buy {
+        background: $gsl-gradient-to-buy;
+    }
+
+    &.o_gsl_in_stock {
+        background: $gs-gradient;
+    }
+
+    &.o_gsl_consumed {
+        background: $gsl-gradient-consumed;
+    }
+
+    .o_gsl_icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .o_gsl_text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_gsl_label {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .o_gsl_hint {
+        font-size: 13px;
+        opacity: 0.85;
+    }
+
+    .o_gsl_count {
+        flex: none;
+        margin-right: 2px;
+
+        b {
+            font-size: 26px;
+            font-weight: 700;
+        }
+    }
+
+    .o_gsl_chevron {
+        flex: none;
+        opacity: 0.7;
+    }
+}

@@ -162,6 +162,10 @@
         </field>
     </record>
 
+    <!-- The combined, unfiltered view (all three states together) - kept for completeness,
+         not linked from any menu since the landing page (family_tracker.stock_landing,
+         groceries_stock_landing.js) is the entry point now; its three buttons open the
+         category-scoped actions below instead. -->
     <record id="action_groceries_stock_entry" model="ir.actions.act_window">
         <field name="name">Shopping List &amp; Stock</field>
         <field name="res_model">groceries.stock_entry</field>
@@ -177,6 +181,53 @@
                 by scanning the same product's barcode at each stage.
             </p>
         </field>
+    </record>
+
+    <!-- Same model, same Kanban (now naturally down to one column via
+         GroceriesStockEntry._read_group_state) and same custom List - just pre-filtered to
+         one lifecycle stage, opened from the landing page's three big buttons. -->
+    <record id="action_groceries_stock_to_buy" model="ir.actions.act_window">
+        <field name="name">To Buy</field>
+        <field name="res_model">groceries.stock_entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_groceries_stock_entry_search"/>
+        <field name="domain">[('state', '=', 'to_buy')]</field>
+        <field name="context">{'default_state': 'to_buy'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing on the shopping list</p>
+            <p>Scan a barcode with "Add to shopping list" to put something here.</p>
+        </field>
+    </record>
+
+    <record id="action_groceries_stock_in_stock" model="ir.actions.act_window">
+        <field name="name">In Stock</field>
+        <field name="res_model">groceries.stock_entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_groceries_stock_entry_search"/>
+        <field name="domain">[('state', '=', 'in_stock')]</field>
+        <field name="context">{'default_state': 'in_stock'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing in stock yet</p>
+            <p>Scan a barcode at checkout ("Mark Purchased") to move it here.</p>
+        </field>
+    </record>
+
+    <record id="action_groceries_stock_consumed" model="ir.actions.act_window">
+        <field name="name">Consumed / Discarded</field>
+        <field name="res_model">groceries.stock_entry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_groceries_stock_entry_search"/>
+        <field name="domain">[('state', '=', 'consumed')]</field>
+        <field name="context">{'default_state': 'consumed'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing consumed or discarded yet</p>
+            <p>Scan a pack's barcode once it's finished or thrown away to log it here.</p>
+        </field>
+    </record>
+
+    <record id="action_groceries_stock_landing" model="ir.actions.client">
+        <field name="name">Shopping List &amp; Stock</field>
+        <field name="tag">family_tracker.stock_landing</field>
     </record>
 
     <!-- Bulk actions: select multiple rows in the list view (checkboxes) and apply
