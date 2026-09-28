@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_tracker.GroceriesStockList.Buttons"/>
+
+    <t t-name="family_tracker.GroceriesStockList">
+        <div class="o_gs_list">
+            <t t-if="isEmpty" t-out="props.noContentHelp"/>
+            <t t-else="">
+                <div t-foreach="sections" t-as="section" t-key="section.state" class="o_gs_section">
+                    <div class="o_gs_section_head">
+                        <i t-attf-class="fa {{ section.icon }}" role="img"/>
+                        <span t-esc="section.label"/>
+                        <span class="o_gs_section_count" t-esc="section.items.length"/>
+                    </div>
+                    <div t-foreach="section.items" t-as="group" t-key="group.key" class="o_gs_card"
+                         t-on-click="() => this.openProduct(group)">
+                        <img class="o_gs_thumb" t-att-src="imageUrl(group)" alt=""/>
+                        <div class="o_gs_body">
+                            <div class="o_gs_title_row">
+                                <span class="o_gs_name" t-esc="group.productName"/>
+                                <i t-if="group.isEssential" class="fa fa-star o_gs_essential" title="Essential product" role="img"/>
+                                <img t-if="group.nutriscore" class="o_gs_nutriscore"
+                                     t-att-src="'/family_tracker/static/src/img/nutriscore_' + group.nutriscore + '.svg'"
+                                     alt="Nutri-Score"/>
+                                <button type="button" class="o_groceries_restock_chip"
+                                        t-att-class="{'o_gs_restock_on': group.autoRestock}"
+                                        t-att-title="group.autoRestock
+                                            ? 'Re-Stock is on: a consumed pack goes straight back to To Buy'
+                                            : 'Re-Stock is off: click to turn on'"
+                                        t-on-click="(ev) => this.onToggleRestock(ev, group)">
+                                    <i class="fa fa-refresh"/>
+                                </button>
+                            </div>
+                            <div class="o_gs_meta_row">
+                                <span class="o_gs_qty">
+                                    <b t-esc="qty(group)"/> <t t-if="group.uomName" t-esc="group.uomName"/>
+                                    <span t-if="showCountHint(group)" class="o_gs_count_hint"> (<t t-esc="group.count"/> packs)</span>
+                                </span>
+                                <button t-if="section.action" type="button" class="o_gs_action"
+                                        t-att-class="{'o_gs_action_secondary': section.action === 'consumed'}"
+                                        t-on-click="(ev) => this.onGroupAction(ev, group)"
+                                        t-esc="section.action === 'in_stock' ? 'Mark Purchased' : 'Mark Consumed'"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

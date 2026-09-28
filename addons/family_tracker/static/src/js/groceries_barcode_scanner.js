@@ -23,6 +23,14 @@ import { Component, useState, useRef, onWillStart, onWillUnmount } from "@odoo/o
 // user actually sees onto a <canvas> via drawImage() every frame instead - canvas
 // bitmaps aren't subject to this bug.
 const BEEP_URL = "/family_tracker/static/src/sounds/Scan.mp3";
+const MAX_COUNT = 999;
+
+// What each action's running total is called and which of the scan's returned totals it reads.
+const TOTAL_LABELS = {
+    to_buy: "On Shopping List",
+    in_stock: "Total In Stock",
+    consumed: "Total Consumed",
+};
 
 class GroceriesBarcodeScanner extends Component {
     setup() {
@@ -44,6 +52,7 @@ class GroceriesBarcodeScanner extends Component {
 
         this.state = useState({
             action: "in_stock",
+            count: "1",
             manualBarcode: "",
             cameraActive: false,
             starting: false,
@@ -77,6 +86,31 @@ class GroceriesBarcodeScanner extends Component {
             .finally(() => {
                 this.beep.muted = false;
             });
+    }
+
+    // ---- how many identical packs this one scan stands for ----
+
+    get countValue() {
+        const n = parseInt(this.state.count, 10);
+        return Number.isFinite(n) && n > 0 ? Math.min(n, MAX_COUNT) : 1;
+    }
+
+    onCountInput(ev) {
+        // Digits only - a phone number pad has no way to type anything else anyway, but
+        // paste/autofill could.
+        this.state.count = ev.target.value.replace(/\D/g, "");
+    }
+
+    onCountBlur() {
+        this.state.count = String(this.countValue);
+    }
+
+    stepCount(delta) {
+        this.state.count = String(Math.min(MAX_COUNT, Math.max(1, this.countValue + delta)));
+    }
+
+    totalLabel(action) {
+        return TOTAL_LABELS[action] || "Total";
     }
 
     async onStartCamera() {
@@ -180,10 +214,12 @@ class GroceriesBarcodeScanner extends Component {
         // Beep on the read itself, like a store scanner - not after the (slow) server round trip.
         this.beep.currentTime = 0;
         this.beep.play().catch(() => {});
+        const count = this.countValue;
         try {
             const result = await this.rpc("/groceries/scan", {
                 barcode,
                 action: this.state.action,
+                count,
             });
             if (result.error) {
                 this.notification.add(result.error, { type: "danger" });
@@ -194,10 +230,14 @@ class GroceriesBarcodeScanner extends Component {
             }
             this.notification.add(
                 `${result.product_name} → ${result.state}` +
+                    (count > 1 ? ` ×${count}` : "") +
                     (result.product_created ? " " + _t("(new product)") : ""),
                 { type: "success" }
             );
             this.state.history.unshift({ ...result, barcode, time: new Date().toLocaleTimeString() });
+            // Reset to 1 so the next (probably different) product isn't scanned with a
+            // leftover count by mistake.
+            this.state.count = "1";
         } finally {
             this.processing = false;
             this.lastCodeAt = Date.now();

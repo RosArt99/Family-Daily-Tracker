@@ -13,6 +13,18 @@
                 </select>
             </div>
 
+            <div class="o_groceries_count mb-3">
+                <label class="form-label mb-1">How many packs is this scan?</label>
+                <div class="o_groceries_count_stepper">
+                    <button type="button" class="o_groceries_count_step" aria-label="Fewer"
+                            t-on-click="() => this.stepCount(-1)">−</button>
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" class="o_groceries_count_value"
+                           t-att-value="state.count" t-on-input="onCountInput" t-on-blur="onCountBlur"/>
+                    <button type="button" class="o_groceries_count_step" aria-label="More"
+                            t-on-click="() => this.stepCount(1)">+</button>
+                </div>
+            </div>
+
             <div t-if="isCameraSupported"
                  style="position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:4px;overflow:hidden;">
                 <canvas t-ref="canvas" style="width:100%;height:100%;object-fit:cover;display:block;"/>
@@ -45,12 +57,19 @@
                 <h5>Recent Scans</h5>
                 <ul class="list-group">
                     <li t-foreach="state.history" t-as="item" t-key="item.time + item.barcode"
-                        class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            <strong t-esc="item.product_name"/>
-                            <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
-                        </span>
-                        <span class="badge bg-secondary" t-esc="item.state"/>
+                        class="list-group-item o_groceries_scan_row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <strong t-esc="item.product_name"/>
+                                <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
+                            </span>
+                            <span class="badge bg-secondary">
+                                <t t-esc="item.state"/><t t-if="item.count > 1"> ×<t t-esc="item.count"/></t>
+                            </span>
+                        </div>
+                        <div class="o_groceries_scan_total text-muted">
+                            <t t-esc="totalLabel(item.state)"/>: <b t-esc="item.totals[item.state]"/>
+                        </div>
                     </li>
                 </ul>
             </div>

@@ -5,20 +5,20 @@
         <field name="name">groceries.stock_entry.list</field>
         <field name="model">groceries.stock_entry</field>
         <field name="arch" type="xml">
-            <tree string="Stock Entries" default_order="purchase_date desc">
-                <field name="product_image" widget="image" string=" "/>
+            <!-- js_class swaps in groceries_stock_list.js's renderer: same fetched records
+                 (respecting the active search/filters below), drawn as OFF-style cards with
+                 same-product-and-status rows rolled into one summed quantity. Kanban (below)
+                 stays the native per-item view, so Mark Consumed etc. still act one pack at
+                 a time there. -->
+            <tree string="Stock Entries" default_order="product_id, state" limit="500"
+                  js_class="groceries_stock_list">
                 <field name="product_id"/>
-                <field name="state" widget="badge"
-                       decoration-info="state == 'to_buy'"
-                       decoration-success="state == 'in_stock'"
-                       decoration-muted="state == 'consumed'"/>
+                <field name="state"/>
                 <field name="quantity"/>
                 <field name="uom_id"/>
-                <field name="purchase_date"/>
-                <field name="expiration_date"/>
-                <field name="user_id"/>
-                <button name="action_open_product" type="object" icon="fa-external-link"
-                        title="Open product card" string=" "/>
+                <field name="is_essential" column_invisible="1"/>
+                <field name="nutriscore_grade" column_invisible="1"/>
+                <field name="auto_restock" column_invisible="1"/>
             </tree>
         </field>
     </record>
@@ -69,51 +69,68 @@
         <field name="name">groceries.stock_entry.kanban</field>
         <field name="model">groceries.stock_entry</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" quick_create="false">
+            <kanban default_group_by="state" quick_create="false" class="o_gs_kanban">
                 <field name="product_id"/>
                 <field name="quantity"/>
                 <field name="uom_id"/>
                 <field name="expiration_date"/>
                 <field name="user_id"/>
                 <field name="state"/>
-                <field name="product_image"/>
+                <field name="is_essential"/>
+                <field name="nutriscore_grade"/>
+                <field name="auto_restock"/>
                 <templates>
                     <t t-name="kanban-box">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="d-flex">
-                                <a type="object" name="action_open_product" role="button" class="text-reset flex-shrink-0"
-                                   title="Open product card">
-                                    <img t-if="record.product_image.raw_value"
-                                         t-att-src="kanban_image('groceries.stock_entry', 'product_image', record.id.raw_value)"
-                                         alt="Product photo" class="o_groceries_kanban_thumb me-2"/>
-                                    <div t-else="" class="o_groceries_kanban_thumb o_groceries_kanban_thumb_empty me-2 text-muted">
-                                        <i class="fa fa-shopping-basket fa-lg" role="img" title="No photo"/>
-                                    </div>
-                                </a>
-                                <div class="flex-grow-1">
-                                    <div class="o_kanban_record_top">
-                                        <a type="object" name="action_open_product" role="button" class="text-reset"
-                                           title="Open product card"><strong><field name="product_id"/></strong></a>
-                                    </div>
-                                    <div>
-                                        <field name="quantity"/> <field name="uom_id"/>
-                                    </div>
-                                    <div t-if="record.expiration_date.raw_value" class="text-muted">
-                                        Exp: <field name="expiration_date"/>
-                                    </div>
+                        <div class="oe_kanban_card oe_kanban_global_click o_gs_card o_gs_kanban_card">
+                            <a type="object" name="action_open_product" role="button" class="text-reset flex-shrink-0"
+                               title="Open product card">
+                                <img class="o_gs_thumb"
+                                     t-att-src="'/web/image/groceries.product/' + record.product_id.raw_value + '/image/128x128'"
+                                     alt="Product photo"/>
+                            </a>
+                            <div class="o_gs_body">
+                                <div class="o_gs_title_row">
+                                    <a type="object" name="action_open_product" role="button" class="text-reset o_gs_name">
+                                        <field name="product_id"/>
+                                    </a>
+                                    <i t-if="record.is_essential.raw_value" class="fa fa-star o_gs_essential"
+                                       title="Essential product" role="img"/>
+                                    <img t-if="record.nutriscore_grade.raw_value" class="o_gs_nutriscore"
+                                         t-attf-src="/family_tracker/static/src/img/nutriscore_{{record.nutriscore_grade.raw_value}}.svg"
+                                         alt="Nutri-Score"/>
+                                    <!-- Two elements swapped by t-if, not one with a ternary t-att-class:
+                                         kanban's template compiler (unlike a real Owl component) doesn't
+                                         evaluate a ternary there reliably - every card ended up with the
+                                         "on" class regardless of its actual value. Same proven pattern as
+                                         the Mark Purchased/Mark Consumed pair below. -->
+                                    <a t-if="!record.auto_restock.raw_value" role="button" type="object"
+                                       name="action_toggle_product_restock" class="o_groceries_restock_chip"
+                                       title="Re-Stock is off: click to turn on">
+                                        <i class="fa fa-refresh"/>
+                                    </a>
+                                    <a t-if="record.auto_restock.raw_value" role="button" type="object"
+                                       name="action_toggle_product_restock"
+                                       class="o_groceries_restock_chip o_gs_restock_on"
+                                       title="Re-Stock is on: a consumed pack goes straight back to To Buy">
+                                        <i class="fa fa-refresh"/>
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="o_kanban_record_bottom">
-                                <div class="oe_kanban_bottom_left">
+                                <div class="o_gs_meta_row">
+                                    <span class="o_gs_qty">
+                                        <b><field name="quantity"/></b> <field name="uom_id"/>
+                                    </span>
+                                    <span t-if="record.expiration_date.raw_value" class="o_gs_exp">
+                                        Exp <field name="expiration_date"/>
+                                    </span>
+                                </div>
+                                <div class="o_gs_bottom_row">
                                     <field name="user_id" widget="many2one_avatar_user"/>
-                                </div>
-                                <div class="oe_kanban_bottom_right">
                                     <a t-if="record.state.raw_value == 'to_buy'" role="button"
-                                       type="object" name="action_mark_purchased" class="btn btn-sm btn-primary">
+                                       type="object" name="action_mark_purchased" class="o_gs_action">
                                         Mark Purchased
                                     </a>
                                     <a t-if="record.state.raw_value == 'in_stock'" role="button"
-                                       type="object" name="action_mark_consumed" class="btn btn-sm btn-secondary">
+                                       type="object" name="action_mark_consumed" class="o_gs_action o_gs_action_secondary">
                                         Mark Consumed
                                     </a>
                                 </div>

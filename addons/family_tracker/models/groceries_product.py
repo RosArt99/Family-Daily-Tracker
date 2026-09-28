@@ -75,6 +75,10 @@ class GroceriesProduct(models.Model):
     auto_reorder = fields.Boolean(
         string='Auto Add to Shopping List', default=True,
         help='Automatically create a "To Buy" stock entry when stock runs low.')
+    auto_restock = fields.Boolean(
+        string='Re-Stock', default=False,
+        help='When a pack of this product is marked Consumed, immediately add a fresh one '
+             'to the shopping list (To Buy) - for things you always keep around.')
 
     nutriscore_grade = fields.Selection([
         ('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D'), ('e', 'E'),
@@ -383,3 +387,7 @@ class GroceriesProduct(models.Model):
             'domain': [('product_id', '=', self.id)],
             'context': {'default_product_id': self.id},
         }
+
+    def action_toggle_restock(self):
+        for product in self:
+            product.auto_restock = not product.auto_restock

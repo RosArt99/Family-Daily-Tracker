@@ -33,9 +33,25 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <field name="auto_restock" invisible="1"/>
                         <button name="action_view_stock_entries" type="object"
                                 class="oe_stat_button" icon="fa-list">
                             <field name="stock_entry_count" widget="statinfo" string="Stock Entries"/>
+                        </button>
+                        <!-- Two buttons swapped by "invisible", not one restyled by JS: this is
+                             the same technique the header's Mark Purchased/Consumed pair uses.
+                             Grey = off, yellow = on; both call the same toggle method. -->
+                        <button name="action_toggle_restock" type="object"
+                                class="o_groceries_restock_btn o_groceries_restock_off"
+                                invisible="auto_restock"
+                                help="Off: a consumed pack of this product is not re-added automatically.">
+                            <i class="fa fa-refresh"/> Re-Stock
+                        </button>
+                        <button name="action_toggle_restock" type="object"
+                                class="o_groceries_restock_btn o_groceries_restock_on"
+                                invisible="not auto_restock"
+                                help="On: consuming a pack of this product immediately adds a fresh one to the shopping list.">
+                            <i class="fa fa-refresh"/> Re-Stock
                         </button>
                     </div>
                     <div class="o_groceries_product_photo">

@@ -1,3 +1,30 @@
+// Re-Stock toggle on the product form's button box: a plain grey pill when off, so it doesn't
+// compete with the real stat button; solid amber/yellow once it's on, so a re-stocked product
+// is unmistakable at a glance next to the (blue) Stock Entries counter.
+.o_groceries_restock_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 999px;
+    font-weight: 700;
+
+    .fa {
+        font-size: 13px;
+    }
+}
+
+.o_groceries_restock_off {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.o_groceries_restock_on {
+    background: #f0a30a;
+    color: #fff;
+}
+
 // Red while the camera waits for a barcode, green while one is being processed.
 .o_groceries_scan_line {
     position: absolute;
@@ -15,6 +42,50 @@
     &.o_scanning {
         background: #28a745;
         box-shadow: 0 0 10px 2px rgba(40, 167, 69, 0.8);
+    }
+}
+
+// How many identical packs one scan stands for (groceries_barcode_scanner.js).
+.o_groceries_count_stepper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .o_groceries_count_step {
+        width: 44px;
+        height: 44px;
+        padding-bottom: 4px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--fam-color, #347136);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    }
+
+    .o_groceries_count_value {
+        width: 72px;
+        padding: 4px 0;
+        border: 0;
+        border-bottom: 2px solid #dee2e6;
+        outline: 0;
+        background: transparent;
+        text-align: center;
+        font-size: 26px;
+        font-weight: 700;
+
+        &:focus {
+            border-bottom-color: var(--fam-color, #347136);
+        }
+    }
+}
+
+.o_groceries_scan_row {
+    .o_groceries_scan_total {
+        margin-top: 2px;
+        font-size: 13px;
     }
 }
 
@@ -110,5 +181,206 @@ body.o_family_theme .o_list_renderer .o_field_image {
         max-width: none;
         max-height: none;
         object-fit: contain;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// OFF-inspired cards shared by the Kanban and the custom List renderer (groceries_stock_list.js)
+// for Shopping List & Stock: rounded white card, square thumbnail, bold name, small badges,
+// a quantity readout and a state-appropriate action pill. Green, not the stock Odoo grey/boxy
+// kanban look.
+// ---------------------------------------------------------------------------------------------
+$gs-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+$gs-gradient: linear-gradient(135deg, var(--fam-color, #347136), var(--fam-color-lighter, #4f9852));
+// Consuming a pack is the "leaving stock" direction, as opposed to purchasing (green, above) -
+// red makes the two pills easy to tell apart at a glance instead of both reading as "go".
+$gs-gradient-danger: linear-gradient(135deg, #a3212f, #dc3545);
+
+.o_gs_card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: $gs-card-shadow;
+    cursor: pointer;
+
+    .o_gs_thumb {
+        flex: none;
+        width: 64px;
+        height: 64px;
+        border-radius: 10px;
+        background: #f5f6f8;
+        object-fit: contain;
+    }
+
+    .o_gs_body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .o_gs_title_row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .o_gs_name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 16px;
+        font-weight: 700;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .o_gs_essential {
+        flex: none;
+        color: #f0a30a;
+        font-size: 13px;
+    }
+
+    .o_gs_nutriscore {
+        flex: none;
+        height: 18px;
+        margin-left: auto;
+    }
+
+    // Same small circular toggle as the product form's Re-Stock button (grey/yellow), sized to
+    // sit inline in the card's title row. `margin-left: auto` here too so it still ends up at
+    // the far right when there is no Nutri-Score badge to push it there.
+    .o_groceries_restock_chip {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        margin-left: auto;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #868e96;
+        font-size: 12px;
+
+        &.o_gs_restock_on {
+            background: #f0a30a;
+            color: #fff;
+        }
+    }
+
+    .o_gs_nutriscore + .o_groceries_restock_chip {
+        margin-left: 0;
+    }
+
+    .o_gs_meta_row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 2px;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .o_gs_qty {
+        color: #343a40;
+
+        b {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--fam-color, #347136);
+        }
+    }
+
+    .o_gs_count_hint {
+        color: #adb5bd;
+    }
+
+    .o_gs_exp {
+        flex: none;
+        white-space: nowrap;
+    }
+
+    .o_gs_action {
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        background: $gs-gradient;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+
+        &.o_gs_action_secondary {
+            background: $gs-gradient-danger;
+        }
+    }
+}
+
+// ---- Kanban card: bottom row adds the "who added it" avatar next to the action pill ----
+.o_gs_kanban_card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    border: 0;
+    border-radius: 14px;
+    box-shadow: $gs-card-shadow;
+
+    .o_gs_meta_row {
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .o_gs_bottom_row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+
+        .o_gs_action {
+            margin-left: auto;
+        }
+    }
+}
+
+body.o_family_theme .o_gs_kanban .o_kanban_record {
+    padding: 4px 8px;
+}
+
+// ---- List renderer (groceries_stock_list.js): section headers + no-content state ----
+.o_gs_list {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 12px;
+
+    .o_gs_section {
+        margin-bottom: 18px;
+    }
+
+    .o_gs_section_head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 4px 10px;
+        color: #495057;
+        font-size: 15px;
+        font-weight: 700;
+
+        .o_gs_section_count {
+            margin-left: auto;
+            padding: 1px 9px;
+            border-radius: 999px;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 12px;
+            font-weight: 700;
+        }
     }
 }

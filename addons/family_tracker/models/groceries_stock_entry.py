@@ -24,6 +24,11 @@ class GroceriesStockEntry(models.Model):
     quantity = fields.Float(string='Quantity', default=1.0)
     uom_id = fields.Many2one('uom.uom', string='Unit of Measure')
     product_image = fields.Image(related='product_id.image', string='Photo', readonly=True)
+    # Cheap read-only echoes of the product's own badges, so the (custom-rendered) list view
+    # can show them without a second round trip per row.
+    is_essential = fields.Boolean(related='product_id.is_essential', readonly=True)
+    nutriscore_grade = fields.Selection(related='product_id.nutriscore_grade', readonly=True)
+    auto_restock = fields.Boolean(related='product_id.auto_restock', readonly=True)
 
     purchase_date = fields.Date(string='Purchase Date')
     expiration_date = fields.Date(string='Expiration Date')
@@ -43,6 +48,13 @@ class GroceriesStockEntry(models.Model):
             self.filtered(lambda e: not e.purchase_date).purchase_date = today
         elif vals.get('state') == 'consumed':
             self.filtered(lambda e: not e.consumed_date).consumed_date = today
+            # Re-Stock (product.auto_restock): every pack consumed for such a product puts a
+            # fresh one straight back on the shopping list. Catches every path that leads
+            # here - the button, a kanban drag, the list's bulk action and the scanner -
+            # since they all end up writing state='consumed' through this same method.
+            to_restock = self.filtered(lambda e: e.product_id.auto_restock)
+            if to_restock:
+                self.create([{'product_id': e.product_id.id, 'state': 'to_buy'} for e in to_restock])
         return res
 
     @api.onchange('product_id')
@@ -67,3 +79,8 @@ class GroceriesStockEntry(models.Model):
 
     def action_mark_consumed(self):
         self.write({'state': 'consumed', 'consumed_date': fields.Date.context_today(self)})
+
+    def action_toggle_product_restock(self):
+        # Exposed here (not just on the product form) so the Re-Stock toggle can live right on
+        # the Shopping List & Stock cards, without leaving to open the product.
+        self.mapped('product_id').action_toggle_restock()
