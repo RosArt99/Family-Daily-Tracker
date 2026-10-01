@@ -13,10 +13,13 @@ _logger = logging.getLogger(__name__)
 # User-Agent instead of a generic library default (their API is free but rate-limited).
 OFF_USER_AGENT = 'FamilyDailyTracker/1.0 (family-tracker@example.com)'
 OFF_API_URL = 'https://world.openfoodfacts.org/api/v2/product/{barcode}.json'
-# Open Food Facts' own sister project for anything that isn't food - cleaning supplies,
-# toilet paper, ... - same people, same v2 API shape, just a different barcode database.
-# A scan tries food first (the common case), then falls back to this one.
+# Open Food Facts' own sister projects for anything that isn't food - same people, same v2
+# API shape, just different barcode databases. A scan tries food first (the common case),
+# then household goods, then beauty/personal care - their own classification occasionally
+# puts a household product (e.g. a multi-purpose cleaning paste) under "beauty" instead of
+# "household", so this third one is needed too, not just belt-and-suspenders.
 OFF_PRODUCTS_API_URL = 'https://world.openproductsfacts.org/api/v2/product/{barcode}.json'
+OFF_BEAUTY_API_URL = 'https://world.openbeautyfacts.org/api/v2/product/{barcode}.json'
 # Restrict the response to what we actually use - the full OFF payload has 100+ keys.
 OFF_FIELDS = (
     'product_name,generic_name,categories_tags,image_front_url,image_url,image_front_small_url,'
@@ -197,16 +200,17 @@ class GroceriesProduct(models.Model):
         try:
             found = self._refresh_from_off(raise_on_error=True)
         except requests.RequestException:
-            raise UserError(_('Open Food Facts and Open Products Facts could not be reached. '
-                               'Please try again in a minute.'))
+            raise UserError(_('Open Food Facts, Open Products Facts and Open Beauty Facts '
+                               'could not be reached. Please try again in a minute.'))
         if found:
             title, kind = _('Updated from Open Food Facts'), 'success'
             message = _('Data refreshed. A missing photo, if any, will appear in a few seconds.')
         else:
             title, kind = _('Not found yet'), 'warning'
-            message = _('No product with barcode %s was found on Open Food Facts or Open '
-                        'Products Facts. Add it on openfoodfacts.org (food) or '
-                        'openproductsfacts.org (household), then try again.') % self.barcode
+            message = _('No product with barcode %s was found on Open Food Facts, Open '
+                        'Products Facts or Open Beauty Facts. Add it on openfoodfacts.org '
+                        '(food), openproductsfacts.org (household) or openbeautyfacts.org '
+                        '(beauty/personal care), then try again.') % self.barcode
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -248,14 +252,16 @@ class GroceriesProduct(models.Model):
                 self.env.cr.commit()
 
     def _fetch_off_product(self, barcode, raise_on_error=False):
-        """Look up a barcode, food first (Open Food Facts) then household (its sister
-        project Open Products Facts, for cleaning supplies, toilet paper, ...). Returns a
+        """Look up a barcode across Open Food Facts' three sister databases - food first,
+        then household goods, then beauty/personal care (their own classification isn't
+        always where you'd expect: a cleaning paste can be filed under "beauty"). Returns a
         dict of field values to pre-fill the product with - with is_food=False in it when
-        the household source is the one that matched - or None if neither has heard of
-        this barcode (common for local Polish brands) or both are unreachable (unless
-        raise_on_error, which lets a caller tell those two cases apart)."""
+        a non-food source is the one that matched - or None if none of the three has heard
+        of this barcode (common for local Polish brands) or all three are unreachable
+        (unless raise_on_error, which lets a caller tell those two cases apart)."""
         unreachable = False
-        for api_url, is_food in ((OFF_API_URL, True), (OFF_PRODUCTS_API_URL, False)):
+        sources = ((OFF_API_URL, True), (OFF_PRODUCTS_API_URL, False), (OFF_BEAUTY_API_URL, False))
+        for api_url, is_food in sources:
             try:
                 off_product = self._fetch_from_source(api_url, barcode)
             except requests.RequestException:
@@ -269,7 +275,7 @@ class GroceriesProduct(models.Model):
                 return vals
         if unreachable and raise_on_error:
             raise requests.RequestException(
-                'Open Food Facts and Open Products Facts were both unreachable.')
+                'Open Food Facts, Open Products Facts and Open Beauty Facts were all unreachable.')
         return None
 
     @api.model
