@@ -320,6 +320,12 @@ $gs-gradient-danger: linear-gradient(135deg, #a3212f, #dc3545);
         &.o_gs_action_secondary {
             background: $gs-gradient-danger;
         }
+
+        // Same solid amber as the Re-Stock chip (.o_gs_restock_on) - "Buy Again" on a
+        // Consumed card.
+        &.o_gs_action_restock {
+            background: #f0a30a;
+        }
     }
 }
 

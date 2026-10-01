@@ -114,6 +114,14 @@ export class GroceriesStockListRenderer extends Component {
         await this.props.list.model.load();
     }
 
+    // "Buy Again" on a Consumed card: one tap, one fresh To Buy entry for that product - no
+    // confirmation needed, it only ever adds, same as scanning "Add to shopping list" would.
+    async onBuyAgain(ev, group) {
+        ev.stopPropagation();
+        await this.orm.call("groceries.product", "action_add_to_shopping_list", [[group.productId]]);
+        await this.props.list.model.load();
+    }
+
     onGroupAction(ev, group) {
         ev.stopPropagation();
         const action = STATE_META[group.state].action;

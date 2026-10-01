@@ -133,6 +133,10 @@
                                        type="object" name="action_mark_consumed" class="o_gs_action o_gs_action_secondary">
                                         Mark Consumed
                                     </a>
+                                    <a t-if="record.state.raw_value == 'consumed'" role="button"
+                                       type="object" name="action_buy_product_again" class="o_gs_action o_gs_action_restock">
+                                        Buy Again
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -154,9 +158,12 @@
                 <filter string="Consumed" name="filter_consumed" domain="[('state', '=', 'consumed')]"/>
                 <separator/>
                 <filter string="My Entries" name="filter_my_entries" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Household (non-food)" name="filter_household" domain="[('is_food', '=', False)]"/>
                 <group expand="0" string="Group By">
                     <filter string="Status" name="groupby_state" context="{'group_by': 'state'}"/>
                     <filter string="Added By" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Food / Household" name="groupby_is_food" context="{'group_by': 'is_food'}"/>
                 </group>
             </search>
         </field>

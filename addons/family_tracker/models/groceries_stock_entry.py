@@ -29,6 +29,7 @@ class GroceriesStockEntry(models.Model):
     is_essential = fields.Boolean(related='product_id.is_essential', readonly=True)
     nutriscore_grade = fields.Selection(related='product_id.nutriscore_grade', readonly=True)
     auto_restock = fields.Boolean(related='product_id.auto_restock', readonly=True)
+    is_food = fields.Boolean(related='product_id.is_food', readonly=True, store=True)
 
     purchase_date = fields.Date(string='Purchase Date')
     expiration_date = fields.Date(string='Expiration Date')
@@ -99,3 +100,8 @@ class GroceriesStockEntry(models.Model):
         # Exposed here (not just on the product form) so the Re-Stock toggle can live right on
         # the Shopping List & Stock cards, without leaving to open the product.
         self.mapped('product_id').action_toggle_restock()
+
+    def action_buy_product_again(self):
+        # "Buy Again" on a Consumed card: one tap, one fresh To Buy entry for that product -
+        # the manual, on-demand equivalent of what Re-Stock does automatically.
+        self.mapped('product_id').action_add_to_shopping_list()

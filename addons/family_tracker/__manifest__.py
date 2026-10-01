@@ -1,6 +1,6 @@
 {
     'name': 'Family Daily Tracker',
-    'version': '17.0.2.2.0',
+    'version': '17.0.2.3.0',
     'category': 'Productivity',
     'summary': 'Track daily family tasks and routines',
     'author': 'Ros',

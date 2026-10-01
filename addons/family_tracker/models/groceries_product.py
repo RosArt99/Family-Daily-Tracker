@@ -13,6 +13,10 @@ _logger = logging.getLogger(__name__)
 # User-Agent instead of a generic library default (their API is free but rate-limited).
 OFF_USER_AGENT = 'FamilyDailyTracker/1.0 (family-tracker@example.com)'
 OFF_API_URL = 'https://world.openfoodfacts.org/api/v2/product/{barcode}.json'
+# Open Food Facts' own sister project for anything that isn't food - cleaning supplies,
+# toilet paper, ... - same people, same v2 API shape, just a different barcode database.
+# A scan tries food first (the common case), then falls back to this one.
+OFF_PRODUCTS_API_URL = 'https://world.openproductsfacts.org/api/v2/product/{barcode}.json'
 # Restrict the response to what we actually use - the full OFF payload has 100+ keys.
 OFF_FIELDS = (
     'product_name,generic_name,categories_tags,image_front_url,image_url,image_front_small_url,'
@@ -79,6 +83,13 @@ class GroceriesProduct(models.Model):
         string='Re-Stock', default=False,
         help='When a pack of this product is marked Consumed, immediately add a fresh one '
              'to the shopping list (To Buy) - for things you always keep around.')
+
+    is_food = fields.Boolean(
+        string='Food Item', default=True,
+        help='Unchecked for household/non-food products (cleaning supplies, toilet paper, ...). '
+             'Set automatically when a scan is only found on Open Products Facts, not Open Food '
+             'Facts; flip it by hand for anything scanned or typed in by name. Keeps these out '
+             'of the Meals food picker and hides the (meaningless) Nutrition tab below.')
 
     nutriscore_grade = fields.Selection([
         ('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D'), ('e', 'E'),
@@ -186,13 +197,16 @@ class GroceriesProduct(models.Model):
         try:
             found = self._refresh_from_off(raise_on_error=True)
         except requests.RequestException:
-            raise UserError(_('Open Food Facts could not be reached. Please try again in a minute.'))
+            raise UserError(_('Open Food Facts and Open Products Facts could not be reached. '
+                               'Please try again in a minute.'))
         if found:
             title, kind = _('Updated from Open Food Facts'), 'success'
             message = _('Data refreshed. A missing photo, if any, will appear in a few seconds.')
         else:
-            title, kind = _('Not on Open Food Facts yet'), 'warning'
-            message = _('No product with barcode %s was found there. Add it on openfoodfacts.org, then try again.') % self.barcode
+            title, kind = _('Not found yet'), 'warning'
+            message = _('No product with barcode %s was found on Open Food Facts or Open '
+                        'Products Facts. Add it on openfoodfacts.org (food) or '
+                        'openproductsfacts.org (household), then try again.') % self.barcode
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -212,7 +226,7 @@ class GroceriesProduct(models.Model):
                     missing += 1
             except requests.RequestException:
                 failed += 1
-        message = _('%(found)s updated, %(missing)s not on Open Food Facts yet, %(failed)s failed.',
+        message = _('%(found)s updated, %(missing)s not found anywhere yet, %(failed)s failed.',
                     found=found, missing=missing, failed=failed)
         return {
             'type': 'ir.actions.client',
@@ -234,30 +248,50 @@ class GroceriesProduct(models.Model):
                 self.env.cr.commit()
 
     def _fetch_off_product(self, barcode, raise_on_error=False):
-        """Look up a barcode on Open Food Facts. Returns a dict of field values
-        to pre-fill the product with, or None if the product isn't listed there
-        (common for local Polish brands) or the API is unreachable (unless
+        """Look up a barcode, food first (Open Food Facts) then household (its sister
+        project Open Products Facts, for cleaning supplies, toilet paper, ...). Returns a
+        dict of field values to pre-fill the product with - with is_food=False in it when
+        the household source is the one that matched - or None if neither has heard of
+        this barcode (common for local Polish brands) or both are unreachable (unless
         raise_on_error, which lets a caller tell those two cases apart)."""
-        try:
-            response = requests.get(
-                OFF_API_URL.format(barcode=barcode),
-                params={'fields': OFF_FIELDS},
-                headers={'User-Agent': OFF_USER_AGENT},
-                timeout=5,
-            )
-            response.raise_for_status()
-            payload = response.json()
-        except requests.RequestException:
-            if raise_on_error:
-                raise
-            _logger.warning('Open Food Facts lookup failed for barcode %s', barcode, exc_info=True)
-            return None
+        unreachable = False
+        for api_url, is_food in ((OFF_API_URL, True), (OFF_PRODUCTS_API_URL, False)):
+            try:
+                off_product = self._fetch_from_source(api_url, barcode)
+            except requests.RequestException:
+                unreachable = True
+                _logger.warning('%s lookup failed for barcode %s', api_url, barcode, exc_info=True)
+                continue
+            if off_product is not None:
+                vals = self._map_off_product(off_product, barcode)
+                if not is_food:
+                    vals['is_food'] = False
+                return vals
+        if unreachable and raise_on_error:
+            raise requests.RequestException(
+                'Open Food Facts and Open Products Facts were both unreachable.')
+        return None
 
+    @api.model
+    def _fetch_from_source(self, api_url, barcode):
+        """GET one barcode from one OFF-shaped API (food or household). Returns the raw
+        `product` dict, or None if that source has never heard of this barcode - a real
+        network/HTTP failure instead raises requests.RequestException."""
+        response = requests.get(
+            api_url.format(barcode=barcode),
+            params={'fields': OFF_FIELDS},
+            headers={'User-Agent': OFF_USER_AGENT},
+            timeout=5,
+        )
+        response.raise_for_status()
+        payload = response.json()
         # status == 0 means "barcode not found in their database", not an HTTP error.
         if payload.get('status') != 1:
             return None
+        return payload['product']
 
-        off_product = payload['product']
+    @api.model
+    def _map_off_product(self, off_product, barcode):
         vals = {'name': off_product.get('product_name') or off_product.get('generic_name') or barcode}
 
         category_tags = off_product.get('categories_tags') or []
@@ -265,9 +299,9 @@ class GroceriesProduct(models.Model):
             categories = self.env['groceries.product.category']._get_or_create_from_off_tags(category_tags)
             vals['category_ids'] = [(6, 0, categories.ids)]
 
-        # Only remember the largest variant OFF's API guarantees (~400px); the download
-        # itself happens in the background - images.openfoodfacts.org can take 10-20s just
-        # to finish its TLS handshake, which used to block the scan response.
+        # Only remember the largest variant these APIs guarantee (~400px); the download
+        # itself happens in the background - their image servers can take 10-20s just to
+        # finish the TLS handshake, which used to block the scan response.
         image_url = (
             off_product.get('image_front_url')
             or off_product.get('image_url')
@@ -276,6 +310,8 @@ class GroceriesProduct(models.Model):
         if image_url:
             vals['off_image_url'] = image_url
 
+        # Household products carry no `nutriments` at all, so these two stay at their
+        # field defaults (0) for them - nothing to zero out by hand.
         nutriments = off_product.get('nutriments')
         if nutriments:
             vals.update(self._map_off_nutrition(nutriments))
@@ -407,3 +443,10 @@ class GroceriesProduct(models.Model):
     def action_toggle_restock(self):
         for product in self:
             product.auto_restock = not product.auto_restock
+
+    def action_add_to_shopping_list(self):
+        """Add a fresh "to buy" copy of each of these products - the on-demand version of
+        what Re-Stock does automatically the moment a pack is marked Consumed. Lets you buy
+        something again after the fact (it was consumed before you turned Re-Stock on, or
+        you just want another one), from the already-Consumed card itself."""
+        self.env['groceries.stock_entry'].create([{'product_id': p.id, 'state': 'to_buy'} for p in self])

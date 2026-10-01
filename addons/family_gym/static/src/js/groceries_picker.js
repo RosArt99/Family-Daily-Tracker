@@ -34,7 +34,9 @@ export class GroceriesPickerDialog extends Component {
     }
 
     async load() {
-        const domain = [];
+        // Household items (cleaning supplies, toilet paper, ...) never belong in a meal -
+        // hard-excluded, not a toggle, since there's no legitimate reason to see them here.
+        const domain = [["is_food", "=", true]];
         if (this.state.search.trim()) {
             domain.push(["name", "ilike", this.state.search.trim()]);
         }

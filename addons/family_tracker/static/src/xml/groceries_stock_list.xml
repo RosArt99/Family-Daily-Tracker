@@ -41,6 +41,8 @@
                                         t-att-class="{'o_gs_action_secondary': section.action === 'consumed'}"
                                         t-on-click="(ev) => this.onGroupAction(ev, group)"
                                         t-esc="section.action === 'in_stock' ? 'Mark Purchased' : 'Mark Consumed'"/>
+                                <button t-if="section.state === 'consumed'" type="button" class="o_gs_action o_gs_action_restock"
+                                        t-on-click="(ev) => this.onBuyAgain(ev, group)">Buy Again</button>
                             </div>
                         </div>
                     </div>
