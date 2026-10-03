@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="family_tracker.GroceriesBarcodeScanner">
-        <div class="o_groceries_scanner p-4" style="max-width: 480px; margin: 0 auto;">
-            <h2>Scan Barcode</h2>
+        <div class="o_groceries_scanner">
+            <h2 class="o_groceries_scan_title">Scan Barcode</h2>
 
-            <div class="mb-3">
-                <label class="form-label">Action</label>
-                <select class="form-select" t-model="state.action">
-                    <option value="to_buy">Add to shopping list</option>
-                    <option value="in_stock">Scanned in store (Mark Purchased)</option>
-                    <option value="consumed">Scanned before throwing away (Mark Consumed)</option>
-                </select>
+            <div class="o_groceries_modes" role="radiogroup" aria-label="Scan mode">
+                <t t-foreach="modes" t-as="mode" t-key="mode.value">
+                    <button type="button" role="radio" t-att-aria-checked="state.action === mode.value"
+                            t-attf-class="o_groceries_mode o_groceries_mode_#{mode.value} #{state.action === mode.value ? 'o_active' : ''}"
+                            t-on-click="() => this.setMode(mode.value)">
+                        <i t-attf-class="fa #{mode.icon}"/>
+                        <span t-esc="mode.label"/>
+                    </button>
+                </t>
             </div>
 
-            <div class="o_groceries_count mb-3">
-                <label class="form-label mb-1">How many packs is this scan?</label>
+            <div t-if="!isFindMode" class="o_groceries_count">
+                <div class="o_groceries_count_label">Quantity</div>
+                <div class="o_groceries_count_hint">packs in this scan</div>
                 <div class="o_groceries_count_stepper">
                     <button type="button" class="o_groceries_count_step" aria-label="Fewer"
                             t-on-click="() => this.stepCount(-1)">−</button>
@@ -24,9 +27,11 @@
                             t-on-click="() => this.stepCount(1)">+</button>
                 </div>
             </div>
+            <div t-else="" class="o_groceries_find_hint">
+                <i class="fa fa-search me-1"/> Scan a barcode to open that product's card. Stock isn't changed.
+            </div>
 
-            <div t-if="isCameraSupported"
-                 style="position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:4px;overflow:hidden;">
+            <div t-if="isCameraSupported" class="o_groceries_viewfinder">
                 <canvas t-ref="canvas" style="width:100%;height:100%;object-fit:cover;display:block;"/>
                 <div t-if="state.cameraActive" class="o_groceries_scan_line"
                      t-att-class="{'o_scanning': state.scanning}"/>
@@ -34,44 +39,51 @@
                        style="position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
             </div>
 
-            <button t-if="isCameraSupported and !state.cameraActive"
-                    class="btn btn-primary btn-lg w-100 my-3"
-                    t-att-disabled="state.starting"
-                    t-on-click="onStartCamera">
-                <i class="fa fa-camera me-1"/> Start Camera
-            </button>
-            <button t-elif="isCameraSupported" class="btn btn-secondary btn-lg w-100 my-3" t-on-click="stopCamera">
-                <i class="fa fa-stop me-1"/> Stop Camera
-            </button>
+            <div t-if="isCameraSupported" class="o_groceries_camera_row">
+                <button t-if="!state.cameraActive" class="o_groceries_camera_btn o_start"
+                        t-att-disabled="state.starting" t-on-click="onStartCamera">
+                    <i class="fa fa-camera"/> Start Camera
+                </button>
+                <button t-else="" class="o_groceries_camera_btn o_stop" t-on-click="stopCamera">
+                    <i class="fa fa-stop"/> Stop Camera
+                </button>
+                <button type="button" t-attf-class="o_groceries_torch_btn #{state.torchOn ? 'o_on' : ''}"
+                        t-att-disabled="!state.cameraActive or !state.torchSupported"
+                        t-att-title="state.cameraActive and !state.torchSupported ? 'Flashlight is not available on this device/browser' : 'Flashlight'"
+                        t-on-click="toggleTorch">
+                    <i class="fa fa-bolt"/> Flashlight
+                    <span t-if="state.cameraActive and !state.torchSupported" class="o_groceries_torch_na">not available</span>
+                </button>
+            </div>
             <div t-else="" class="alert alert-warning my-3">
                 Camera scanning isn't supported in this browser. Use manual entry below.
             </div>
 
-            <form t-on-submit="onManualSubmit" class="input-group mb-4">
-                <input type="text" class="form-control" placeholder="Enter barcode manually"
+            <form t-on-submit="onManualSubmit" class="o_groceries_manual">
+                <input type="text" inputmode="numeric" class="o_groceries_manual_input" placeholder="Enter barcode manually"
                        t-model="state.manualBarcode"/>
-                <button type="submit" class="btn btn-secondary">Submit</button>
+                <button type="submit" class="o_groceries_manual_btn">
+                    <t t-if="isFindMode">Find</t><t t-else="">Submit</t>
+                </button>
             </form>
 
-            <div t-if="state.history.length">
+            <div t-if="state.history.length" class="o_groceries_history">
                 <h5>Recent Scans</h5>
-                <ul class="list-group">
-                    <li t-foreach="state.history" t-as="item" t-key="item.time + item.barcode"
-                        class="list-group-item o_groceries_scan_row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>
-                                <strong t-esc="item.product_name"/>
-                                <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
-                            </span>
-                            <span class="badge bg-secondary">
-                                <t t-esc="item.state"/><t t-if="item.count > 1"> ×<t t-esc="item.count"/></t>
-                            </span>
-                        </div>
-                        <div class="o_groceries_scan_total text-muted">
-                            <t t-esc="totalLabel(item.state)"/>: <b t-esc="item.totals[item.state]"/>
-                        </div>
-                    </li>
-                </ul>
+                <div t-foreach="state.history" t-as="item" t-key="item.time + item.barcode"
+                     class="o_groceries_scan_row">
+                    <div class="o_groceries_scan_head">
+                        <span class="o_groceries_scan_name">
+                            <strong t-esc="item.product_name"/>
+                            <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
+                        </span>
+                        <span class="o_groceries_scan_badge" t-attf-class="o_groceries_scan_badge_#{item.state}">
+                            <t t-esc="stateLabel(item.state)"/><t t-if="item.count > 1"> ×<t t-esc="item.count"/></t>
+                        </span>
+                    </div>
+                    <div class="o_groceries_scan_total text-muted">
+                        <t t-esc="totalLabel(item.state)"/>: <b t-esc="item.totals[item.state]"/>
+                    </div>
+                </div>
             </div>
         </div>
     </t>

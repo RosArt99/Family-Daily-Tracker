@@ -45,50 +45,6 @@
     }
 }
 
-// How many identical packs one scan stands for (groceries_barcode_scanner.js).
-.o_groceries_count_stepper {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
-    .o_groceries_count_step {
-        width: 44px;
-        height: 44px;
-        padding-bottom: 4px;
-        border: 0;
-        border-radius: 50%;
-        background: var(--fam-color, #347136);
-        color: #fff;
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-    }
-
-    .o_groceries_count_value {
-        width: 72px;
-        padding: 4px 0;
-        border: 0;
-        border-bottom: 2px solid #dee2e6;
-        outline: 0;
-        background: transparent;
-        text-align: center;
-        font-size: 26px;
-        font-weight: 700;
-
-        &:focus {
-            border-bottom-color: var(--fam-color, #347136);
-        }
-    }
-}
-
-.o_groceries_scan_row {
-    .o_groceries_scan_total {
-        margin-top: 2px;
-        font-size: 13px;
-    }
-}
-
 // Product card photo. width/height:auto + max-width/max-height keeps the original aspect
 // ratio whatever the photo's proportions (never stretched); object-fit is a safety net.
 .o_groceries_product_photo {
@@ -472,5 +428,299 @@ $gsl-gradient-consumed: linear-gradient(135deg, #495057, #6c757d);
     .o_gsl_chevron {
         flex: none;
         opacity: 0.7;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Scan Barcode page (groceries_barcode_scanner.js): friendly like Shopping List & Stock - big
+// rounded radio-style mode buttons, centred quantity stepper, rounded camera frame, soft cards.
+// ---------------------------------------------------------------------------------------------
+$gsc-gradient-to-buy: linear-gradient(135deg, #c9820a, #f0a30a);
+$gsc-gradient-consumed: linear-gradient(135deg, #495057, #6c757d);
+$gsc-gradient-find: linear-gradient(135deg, #1f5f99, #3a8fd6);
+
+.o_groceries_scanner {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 20px 16px 32px;
+
+    .o_groceries_scan_title {
+        margin-bottom: 16px;
+        font-weight: 700;
+        text-align: center;
+    }
+}
+
+// Four radio-style buttons (exactly one is on). Off = white outlined, on = filled gradient.
+.o_groceries_modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.o_groceries_mode {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 14px;
+    background: #fff;
+    color: #495057;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: $gs-card-shadow;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    .fa {
+        font-size: 18px;
+    }
+
+    &.o_active {
+        border-color: transparent;
+        color: #fff;
+    }
+
+    &.o_groceries_mode_to_buy.o_active {
+        background: $gsc-gradient-to-buy;
+    }
+
+    &.o_groceries_mode_in_stock.o_active {
+        background: $gs-gradient;
+    }
+
+    &.o_groceries_mode_consumed.o_active {
+        background: $gsc-gradient-consumed;
+    }
+
+    &.o_groceries_mode_find.o_active {
+        background: $gsc-gradient-find;
+    }
+}
+
+// How many identical packs one scan stands for - centred on the page.
+.o_groceries_count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 14px 10px 16px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: $gs-card-shadow;
+    text-align: center;
+
+    .o_groceries_count_label {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .o_groceries_count_hint {
+        margin-bottom: 8px;
+        color: #6c757d;
+        font-size: 13px;
+    }
+}
+
+.o_groceries_find_hint {
+    margin-bottom: 20px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #e7f1fb;
+    color: #1f5f99;
+    text-align: center;
+}
+
+.o_groceries_count_stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+
+    .o_groceries_count_step {
+        width: 48px;
+        height: 48px;
+        padding-bottom: 4px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--fam-color, #347136);
+        color: #fff;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    }
+
+    .o_groceries_count_value {
+        width: 84px;
+        padding: 4px 0;
+        border: 0;
+        border-bottom: 2px solid #dee2e6;
+        outline: 0;
+        background: transparent;
+        text-align: center;
+        font-size: 30px;
+        font-weight: 700;
+
+        &:focus {
+            border-bottom-color: var(--fam-color, #347136);
+        }
+    }
+}
+
+.o_groceries_viewfinder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #000;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.o_groceries_camera_row {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.o_groceries_camera_btn,
+.o_groceries_torch_btn,
+.o_groceries_manual_btn {
+    border: 0;
+    border-radius: 14px;
+    font-weight: 700;
+    box-shadow: $gs-card-shadow;
+}
+
+.o_groceries_camera_btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    color: #fff;
+    font-size: 17px;
+
+    &.o_start {
+        background: $gs-gradient;
+    }
+
+    &.o_stop {
+        background: $gs-gradient-danger;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+// Flashlight: white pill when off, amber when on, greyed out when the camera/browser can't do it.
+.o_groceries_torch_btn {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    background: #fff;
+    color: #495057;
+    font-size: 13px;
+
+    .fa {
+        font-size: 18px;
+    }
+
+    .o_groceries_torch_na {
+        font-size: 10px;
+        font-weight: 400;
+    }
+
+    &.o_on {
+        background: #f0a30a;
+        color: #fff;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+.o_groceries_manual {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+
+    .o_groceries_manual_input {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 14px;
+        border: 2px solid #dee2e6;
+        border-radius: 14px;
+        background: #fff;
+        outline: 0;
+
+        &:focus {
+            border-color: var(--fam-color, #347136);
+        }
+    }
+
+    .o_groceries_manual_btn {
+        padding: 0 20px;
+        background: #e9ecef;
+        color: #343a40;
+    }
+}
+
+.o_groceries_history h5 {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.o_groceries_scan_row {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: $gs-card-shadow;
+
+    .o_groceries_scan_head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .o_groceries_scan_total {
+        margin-top: 2px;
+        font-size: 13px;
+    }
+
+    .o_groceries_scan_badge {
+        flex: none;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: #6c757d;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .o_groceries_scan_badge_to_buy {
+        background: #f0a30a;
+    }
+
+    .o_groceries_scan_badge_in_stock {
+        background: var(--fam-color, #347136);
     }
 }

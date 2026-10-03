@@ -25,6 +25,15 @@ import { Component, useState, useRef, onWillStart, onWillUnmount } from "@odoo/o
 const BEEP_URL = "/family_tracker/static/src/sounds/Scan.mp3";
 const MAX_COUNT = 999;
 
+// The four scan modes, shown as radio-style buttons. "find" doesn't touch stock at all: it only
+// looks the barcode up and opens that product's card.
+const MODES = [
+    { value: "to_buy", label: _t("To Buy"), icon: "fa-shopping-cart" },
+    { value: "in_stock", label: _t("In Stock"), icon: "fa-check-circle" },
+    { value: "consumed", label: _t("Consumed"), icon: "fa-archive" },
+    { value: "find", label: _t("Find Product"), icon: "fa-search" },
+];
+
 // What each action's running total is called and which of the scan's returned totals it reads.
 const TOTAL_LABELS = {
     to_buy: "On Shopping List",
@@ -36,10 +45,14 @@ class GroceriesBarcodeScanner extends Component {
     setup() {
         this.rpc = useService("rpc");
         this.notification = useService("notification");
+        this.orm = useService("orm");
+        this.actionService = useService("action");
+        this.modes = MODES;
         this.videoRef = useRef("video");
         this.canvasRef = useRef("canvas");
         this.detector = null;
         this.stream = null;
+        this.track = null;
         this.pollTimer = null;
         this.drawRaf = null;
         this.scanTimer = null;
@@ -57,6 +70,8 @@ class GroceriesBarcodeScanner extends Component {
             cameraActive: false,
             starting: false,
             scanning: false,
+            torchSupported: false,
+            torchOn: false,
             history: [],
         });
 
@@ -109,6 +124,35 @@ class GroceriesBarcodeScanner extends Component {
         this.state.count = String(Math.min(MAX_COUNT, Math.max(1, this.countValue + delta)));
     }
 
+    get isFindMode() {
+        return this.state.action === "find";
+    }
+
+    setMode(value) {
+        this.state.action = value;
+    }
+
+    // ---- flashlight (the camera's torch). Android Chrome exposes it; iPhone Safari does not
+    // expose it to web pages at all, so there the button just stays disabled. ----
+
+    async toggleTorch() {
+        if (!this.track || !this.state.torchSupported) {
+            return;
+        }
+        const next = !this.state.torchOn;
+        try {
+            await this.track.applyConstraints({ advanced: [{ torch: next }] });
+            this.state.torchOn = next;
+        } catch (error) {
+            this.notification.add(_t("Could not switch the flashlight."), { type: "warning" });
+        }
+    }
+
+    stateLabel(action) {
+        const mode = MODES.find((m) => m.value === action);
+        return mode ? mode.label : action;
+    }
+
     totalLabel(action) {
         return TOTAL_LABELS[action] || "Total";
     }
@@ -129,6 +173,9 @@ class GroceriesBarcodeScanner extends Component {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
             };
+            this.track = this.stream.getVideoTracks()[0] || null;
+            const capabilities = (this.track && this.track.getCapabilities && this.track.getCapabilities()) || {};
+            this.state.torchSupported = !!capabilities.torch;
             video.srcObject = this.stream;
             await video.play();
             this.state.cameraActive = true;
@@ -169,6 +216,9 @@ class GroceriesBarcodeScanner extends Component {
             this.stream.getTracks().forEach((track) => track.stop());
             this.stream = null;
         }
+        this.track = null;
+        this.state.torchOn = false;
+        this.state.torchSupported = false;
         this.state.cameraActive = false;
     }
 
@@ -216,6 +266,10 @@ class GroceriesBarcodeScanner extends Component {
         this.beep.play().catch(() => {});
         const count = this.countValue;
         try {
+            if (this.isFindMode) {
+                await this.findProduct(barcode);
+                return;
+            }
             const result = await this.rpc("/groceries/scan", {
                 barcode,
                 action: this.state.action,
@@ -245,6 +299,31 @@ class GroceriesBarcodeScanner extends Component {
                 this.state.scanning = false;
             }, 1200);
         }
+    }
+
+    // "Find Product": no stock change, and no Open Food Facts lookup either - just open the
+    // card of a product we already have.
+    async findProduct(barcode) {
+        const [product] = await this.orm.searchRead(
+            "groceries.product", [["barcode", "=", barcode]], ["id"], { limit: 1 }
+        );
+        if (!product) {
+            this.notification.add(_t("No product with barcode %s in your catalog yet.", barcode), {
+                type: "warning",
+            });
+            return;
+        }
+        if ("vibrate" in window.navigator) {
+            window.navigator.vibrate(100);
+        }
+        this.stopCamera();
+        await this.actionService.doAction({
+            type: "ir.actions.act_window",
+            res_model: "groceries.product",
+            res_id: product.id,
+            views: [[false, "form"]],
+            target: "current",
+        });
     }
 }
 
