@@ -705,22 +705,108 @@ $gsc-gradient-find: linear-gradient(135deg, #1f5f99, #3a8fd6);
         margin-top: 2px;
         font-size: 13px;
     }
+}
 
-    .o_groceries_scan_badge {
+// Status pill used in Recent Scans and in the just-scanned popup.
+.o_groceries_scan_badge {
+    flex: none;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #6c757d;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.o_groceries_scan_badge_to_buy {
+    background: #f0a30a;
+}
+
+.o_groceries_scan_badge_in_stock {
+    background: var(--fam-color, #347136);
+}
+
+// Confirmation card shown for a few seconds after every scan: pinned under the top bar so it is
+// visible whatever the scroll position (the Recent Scans list is far below the camera on a
+// phone). Left stripe takes the colour of the mode that was scanned.
+.o_groceries_scan_popup {
+    position: fixed;
+    top: calc(var(--o-navbar-height, 46px) + 10px);
+    left: 50%;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: calc(100vw - 24px);
+    max-width: 496px;
+    padding: 10px 14px 10px 10px;
+    border-left: 6px solid var(--fam-color, #347136);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+    transform: translateX(-50%);
+    animation: o_groceries_scan_popup_in 0.2s ease-out;
+
+    &.o_groceries_scan_popup_to_buy {
+        border-left-color: #f0a30a;
+    }
+
+    &.o_groceries_scan_popup_consumed {
+        border-left-color: #6c757d;
+    }
+
+    .o_groceries_scan_popup_img {
         flex: none;
-        padding: 2px 10px;
-        border-radius: 999px;
-        background: #6c757d;
-        color: #fff;
-        font-size: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        background: #f5f6f8;
+        object-fit: contain;
+    }
+
+    .o_groceries_scan_popup_body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .o_groceries_scan_popup_name {
+        overflow: hidden;
+        font-size: 16px;
         font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .o_groceries_scan_badge_to_buy {
-        background: #f0a30a;
+    .o_groceries_scan_popup_meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 3px 0;
     }
 
-    .o_groceries_scan_badge_in_stock {
-        background: var(--fam-color, #347136);
+    .o_groceries_scan_popup_new {
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .o_groceries_scan_popup_total {
+        color: #495057;
+        font-size: 15px;
+
+        b {
+            font-size: 20px;
+        }
+    }
+}
+
+@keyframes o_groceries_scan_popup_in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -12px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
     }
 }

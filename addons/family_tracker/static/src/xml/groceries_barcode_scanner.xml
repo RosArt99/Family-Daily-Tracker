@@ -4,6 +4,25 @@
         <div class="o_groceries_scanner">
             <h2 class="o_groceries_scan_title">Scan Barcode</h2>
 
+            <div t-if="state.lastScan"
+                 t-attf-class="o_groceries_scan_popup o_groceries_scan_popup_#{state.lastScan.state}"
+                 t-on-click="dismissScanResult">
+                <img class="o_groceries_scan_popup_img" alt="Product photo"
+                     t-att-src="'/web/image/groceries.product/' + state.lastScan.product_id + '/image/128x128'"/>
+                <div class="o_groceries_scan_popup_body">
+                    <div class="o_groceries_scan_popup_name" t-esc="state.lastScan.product_name"/>
+                    <div class="o_groceries_scan_popup_meta">
+                        <span t-attf-class="o_groceries_scan_badge o_groceries_scan_badge_#{state.lastScan.state}">
+                            <t t-esc="stateLabel(state.lastScan.state)"/><t t-if="state.lastScan.count > 1"> ×<t t-esc="state.lastScan.count"/></t>
+                        </span>
+                        <span t-if="state.lastScan.product_created" class="o_groceries_scan_popup_new">new product</span>
+                    </div>
+                    <div class="o_groceries_scan_popup_total">
+                        <t t-esc="totalLabel(state.lastScan.state)"/>: <b t-esc="state.lastScan.totals[state.lastScan.state]"/>
+                    </div>
+                </div>
+            </div>
+
             <div class="o_groceries_modes" role="radiogroup" aria-label="Scan mode">
                 <t t-foreach="modes" t-as="mode" t-key="mode.value">
                     <button type="button" role="radio" t-att-aria-checked="state.action === mode.value"
@@ -76,7 +95,7 @@
                             <strong t-esc="item.product_name"/>
                             <span class="text-muted"> (<t t-esc="item.barcode"/>)</span>
                         </span>
-                        <span class="o_groceries_scan_badge" t-attf-class="o_groceries_scan_badge_#{item.state}">
+                        <span t-attf-class="o_groceries_scan_badge o_groceries_scan_badge_#{item.state}">
                             <t t-esc="stateLabel(item.state)"/><t t-if="item.count > 1"> ×<t t-esc="item.count"/></t>
                         </span>
                     </div>

@@ -73,7 +73,9 @@ class GroceriesBarcodeScanner extends Component {
             torchSupported: false,
             torchOn: false,
             history: [],
+            lastScan: null,
         });
+        this.lastScanTimer = null;
 
         onWillStart(async () => {
             if ("BarcodeDetector" in window) {
@@ -84,7 +86,10 @@ class GroceriesBarcodeScanner extends Component {
             }
         });
 
-        onWillUnmount(() => this.stopCamera());
+        onWillUnmount(() => {
+            this.stopCamera();
+            clearTimeout(this.lastScanTimer);
+        });
     }
 
     // iOS only lets a page play audio later (from a timer/after an await) if
@@ -146,6 +151,21 @@ class GroceriesBarcodeScanner extends Component {
         } catch (error) {
             this.notification.add(_t("Could not switch the flashlight."), { type: "warning" });
         }
+    }
+
+    // On-screen confirmation of the scan just made (a card pinned under the top bar, so it's
+    // visible however far down the page is scrolled while the camera is running).
+    showScanResult(result) {
+        clearTimeout(this.lastScanTimer);
+        this.state.lastScan = result;
+        this.lastScanTimer = setTimeout(() => {
+            this.state.lastScan = null;
+        }, 6000);
+    }
+
+    dismissScanResult() {
+        clearTimeout(this.lastScanTimer);
+        this.state.lastScan = null;
     }
 
     stateLabel(action) {
@@ -282,12 +302,7 @@ class GroceriesBarcodeScanner extends Component {
             if ("vibrate" in window.navigator) {
                 window.navigator.vibrate(100);
             }
-            this.notification.add(
-                `${result.product_name} → ${result.state}` +
-                    (count > 1 ? ` ×${count}` : "") +
-                    (result.product_created ? " " + _t("(new product)") : ""),
-                { type: "success" }
-            );
+            this.showScanResult({ ...result, barcode });
             this.state.history.unshift({ ...result, barcode, time: new Date().toLocaleTimeString() });
             // Reset to 1 so the next (probably different) product isn't scanned with a
             // leftover count by mistake.
