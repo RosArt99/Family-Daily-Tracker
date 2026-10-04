@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_housing_form" model="ir.ui.view">
+        <field name="name">finance.housing.form</field>
+        <field name="model">finance.housing</field>
+        <field name="arch" type="xml">
+            <form string="Housing payment">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="kind"/>
+                            <field name="period"/>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                    <group string="Receipt photos">
+                        <field name="photo_ids" nolabel="1" mode="kanban">
+                            <kanban>
+                                <field name="image"/>
+                                <templates>
+                                    <t t-name="kanban-box">
+                                        <div class="oe_kanban_global_click o_fin_photo_card">
+                                            <img t-att-src="kanban_image('finance.photo', 'image', record.id.raw_value)" alt="Receipt"/>
+                                        </div>
+                                    </t>
+                                </templates>
+                            </kanban>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_finance_housing_tree" model="ir.ui.view">
+        <field name="name">finance.housing.tree</field>
+        <field name="model">finance.housing</field>
+        <field name="arch" type="xml">
+            <tree string="Housing" default_order="period desc, date desc, id desc" js_class="finance_list">
+                <field name="period"/>
+                <field name="kind"/>
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_finance_housing_kanban" model="ir.ui.view">
+        <field name="name">finance.housing.kanban</field>
+        <field name="model">finance.housing</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false" class="o_fin_kanban" js_class="finance_kanban">
+                <field name="kind"/>
+                <field name="period_label"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="amount"/>
+                <field name="notes"/>
+                <field name="photo_count"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
+                            <span class="o_fin_card_icon o_fin_icon_housing"><i class="fa fa-home" role="img" title="Housing"/></span>
+                            <div class="o_fin_card_body">
+                                <div class="o_fin_card_title"><field name="kind"/> · <field name="period_label"/></div>
+                                <div class="o_fin_card_meta">
+                                    Paid <field name="date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <span t-if="record.photo_count.raw_value" class="o_fin_photo_flag" title="Receipt photo attached"><i class="fa fa-camera"/> <t t-esc="record.photo_count.raw_value"/></span>
+                                </div>
+                                <div t-if="record.notes.raw_value" class="o_fin_card_meta"><field name="notes"/></div>
+                            </div>
+                            <div class="o_fin_card_amount"><field name="amount"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_finance_housing_graph" model="ir.ui.view">
+        <field name="name">finance.housing.graph</field>
+        <field name="model">finance.housing</field>
+        <field name="arch" type="xml">
+            <graph string="Housing" type="bar" stacked="1">
+                <field name="period" interval="month"/>
+                <field name="kind"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_finance_housing_search" model="ir.ui.view">
+        <field name="name">finance.housing.search</field>
+        <field name="model">finance.housing</field>
+        <field name="arch" type="xml">
+            <search string="Search Housing">
+                <field name="notes"/>
+                <field name="user_id"/>
+                <filter string="Rent" name="filter_rent" domain="[('kind', '=', 'rent')]"/>
+                <filter string="Utilities" name="filter_utilities" domain="[('kind', '!=', 'rent')]"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'period:month'}"/>
+                    <filter string="What" name="groupby_kind" context="{'group_by': 'kind'}"/>
+                    <filter string="Paid by" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_finance_housing" model="ir.actions.act_window">
+        <field name="name">Housing</field>
+        <field name="res_model">finance.housing</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="search_view_id" ref="view_finance_housing_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add your first rent or utilities payment</p>
+            <p>Rent, electricity, internet... Each payment counts in the month it is <b>for</b>,
+               even if you paid a few days early. Attach a photo of the receipt if you like.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_saving_form" model="ir.ui.view">
+        <field name="name">finance.saving.form</field>
+        <field name="model">finance.saving</field>
+        <field name="arch" type="xml">
+            <form string="Savings transfer">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="kind"/>
+                            <field name="user_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="amount"/>
+                            <field name="rate"/>
+                            <field name="signed_base"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="plan_id"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_finance_saving_tree" model="ir.ui.view">
+        <field name="name">finance.saving.tree</field>
+        <field name="model">finance.saving</field>
+        <field name="arch" type="xml">
+            <tree string="Savings" default_order="date desc, id desc" js_class="finance_list"
+                  decoration-danger="kind == 'withdraw'">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="kind"/>
+                <field name="plan_id"/>
+                <field name="signed_amount"/>
+                <field name="signed_base" sum="Net"/>
+                <field name="notes" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_finance_saving_search" model="ir.ui.view">
+        <field name="name">finance.saving.search</field>
+        <field name="model">finance.saving</field>
+        <field name="arch" type="xml">
+            <search string="Search Savings">
+                <field name="user_id"/>
+                <field name="plan_id"/>
+                <field name="notes"/>
+                <filter string="To savings" name="filter_deposit" domain="[('kind', '=', 'deposit')]"/>
+                <filter string="Withdrawals" name="filter_withdraw" domain="[('kind', '=', 'withdraw')]"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Plan" name="groupby_plan" context="{'group_by': 'plan_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_finance_saving_list" model="ir.actions.act_window">
+        <field name="name">Savings transfers</field>
+        <field name="res_model">finance.saving</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_finance_saving_search"/>
+    </record>
+
+    <!-- The Savings tab itself is a client action (finance_savings.js): total saved, who/what it
+         is for, latest transfers. The list above is its "All transfers" drill-down. -->
+    <record id="action_finance_savings" model="ir.actions.client">
+        <field name="name">Savings</field>
+        <field name="tag">family_finance.savings</field>
+    </record>
+
+</odoo>

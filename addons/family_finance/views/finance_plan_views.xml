@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_plan_form" model="ir.ui.view">
+        <field name="name">finance.plan.form</field>
+        <field name="model">finance.plan</field>
+        <field name="arch" type="xml">
+            <form string="Plan">
+                <header>
+                    <button name="action_start_saving" type="object" string="Start Saving"
+                            class="oe_highlight" invisible="state != 'planning'"/>
+                    <button name="action_done" type="object" string="Mark Done"
+                            class="oe_highlight" invisible="state != 'saving'"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_reopen" type="object" string="Reopen"
+                            invisible="state not in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="planning,saving,done"/>
+                </header>
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="image" widget="image" class="oe_avatar" options="{'preview_image': 'image'}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Summer in Italy, new laptop, ..."/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="kind"/>
+                            <field name="target_date"/>
+                            <field name="date_to" invisible="kind != 'travel'"/>
+                        </group>
+                        <group>
+                            <field name="budget_amount"/>
+                            <field name="saved_amount"/>
+                            <field name="missing_amount"/>
+                            <field name="progress" widget="progressbar"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Budget" name="budget">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Savings" name="savings">
+                            <field name="saving_ids">
+                                <tree editable="top">
+                                    <field name="date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="kind"/>
+                                    <field name="currency_id"/>
+                                    <field name="amount"/>
+                                    <field name="signed_base" sum="Net saved"/>
+                                    <field name="notes" optional="show"/>
+                                    <field name="company_currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Links, ideas, booking numbers..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_finance_plan_tree" model="ir.ui.view">
+        <field name="name">finance.plan.tree</field>
+        <field name="model">finance.plan</field>
+        <field name="arch" type="xml">
+            <tree string="Plans" js_class="finance_list" decoration-muted="state in ('done', 'cancelled')">
+                <field name="name"/>
+                <field name="kind"/>
+                <field name="target_date"/>
+                <field name="budget_amount" sum="Budget"/>
+                <field name="saved_amount" sum="Saved"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="state"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_finance_plan_kanban" model="ir.ui.view">
+        <field name="name">finance.plan.kanban</field>
+        <field name="model">finance.plan</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false" class="o_fin_kanban" js_class="finance_kanban">
+                <field name="name"/>
+                <field name="kind"/>
+                <field name="state"/>
+                <field name="target_date"/>
+                <field name="budget_amount"/>
+                <field name="saved_amount"/>
+                <field name="progress"/>
+                <field name="has_image"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click o_fin_card o_fin_plan_card">
+                            <img t-if="record.has_image.raw_value" class="o_fin_plan_thumb"
+                                 t-att-src="kanban_image('finance.plan', 'image', record.id.raw_value)" alt="Plan photo"/>
+                            <span t-if="!record.has_image.raw_value and record.kind.raw_value == 'travel'"
+                                  class="o_fin_plan_thumb o_fin_plan_thumb_icon o_fin_plan_thumb_travel"><i class="fa fa-plane" title="Travel"/></span>
+                            <span t-if="!record.has_image.raw_value and record.kind.raw_value == 'purchase'"
+                                  class="o_fin_plan_thumb o_fin_plan_thumb_icon o_fin_plan_thumb_purchase"><i class="fa fa-shopping-bag" title="Purchase"/></span>
+                            <div class="o_fin_card_body">
+                                <div class="o_fin_card_title"><field name="name"/></div>
+                                <div class="o_fin_card_meta">
+                                    <span t-if="record.kind.raw_value == 'travel'" class="o_fin_chip o_fin_chip_source"><i class="fa fa-plane" title="Travel"/> Travel</span>
+                                    <span t-if="record.kind.raw_value == 'purchase'" class="o_fin_chip o_fin_chip_house"><i class="fa fa-shopping-bag" title="Purchase"/> Purchase</span>
+                                    <span t-if="record.target_date.raw_value"><field name="target_date"/></span>
+                                </div>
+                                <div class="o_fin_progress">
+                                    <div class="o_fin_progress_bar" t-attf-style="width: #{record.progress.raw_value}%"/>
+                                </div>
+                                <div class="o_fin_card_meta">
+                                    <span><b><field name="saved_amount"/></b> of <field name="budget_amount"/></span>
+                                    <span class="ms-auto"><field name="progress" widget="integer"/>%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_finance_plan_search" model="ir.ui.view">
+        <field name="name">finance.plan.search</field>
+        <field name="model">finance.plan</field>
+        <field name="arch" type="xml">
+            <search string="Search Plans">
+                <field name="name"/>
+                <filter string="Travel" name="filter_travel" domain="[('kind', '=', 'travel')]"/>
+                <filter string="Big purchases" name="filter_purchase" domain="[('kind', '=', 'purchase')]"/>
+                <filter string="Active" name="filter_active" domain="[('state', 'in', ('planning', 'saving'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="groupby_state" context="{'group_by': 'state'}"/>
+                    <filter string="Type" name="groupby_kind" context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_finance_plan" model="ir.actions.act_window">
+        <field name="name">Plans</field>
+        <field name="res_model">finance.plan</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_finance_plan_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Plan your first trip or big purchase</p>
+            <p>List what it will cost, then add the money you put aside - the card shows how close
+               you are.</p>
+        </field>
+    </record>
+
+</odoo>

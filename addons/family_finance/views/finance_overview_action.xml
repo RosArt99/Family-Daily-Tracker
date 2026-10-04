@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_finance_overview" model="ir.actions.client">
+        <field name="name">Overview</field>
+        <field name="tag">family_finance.overview</field>
+    </record>
+
+</odoo>

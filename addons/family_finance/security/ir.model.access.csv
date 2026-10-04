@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_finance_store,finance.store,model_finance_store,base.group_user,1,1,1,1
+access_finance_photo,finance.photo,model_finance_photo,base.group_user,1,1,1,1
+access_finance_bill,finance.bill,model_finance_bill,base.group_user,1,1,1,1
+access_finance_housing,finance.housing,model_finance_housing,base.group_user,1,1,1,1
+access_finance_income,finance.income,model_finance_income,base.group_user,1,1,1,1
+access_finance_saving,finance.saving,model_finance_saving,base.group_user,1,1,1,1
+access_finance_plan,finance.plan,model_finance_plan,base.group_user,1,1,1,1
+access_finance_plan_line,finance.plan.line,model_finance_plan_line,base.group_user,1,1,1,1
+access_finance_budget,finance.budget,model_finance_budget,base.group_user,1,1,1,1
+access_finance_fx_rate,finance.fx.rate,model_finance_fx_rate,base.group_user,1,0,0,0

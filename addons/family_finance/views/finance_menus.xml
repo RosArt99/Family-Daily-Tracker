@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_finance_root" name="Finance" sequence="40"/>
+
+    <!-- Phone tab bar order (see finance_app.js): Overview, Groceries, Housing, Income, Savings,
+         Plans. Limits and Stores are desktop extras. -->
+    <menuitem id="menu_finance_overview" name="Overview" parent="menu_finance_root"
+              action="action_finance_overview" sequence="10"/>
+    <menuitem id="menu_finance_bills" name="Groceries" parent="menu_finance_root"
+              action="action_finance_bill" sequence="20"/>
+    <menuitem id="menu_finance_housing" name="Housing" parent="menu_finance_root"
+              action="action_finance_housing" sequence="30"/>
+    <menuitem id="menu_finance_income" name="Income" parent="menu_finance_root"
+              action="action_finance_income" sequence="40"/>
+    <menuitem id="menu_finance_savings" name="Savings" parent="menu_finance_root"
+              action="action_finance_savings" sequence="50"/>
+    <menuitem id="menu_finance_plans" name="Plans" parent="menu_finance_root"
+              action="action_finance_plan" sequence="60"/>
+    <menuitem id="menu_finance_limits" name="Limits" parent="menu_finance_root"
+              action="action_finance_budget" sequence="70"/>
+    <menuitem id="menu_finance_stores" name="Stores" parent="menu_finance_root"
+              action="action_finance_store" sequence="80"/>
+
+</odoo>

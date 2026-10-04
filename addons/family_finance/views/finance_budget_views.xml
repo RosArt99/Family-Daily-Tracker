@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_budget_form" model="ir.ui.view">
+        <field name="name">finance.budget.form</field>
+        <field name="model">finance.budget</field>
+        <field name="arch" type="xml">
+            <form string="Spending limits" create="false" delete="false">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <div class="text-muted mb-3">Monthly limits shared by the whole household. 0 means no limit.</div>
+                    <group>
+                        <field name="groceries_limit"/>
+                        <field name="housing_limit"/>
+                        <field name="total_limit"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_finance_budget" model="ir.actions.server">
+        <field name="name">Spending limits</field>
+        <field name="model_id" ref="model_finance_budget"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_limits()</field>
+    </record>
+
+    <record id="view_finance_store_tree" model="ir.ui.view">
+        <field name="name">finance.store.tree</field>
+        <field name="model">finance.store</field>
+        <field name="arch" type="xml">
+            <tree string="Stores" editable="bottom">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_finance_store" model="ir.actions.act_window">
+        <field name="name">Stores</field>
+        <field name="res_model">finance.store</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

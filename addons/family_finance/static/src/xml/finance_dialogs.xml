@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_finance.EntryDialog">
+        <Dialog title="dialogTitle" size="'md'" contentClass="'o_fin_entry_dialog'">
+            <div class="o_fin_ui_form">
+                <div t-if="state.error" class="o_fin_ui_error" t-esc="state.error"/>
+
+                <!-- Big coloured header: the amount (or, for a plan, its name). -->
+                <div class="o_fin_ui_hero">
+                    <span class="o_fin_ui_hero_icon"><i t-attf-class="fa #{cfg.icon}" role="img" title="Icon"/></span>
+                    <div class="o_fin_ui_hero_text">
+                        <label for="o_fin_main_input" t-esc="cfg.heroLabel"/>
+                        <t t-if="kind == 'plan'">
+                            <input id="o_fin_main_input" type="text" class="o_fin_ui_hero_input" autocomplete="off"
+                                   placeholder="Summer in Italy, new laptop..." t-model="state.planName"/>
+                        </t>
+                        <t t-else="">
+                            <div class="o_fin_ui_hero_number">
+                                <span class="o_fin_ui_unit" t-if="state.currency.position == 'before'" t-esc="state.currency.symbol"/>
+                                <input id="o_fin_main_input" type="text" inputmode="decimal" autocomplete="off"
+                                       placeholder="0.00" t-att-value="state.amount" t-on-input="onAmountInput"/>
+                                <span class="o_fin_ui_unit" t-if="state.currency.position != 'before'" t-esc="state.currency.symbol"/>
+                            </div>
+                        </t>
+                        <div class="o_fin_ui_hint" t-if="isForeign and state.amount and state.rate">
+                            ≈ <b t-esc="moneyBase(baseValue)"/>
+                        </div>
+                        <div class="o_fin_ui_hint" t-if="kind == 'bill' and state.household">
+                            Food <b t-esc="money(food)"/> · Household <b t-esc="money(householdValue)"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Income / savings: which currency, and the rate to the base currency -->
+                <div class="o_fin_ui_card" t-if="hasCurrency">
+                    <div class="o_fin_ui_label">Currency</div>
+                    <div class="o_fin_ui_chips">
+                        <button t-foreach="state.currencies" t-as="cur" t-key="cur.id" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.currencyId == cur.id }"
+                                t-on-click="() => this.setCurrency(cur.id)"><t t-esc="cur.name"/> <t t-esc="cur.symbol"/></button>
+                    </div>
+                    <t t-if="isForeign">
+                        <div class="o_fin_ui_label" style="margin-top:14px">Exchange rate</div>
+                        <div class="o_fin_ui_inline">
+                            <span class="o_fin_ui_unit_dark">1 <t t-esc="state.currency.symbol"/> =</span>
+                            <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0.0000"
+                                   t-att-value="state.rate" t-on-input="onRateInput"/>
+                            <span class="o_fin_ui_unit_dark" t-esc="state.base.symbol"/>
+                        </div>
+                        <div class="o_fin_ui_hint" t-esc="state.rateNote"/>
+                    </t>
+                </div>
+
+                <!-- Plan: trip or purchase, then a rough budget. -->
+                <div class="o_fin_ui_card" t-if="kind == 'plan'">
+                    <div class="o_fin_ui_label">What kind</div>
+                    <div class="o_fin_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.planKind == 'travel' }"
+                                t-on-click="() => state.planKind = 'travel'"><i class="fa fa-plane" title="Travel"/> Trip</button>
+                        <button type="button" t-att-class="{ o_active: state.planKind == 'purchase' }"
+                                t-on-click="() => state.planKind = 'purchase'"><i class="fa fa-shopping-bag" title="Purchase"/> Big purchase</button>
+                    </div>
+                </div>
+                <div class="o_fin_ui_card" t-if="kind == 'plan'">
+                    <div class="o_fin_ui_label">Rough budget (optional)</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0.00"
+                               t-att-value="state.amount" t-on-input="onAmountInput"/>
+                    </div>
+                    <div class="o_fin_ui_hint">You can split it into flights, hotel... later, on the plan itself.</div>
+                </div>
+
+                <!-- Housing: what + which month -->
+                <div class="o_fin_ui_card" t-if="kind == 'housing'">
+                    <div class="o_fin_ui_label">What</div>
+                    <div class="o_fin_ui_chips">
+                        <button t-foreach="housingKinds" t-as="hk" t-key="hk[0]" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.housingKind == hk[0] }"
+                                t-on-click="() => state.housingKind = hk[0]" t-esc="hk[1]"/>
+                    </div>
+                </div>
+                <div class="o_fin_ui_card" t-if="kind == 'housing'">
+                    <div class="o_fin_ui_label">For which month</div>
+                    <input type="month" class="o_fin_ui_date" t-model="state.period"/>
+                </div>
+
+                <!-- Income: source -->
+                <div class="o_fin_ui_card" t-if="kind == 'income'">
+                    <div class="o_fin_ui_label">Type</div>
+                    <div class="o_fin_ui_chips">
+                        <button t-foreach="incomeSources" t-as="src" t-key="src[0]" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.source == src[0] }"
+                                t-on-click="() => state.source = src[0]" t-esc="src[1]"/>
+                    </div>
+                </div>
+
+                <!-- Savings: direction + goal -->
+                <div class="o_fin_ui_card" t-if="kind == 'saving'">
+                    <div class="o_fin_ui_label">Direction</div>
+                    <div class="o_fin_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.savingKind == 'deposit' }"
+                                t-on-click="() => state.savingKind = 'deposit'"><i class="fa fa-arrow-down" title="In"/> To savings</button>
+                        <button type="button" t-att-class="{ o_active: state.savingKind == 'withdraw' }"
+                                t-on-click="() => state.savingKind = 'withdraw'"><i class="fa fa-arrow-up" title="Out"/> Withdraw</button>
+                    </div>
+                </div>
+                <div class="o_fin_ui_card" t-if="kind == 'saving'">
+                    <div class="o_fin_ui_label">For</div>
+                    <div class="o_fin_ui_chips">
+                        <button type="button" class="o_fin_ui_chip" t-att-class="{ o_active: !state.planId }"
+                                t-on-click="() => state.planId = false">General savings</button>
+                        <button t-foreach="state.plans" t-as="plan" t-key="plan.id" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.planId == plan.id }"
+                                t-on-click="() => state.planId = plan.id" t-esc="plan.name"/>
+                    </div>
+                </div>
+
+                <!-- Who -->
+                <div class="o_fin_ui_card" t-if="needsWho">
+                    <div class="o_fin_ui_label" t-esc="whoLabel"/>
+                    <div class="o_fin_ui_chips o_tight">
+                        <button t-foreach="state.users" t-as="user" t-key="user.id" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.userId == user.id }"
+                                t-on-click="() => state.userId = user.id" t-esc="user.name"/>
+                    </div>
+                </div>
+
+                <!-- Bill: household part and store -->
+                <div class="o_fin_ui_card" t-if="kind == 'bill'">
+                    <div class="o_fin_ui_label">Of which household (non-food)</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0.00"
+                               t-att-value="state.household" t-on-input="onHouseholdInput"/>
+                    </div>
+                    <div class="o_fin_ui_hint">Cleaning supplies, toilet paper... The rest counts as food.</div>
+                </div>
+                <div class="o_fin_ui_card" t-if="kind == 'bill'">
+                    <div class="o_fin_ui_label">Store</div>
+                    <input type="text" class="o_fin_ui_input o_full" autocomplete="off"
+                           placeholder="Choose, or type a new one" t-model="state.storeText"/>
+                    <div class="o_fin_ui_chips o_tight" style="margin-top:10px">
+                        <button t-foreach="storeSuggestions" t-as="store" t-key="store.id" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: selectedStore and selectedStore.id == store.id }"
+                                t-on-click="() => state.storeText = store.name" t-esc="store.name"/>
+                        <span t-if="isNewStore" class="o_fin_ui_chip o_create"><i class="fa fa-plus" title="New"/> New: <t t-esc="typedStore"/></span>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label" t-esc="kind == 'plan' ? 'When (optional)' : 'Date'"/>
+                    <input type="date" class="o_fin_ui_date" t-model="state.date" t-on-change="onDateChanged"/>
+                </div>
+
+                <!-- Receipt photos -->
+                <div class="o_fin_ui_card" t-if="hasPhotos">
+                    <div class="o_fin_ui_label">Receipt photos</div>
+                    <div class="o_fin_ui_photos">
+                        <div t-foreach="state.photos" t-as="photo" t-key="photo_index" class="o_fin_ui_photo">
+                            <img t-att-src="photo.thumb" alt="Receipt" t-on-click="() => this.zoom(photo)"/>
+                            <button type="button" class="o_fin_ui_photo_remove" aria-label="Remove photo"
+                                    t-on-click="() => this.removePhoto(photo)"><i class="fa fa-times" title="Remove"/></button>
+                        </div>
+                        <button type="button" class="o_fin_ui_photo_add" t-on-click="pickPhoto">
+                            <i class="fa fa-camera" title="Add photo"/>
+                            <span>Add photo</span>
+                        </button>
+                    </div>
+                    <input type="file" t-ref="file" accept="image/*" multiple="multiple" class="d-none" t-on-change="onPhotosChosen"/>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Notes</div>
+                    <textarea class="o_fin_ui_textarea" rows="2" placeholder="Optional" t-model="state.notes"/>
+                </div>
+
+                <button t-if="isEdit" type="button" class="o_fin_ui_delete" t-on-click="askDelete">
+                    <i class="fa fa-trash" title="Delete"/> Delete this entry
+                </button>
+            </div>
+
+            <div t-if="state.zoom" class="o_fin_ui_zoom" t-on-click="() => state.zoom = ''">
+                <img t-att-src="state.zoom" alt="Receipt"/>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="family_finance.LimitsDialog">
+        <Dialog title="'Spending limits'" size="'md'" contentClass="'o_fin_entry_dialog'">
+            <div class="o_fin_ui_form">
+                <div class="o_fin_ui_hero">
+                    <span class="o_fin_ui_hero_icon"><i class="fa fa-tachometer" role="img" title="Limits"/></span>
+                    <div class="o_fin_ui_hero_text">
+                        <label>Monthly limits</label>
+                        <div class="o_fin_ui_hero_sub">The overview turns amber at 80% and red when you go over. Leave empty for no limit.</div>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Groceries per month</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
+                               t-att-value="state.groceries" t-on-input="(ev) => this.onInput(ev, 'groceries')"/>
+                    </div>
+                </div>
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Housing per month</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
+                               t-att-value="state.housing" t-on-input="(ev) => this.onInput(ev, 'housing')"/>
+                    </div>
+                </div>
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">All spending per month</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
+                               t-att-value="state.total" t-on-input="(ev) => this.onInput(ev, 'total')"/>
+                    </div>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

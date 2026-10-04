@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Both of you can SEE all income (the overview adds it up), but each of you can only
+         create/edit/delete your own - same idea as the Gym & Fit logs. Bills and plans are
+         shared household records, so either of you may change them. -->
+    <record id="rule_finance_income_own" model="ir.rule">
+        <field name="name">Income: change only your own</field>
+        <field name="model_id" ref="model_finance_income"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_finance.FinanceSavings">
+        <div class="o_fin_overview">
+            <t t-set="d" t-value="state.data"/>
+
+            <div class="o_fin_hero o_fin_hero_savings">
+                <div class="o_fin_hero_label">Total saved</div>
+                <div t-foreach="d.balances" t-as="bal" t-key="bal.id" class="o_fin_hero_amount o_balance">
+                    <t t-esc="money(bal.amount, bal)"/> <span class="o_fin_hero_cur" t-esc="bal.name"/>
+                </div>
+                <div t-if="!d.balances.length" class="o_fin_hero_amount" t-esc="money(0)"/>
+                <div class="o_fin_hero_worth" t-if="d.balances.length and (d.balances.length > 1 or d.balances[0].id != d.currency.id)">
+                    ≈ <b t-esc="money(d.total_now)"/> at today's rate
+                </div>
+                <div class="o_fin_hero_row">
+                    <button type="button" class="o_fin_hero_btn" t-on-click="transfer">
+                        <i class="fa fa-arrow-down" role="img" title="Transfer"/> Transfer from income
+                    </button>
+                    <button type="button" class="o_fin_hero_btn o_secondary" t-on-click="withdraw">
+                        <i class="fa fa-arrow-up" role="img" title="Withdraw"/> Withdraw
+                    </button>
+                </div>
+            </div>
+
+            <div class="o_fin_section" t-if="d.by_user.length">
+                <div class="o_fin_section_head"><span class="o_fin_section_title">Whose</span><span class="o_fin_muted">in <t t-esc="d.currency.name"/></span></div>
+                <div class="o_fin_panel">
+                    <div t-foreach="d.by_user" t-as="person" t-key="person.id" class="o_fin_person">
+                        <span class="o_fin_avatar" t-esc="initial(person.name)"/>
+                        <span class="o_fin_person_name" t-esc="person.name"/>
+                        <b class="o_fin_person_amount" t-esc="money(person.amount)"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_fin_section">
+                <div class="o_fin_section_head"><span class="o_fin_section_title">What for</span></div>
+                <div class="o_fin_panel">
+                    <div class="o_fin_person">
+                        <span class="o_fin_avatar o_flat"><i class="fa fa-university" role="img" title="General"/></span>
+                        <span class="o_fin_person_name">General savings</span>
+                        <b class="o_fin_person_amount" t-esc="money(d.general)"/>
+                    </div>
+                </div>
+                <div t-foreach="d.by_plan" t-as="plan" t-key="plan.id" class="o_fin_panel o_fin_plan"
+                     t-on-click="() => this.openPlan(plan.id)">
+                    <div class="o_fin_plan_head">
+                        <i t-attf-class="fa #{plan.kind == 'travel' ? 'fa-plane' : 'fa-shopping-bag'}" role="img" title="Plan"/>
+                        <b class="o_fin_plan_name" t-esc="plan.name"/>
+                        <b t-esc="money(plan.saved)"/>
+                    </div>
+                    <t t-if="plan.budget">
+                        <div class="o_fin_progress"><div class="o_fin_progress_bar" t-attf-style="width: #{plan.progress}%"/></div>
+                        <div class="o_fin_plan_foot">
+                            <span class="o_fin_muted">of <t t-esc="money(plan.budget)"/></span>
+                            <span class="o_fin_muted"><t t-esc="Math.round(plan.progress)"/>%</span>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <div class="o_fin_section">
+                <div class="o_fin_section_head"><span class="o_fin_section_title">Latest transfers</span></div>
+                <div t-foreach="d.recent" t-as="row" t-key="row.id" class="o_fin_panel o_fin_transfer"
+                     t-on-click="() => this.edit(row)">
+                    <span t-attf-class="o_fin_transfer_icon #{row.kind == 'withdraw' ? 'o_out' : ''}">
+                        <i t-attf-class="fa #{row.kind == 'withdraw' ? 'fa-arrow-up' : 'fa-arrow-down'}" role="img" title="Transfer"/>
+                    </span>
+                    <span class="o_fin_transfer_text">
+                        <b t-esc="row.user"/>
+                        <span class="o_fin_muted"><t t-esc="row.date"/><t t-if="row.plan"> · <t t-esc="row.plan"/></t><t t-if="row.notes"> · <t t-esc="row.notes"/></t></span>
+                    </span>
+                    <span class="o_fin_transfer_right">
+                        <b t-attf-class="o_fin_transfer_amount #{row.kind == 'withdraw' ? 'o_out' : ''}"
+                           t-esc="(row.kind == 'withdraw' ? '−' : '+') + money(row.amount, row.currency)"/>
+                        <span t-if="row.is_foreign" class="o_fin_muted">≈ <t t-esc="money(row.base)"/></span>
+                    </span>
+                </div>
+                <div t-if="!d.recent.length" class="o_fin_panel o_fin_empty">Nothing saved yet. Use "Transfer from income" to start.</div>
+                <button type="button" class="o_fin_link" t-on-click="openAll">
+                    All transfers <i class="fa fa-chevron-right" role="img" title="Open"/>
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

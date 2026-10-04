@@ -8,7 +8,10 @@
                 <button t-foreach="apps" t-as="app" t-key="app.key" type="button"
                         class="o_family_tile" t-att-style="tileStyle(app)"
                         t-on-click="() => this.open(app)">
-                    <span class="o_family_tile_icon"><i t-attf-class="fa fa-2x {{ app.icon }}" role="img"/></span>
+                    <span class="o_family_tile_icon">
+                        <img t-if="app.image" class="o_family_tile_img" t-att-src="app.image" alt="App logo"/>
+                        <i t-else="" t-attf-class="fa fa-2x {{ app.icon }}" role="img"/>
+                    </span>
                     <span class="o_family_tile_name" t-esc="app.menu.name"/>
                     <span class="o_family_tile_desc" t-if="app.description" t-esc="app.description"/>
                 </button>

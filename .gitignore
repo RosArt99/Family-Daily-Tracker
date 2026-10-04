@@ -9,4 +9,4 @@ venv/
 cookies.txt
 .env
 *.sql.gz
-
+.claude/settings.local.json

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_income_form" model="ir.ui.view">
+        <field name="name">finance.income.form</field>
+        <field name="model">finance.income</field>
+        <field name="arch" type="xml">
+            <form string="Income">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="amount"/>
+                            <field name="rate"/>
+                            <field name="amount_base"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="source"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_finance_income_tree" model="ir.ui.view">
+        <field name="name">finance.income.tree</field>
+        <field name="model">finance.income</field>
+        <field name="arch" type="xml">
+            <tree string="Income" default_order="date desc, id desc" js_class="finance_list">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="source"/>
+                <field name="amount"/>
+                <field name="amount_base" sum="Total"/>
+                <field name="notes" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_finance_income_kanban" model="ir.ui.view">
+        <field name="name">finance.income.kanban</field>
+        <field name="model">finance.income</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false" class="o_fin_kanban" js_class="finance_kanban">
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="amount"/>
+                <field name="source"/>
+                <field name="notes"/>
+                <field name="currency_id"/>
+                <field name="is_foreign"/>
+                <field name="amount_base"/>
+                <field name="company_currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
+                            <span class="o_fin_card_icon o_fin_icon_income"><i class="fa fa-arrow-down" role="img" title="Income"/></span>
+                            <div class="o_fin_card_body">
+                                <div class="o_fin_card_title"><field name="user_id"/></div>
+                                <div class="o_fin_card_meta">
+                                    <field name="date"/>
+                                    <span class="o_fin_chip o_fin_chip_source"><field name="source"/></span>
+                                </div>
+                                <div t-if="record.notes.raw_value" class="o_fin_card_meta"><field name="notes"/></div>
+                            </div>
+                            <div class="o_fin_card_amount o_fin_amount_income">
+                                +<field name="amount"/>
+                                <div t-if="record.is_foreign.raw_value" class="o_fin_card_sub">≈ <field name="amount_base"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_finance_income_graph" model="ir.ui.view">
+        <field name="name">finance.income.graph</field>
+        <field name="model">finance.income</field>
+        <field name="arch" type="xml">
+            <graph string="Income" type="bar" stacked="1">
+                <field name="date" interval="month"/>
+                <field name="user_id"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_finance_income_search" model="ir.ui.view">
+        <field name="name">finance.income.search</field>
+        <field name="model">finance.income</field>
+        <field name="arch" type="xml">
+            <search string="Search Income">
+                <field name="user_id"/>
+                <field name="notes"/>
+                <filter string="This month" name="filter_this_month"
+                        domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
+                    <filter string="Person" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Source" name="groupby_source" context="{'group_by': 'source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_finance_income" model="ir.actions.act_window">
+        <field name="name">Income</field>
+        <field name="res_model">finance.income</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="search_view_id" ref="view_finance_income_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add your first income</p>
+            <p>Salary varies month to month - add each payment as it arrives. Both of you can see
+               everything, but you can only change your own entries.</p>
+        </field>
+    </record>
+
+</odoo>
