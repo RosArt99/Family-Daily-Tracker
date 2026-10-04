@@ -3,6 +3,7 @@ access_finance_store,finance.store,model_finance_store,base.group_user,1,1,1,1
 access_finance_photo,finance.photo,model_finance_photo,base.group_user,1,1,1,1
 access_finance_bill,finance.bill,model_finance_bill,base.group_user,1,1,1,1
 access_finance_housing,finance.housing,model_finance_housing,base.group_user,1,1,1,1
+access_finance_expense,finance.expense,model_finance_expense,base.group_user,1,1,1,1
 access_finance_income,finance.income,model_finance_income,base.group_user,1,1,1,1
 access_finance_saving,finance.saving,model_finance_saving,base.group_user,1,1,1,1
 access_finance_plan,finance.plan,model_finance_plan,base.group_user,1,1,1,1

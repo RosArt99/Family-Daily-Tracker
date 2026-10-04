@@ -3,14 +3,12 @@
 
     <menuitem id="menu_finance_root" name="Finance" sequence="40"/>
 
-    <!-- Phone tab bar order (see finance_app.js): Overview, Groceries, Housing, Income, Savings,
-         Plans. Limits and Stores are desktop extras. -->
+    <!-- Phone tab bar order (see finance_app.js): Overview, Expenses (big category buttons ->
+         Groceries, Housing, Subscriptions, ...), Income, Savings, Plans. Limits and Stores are desktop extras. -->
     <menuitem id="menu_finance_overview" name="Overview" parent="menu_finance_root"
               action="action_finance_overview" sequence="10"/>
-    <menuitem id="menu_finance_bills" name="Groceries" parent="menu_finance_root"
-              action="action_finance_bill" sequence="20"/>
-    <menuitem id="menu_finance_housing" name="Housing" parent="menu_finance_root"
-              action="action_finance_housing" sequence="30"/>
+    <menuitem id="menu_finance_expenses" name="Expenses" parent="menu_finance_root"
+              action="action_finance_expenses" sequence="20"/>
     <menuitem id="menu_finance_income" name="Income" parent="menu_finance_root"
               action="action_finance_income" sequence="40"/>
     <menuitem id="menu_finance_savings" name="Savings" parent="menu_finance_root"

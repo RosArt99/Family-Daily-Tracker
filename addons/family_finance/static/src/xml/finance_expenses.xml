@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_finance.FinanceExpenses">
+        <div class="o_fin_overview">
+            <t t-set="d" t-value="state.data"/>
+
+            <div class="o_fin_hero">
+                <div class="o_fin_hero_top">
+                    <div class="o_fin_hero_label">Spent in <t t-esc="d.label"/></div>
+                    <button type="button" class="o_fin_hero_chip" t-on-click="add">
+                        <i class="fa fa-plus" role="img" title="Add"/> Add expense
+                    </button>
+                </div>
+                <div class="o_fin_hero_amount" t-esc="money(d.spent)"/>
+                <div class="o_fin_hero_row">
+                    <span>Choose a category below to see its expenses</span>
+                </div>
+            </div>
+
+            <button t-foreach="categories" t-as="category" t-key="category.key" type="button"
+                    t-attf-class="o_fin_cat_button o_fin_cat_#{category.key}"
+                    t-on-click="() => this.open(category)">
+                <span class="o_fin_cat_icon"><i t-attf-class="fa fa-2x #{category.icon}" role="img" t-att-title="category.label"/></span>
+                <span class="o_fin_cat_text">
+                    <span class="o_fin_cat_label" t-esc="category.label"/>
+                    <span class="o_fin_cat_hint" t-esc="category.hint"/>
+                </span>
+                <span class="o_fin_cat_amount"><b t-esc="money(amountFor(category))"/></span>
+                <i class="fa fa-chevron-right o_fin_cat_chevron" role="img" title="Open"/>
+            </button>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_finance_expense_form" model="ir.ui.view">
+        <field name="name">finance.expense.form</field>
+        <field name="model">finance.expense</field>
+        <field name="arch" type="xml">
+            <form string="Expense">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="category"/>
+                            <field name="title"/>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                    <group string="Receipt photos">
+                        <field name="photo_ids" nolabel="1" mode="kanban">
+                            <kanban>
+                                <field name="image"/>
+                                <templates>
+                                    <t t-name="kanban-box">
+                                        <div class="oe_kanban_global_click o_fin_photo_card">
+                                            <img t-att-src="kanban_image('finance.photo', 'image', record.id.raw_value)" alt="Receipt"/>
+                                        </div>
+                                    </t>
+                                </templates>
+                            </kanban>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_finance_expense_tree" model="ir.ui.view">
+        <field name="name">finance.expense.tree</field>
+        <field name="model">finance.expense</field>
+        <field name="arch" type="xml">
+            <tree string="Expenses" default_order="date desc, id desc" js_class="finance_list">
+                <field name="date"/>
+                <field name="category"/>
+                <field name="title"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_finance_expense_kanban" model="ir.ui.view">
+        <field name="name">finance.expense.kanban</field>
+        <field name="model">finance.expense</field>
+        <field name="arch" type="xml">
+            <kanban quick_create="false" class="o_fin_kanban" js_class="finance_kanban">
+                <field name="category"/>
+                <field name="title"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="amount"/>
+                <field name="notes"/>
+                <field name="photo_count"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
+                            <span t-if="record.category.raw_value == 'subscriptions'" class="o_fin_card_icon o_fin_icon_subscriptions"><i class="fa fa-repeat" title="Subscriptions"/></span>
+                            <span t-if="record.category.raw_value == 'restaurants'" class="o_fin_card_icon o_fin_icon_restaurants"><i class="fa fa-cutlery" title="Restaurants"/></span>
+                            <span t-if="record.category.raw_value == 'clothes'" class="o_fin_card_icon o_fin_icon_clothes"><i class="fa fa-tag" title="Clothes"/></span>
+                            <span t-if="record.category.raw_value == 'car'" class="o_fin_card_icon o_fin_icon_car"><i class="fa fa-car" title="Car"/></span>
+                            <span t-if="record.category.raw_value == 'other'" class="o_fin_card_icon o_fin_icon_other"><i class="fa fa-ellipsis-h" title="Other"/></span>
+                            <div class="o_fin_card_body">
+                                <div class="o_fin_card_title">
+                                    <field name="title"/>
+                                    <span t-if="!record.title.raw_value" class="text-muted"><field name="category"/></span>
+                                </div>
+                                <div class="o_fin_card_meta">
+                                    <field name="date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <span t-if="record.photo_count.raw_value" class="o_fin_photo_flag" title="Receipt photo attached"><i class="fa fa-camera"/> <t t-esc="record.photo_count.raw_value"/></span>
+                                </div>
+                                <div t-if="record.notes.raw_value" class="o_fin_card_meta"><field name="notes"/></div>
+                            </div>
+                            <div class="o_fin_card_amount"><field name="amount"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_finance_expense_graph" model="ir.ui.view">
+        <field name="name">finance.expense.graph</field>
+        <field name="model">finance.expense</field>
+        <field name="arch" type="xml">
+            <graph string="Expenses" type="bar" stacked="1">
+                <field name="date" interval="month"/>
+                <field name="category"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_finance_expense_search" model="ir.ui.view">
+        <field name="name">finance.expense.search</field>
+        <field name="model">finance.expense</field>
+        <field name="arch" type="xml">
+            <search string="Search Expenses">
+                <field name="title"/>
+                <field name="user_id"/>
+                <filter string="This month" name="filter_this_month"
+                        domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
+                    <filter string="Category" name="groupby_category" context="{'group_by': 'category'}"/>
+                    <filter string="Paid by" name="groupby_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- One action per category: the Expenses landing page (finance_expenses.js) opens these.
+         default_category pre-selects the category for "New". -->
+    <record id="action_finance_expense_subscriptions" model="ir.actions.act_window">
+        <field name="name">Subscriptions</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'subscriptions')]</field>
+        <field name="context">{'default_category': 'subscriptions'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No subscription payments yet</p></field>
+    </record>
+    <record id="action_finance_expense_restaurants" model="ir.actions.act_window">
+        <field name="name">Restaurants</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'restaurants')]</field>
+        <field name="context">{'default_category': 'restaurants'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No restaurant bills yet</p></field>
+    </record>
+    <record id="action_finance_expense_clothes" model="ir.actions.act_window">
+        <field name="name">Clothes</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'clothes')]</field>
+        <field name="context">{'default_category': 'clothes'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No clothes bought yet</p></field>
+    </record>
+    <record id="action_finance_expense_car" model="ir.actions.act_window">
+        <field name="name">Car</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'car')]</field>
+        <field name="context">{'default_category': 'car'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No car expenses yet</p></field>
+    </record>
+    <record id="action_finance_expense_other" model="ir.actions.act_window">
+        <field name="name">Other expenses</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'other')]</field>
+        <field name="context">{'default_category': 'other'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Nothing here yet</p></field>
+    </record>
+
+    <!-- The Expenses tab: big category buttons (finance_expenses.js). -->
+    <record id="action_finance_expenses" model="ir.actions.client">
+        <field name="name">Expenses</field>
+        <field name="tag">family_finance.expenses</field>
+    </record>
+
+</odoo>

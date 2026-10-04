@@ -42,10 +42,13 @@ their own key.
 ### `family_finance` — Finance
 - **Overview**: one month at a glance - income (per person), grocery spending split into food and
   household, what is left, a 6-month trend and the plans being saved for.
-- **Groceries**: just the receipt total plus how much of it was household items (cleaning
+- **Expenses**: seven categories as big buttons - Groceries, Housing, Subscriptions, Restaurants,
+  Clothes, Car, Other. "+ Add expense" asks for the category first, then opens that category's
+  entry window.
+  - **Groceries**: just the receipt total plus how much of it was household items (cleaning
   supplies, toilet paper...); the rest counts as food. No per-product prices to type in. Pick the
   store, and attach photos of the receipt.
-- **Housing**: rent and utilities, counted in the month they are *for*, with receipt photos.
+  - **Housing**: rent and utilities, counted in the month they are *for*, with receipt photos.
 - **Income**: each payment as it arrives (salary varies), for each of you, in the currency you
   got it in (hryvnias, zlotys...). Both of you see everything, each can only edit their own.
 - **Savings**: move money from your income into savings (general, or for a plan) and take it out
@@ -54,7 +57,7 @@ their own key.
   converted at the National Bank of Ukraine's official rate for the day (editable).
 - **Plans**: trips and big purchases with a budget (flights, hotel, ...), the money put aside so
   far and a progress bar.
-- **Limits**: monthly limits for groceries, housing and everything together; the overview turns
+- **Limits**: monthly limits per category and for everything together; the overview turns
   amber at 80% and red when you go over.
 
 ### Automatic weight sync (Zepp Life → Odoo)

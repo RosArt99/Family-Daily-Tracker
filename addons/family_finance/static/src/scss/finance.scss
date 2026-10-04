@@ -1000,3 +1000,179 @@ $fin-over: #dc3545;
 .o_fin_ui_inline .o_fin_ui_unit_dark {
     white-space: nowrap;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Expense categories: one colour per category, used by the big buttons, the Overview rows and
+// the kanban cards.
+// ---------------------------------------------------------------------------------------------
+$fin-cat-groceries: linear-gradient(135deg, #cf5f14, #f08a3c);
+$fin-cat-housing: linear-gradient(135deg, #2d78a6, #5fa8d6);
+$fin-cat-subscriptions: linear-gradient(135deg, #6f42c1, #9b6fe0);
+$fin-cat-restaurants: linear-gradient(135deg, #c0392b, #e8665a);
+$fin-cat-clothes: linear-gradient(135deg, #c2185b, #ec5f98);
+$fin-cat-car: linear-gradient(135deg, #00796b, #26a69a);
+$fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
+
+.o_fin_cat_button {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 18px 18px;
+    border: 0;
+    border-radius: 18px;
+    color: #fff;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+
+    &.o_fin_cat_groceries { background: $fin-cat-groceries; }
+    &.o_fin_cat_housing { background: $fin-cat-housing; }
+    &.o_fin_cat_subscriptions { background: $fin-cat-subscriptions; }
+    &.o_fin_cat_restaurants { background: $fin-cat-restaurants; }
+    &.o_fin_cat_clothes { background: $fin-cat-clothes; }
+    &.o_fin_cat_car { background: $fin-cat-car; }
+    &.o_fin_cat_other { background: $fin-cat-other; }
+
+    .o_fin_cat_icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .o_fin_cat_text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_fin_cat_label {
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .o_fin_cat_hint {
+        font-size: 13px;
+        opacity: 0.88;
+    }
+
+    .o_fin_cat_amount {
+        flex: none;
+        font-size: 17px;
+    }
+
+    .o_fin_cat_chevron {
+        flex: none;
+        opacity: 0.7;
+    }
+
+    &:active {
+        transform: scale(0.99);
+    }
+}
+
+// Overview "Expenses" rows
+.o_fin_exp_row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+
+    + .o_fin_exp_row {
+        border-top: 1px solid #eef0f2;
+    }
+
+    .o_fin_exp_icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: #fff;
+
+        &.o_fin_exp_groceries { background: $fin-cat-groceries; }
+        &.o_fin_exp_housing { background: $fin-cat-housing; }
+        &.o_fin_exp_subscriptions { background: $fin-cat-subscriptions; }
+        &.o_fin_exp_restaurants { background: $fin-cat-restaurants; }
+        &.o_fin_exp_clothes { background: $fin-cat-clothes; }
+        &.o_fin_exp_car { background: $fin-cat-car; }
+        &.o_fin_exp_other { background: $fin-cat-other; }
+    }
+
+    .o_fin_exp_body {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .o_fin_exp_head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .o_fin_exp_limit {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-top: 2px;
+
+        .o_fin_progress {
+            display: block;
+            height: 6px;
+        }
+
+        .o_fin_progress_bar {
+            display: block;
+        }
+    }
+}
+
+// Kanban card icons for the plain expense categories
+.o_fin_card .o_fin_card_icon {
+    &.o_fin_icon_subscriptions { background: $fin-cat-subscriptions; }
+    &.o_fin_icon_restaurants { background: $fin-cat-restaurants; }
+    &.o_fin_icon_clothes { background: $fin-cat-clothes; }
+    &.o_fin_icon_car { background: $fin-cat-car; }
+    &.o_fin_icon_other { background: $fin-cat-other; }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Bigger Save / Close buttons in the Finance dialogs (easy to hit with a thumb)
+// ---------------------------------------------------------------------------------------------
+.o_fin_entry_dialog .modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+
+    .btn {
+        flex: 1;
+        margin: 0;
+        padding: 15px 12px;
+        border-radius: 14px;
+        font-size: 18px;
+        font-weight: 700;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Scrolling: the Overview / Expenses / Savings screens are taller than the phone. The action
+// area does not scroll for a plain client action, so these screens scroll themselves and keep
+// the last card clear of the fixed bottom bar.
+// ---------------------------------------------------------------------------------------------
+.o_fin_overview {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 40px;
+}

@@ -12,6 +12,11 @@
                     <group>
                         <field name="groceries_limit"/>
                         <field name="housing_limit"/>
+                        <field name="subscriptions_limit"/>
+                        <field name="restaurants_limit"/>
+                        <field name="clothes_limit"/>
+                        <field name="car_limit"/>
+                        <field name="other_limit"/>
                         <field name="total_limit"/>
                     </group>
                 </sheet>

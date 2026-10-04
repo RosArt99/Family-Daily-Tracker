@@ -117,6 +117,18 @@
                     </div>
                 </div>
 
+                <!-- Expense: what was it -->
+                <div class="o_fin_ui_card" t-if="isExpense">
+                    <div class="o_fin_ui_label">What</div>
+                    <input type="text" class="o_fin_ui_input o_full" autocomplete="off"
+                           t-att-placeholder="cfg.titlePlaceholder" t-model="state.titleText"/>
+                    <div class="o_fin_ui_chips o_tight" style="margin-top:10px" t-if="state.titles.length">
+                        <button t-foreach="state.titles" t-as="title" t-key="title" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.titleText.trim().toLowerCase() == title.toLowerCase() }"
+                                t-on-click="() => state.titleText = title" t-esc="title"/>
+                    </div>
+                </div>
+
                 <!-- Who -->
                 <div class="o_fin_ui_card" t-if="needsWho">
                     <div class="o_fin_ui_label" t-esc="whoLabel"/>
@@ -187,7 +199,7 @@
 
             <t t-set-slot="footer">
                 <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
-                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
             </t>
         </Dialog>
     </t>
@@ -203,35 +215,39 @@
                     </div>
                 </div>
 
-                <div class="o_fin_ui_card">
-                    <div class="o_fin_ui_label">Groceries per month</div>
+                <div class="o_fin_ui_card" t-foreach="rows" t-as="row" t-key="row[0]">
+                    <div class="o_fin_ui_label" t-esc="row[1]"/>
                     <div class="o_fin_ui_inline">
                         <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
                         <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
-                               t-att-value="state.groceries" t-on-input="(ev) => this.onInput(ev, 'groceries')"/>
-                    </div>
-                </div>
-                <div class="o_fin_ui_card">
-                    <div class="o_fin_ui_label">Housing per month</div>
-                    <div class="o_fin_ui_inline">
-                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
-                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
-                               t-att-value="state.housing" t-on-input="(ev) => this.onInput(ev, 'housing')"/>
-                    </div>
-                </div>
-                <div class="o_fin_ui_card">
-                    <div class="o_fin_ui_label">All spending per month</div>
-                    <div class="o_fin_ui_inline">
-                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
-                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="No limit"
-                               t-att-value="state.total" t-on-input="(ev) => this.onInput(ev, 'total')"/>
+                               t-att-value="state.values[row[0]]" t-on-input="(ev) => this.onInput(ev, row[0])"/>
                     </div>
                 </div>
             </div>
 
             <t t-set-slot="footer">
                 <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
-                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="family_finance.CategoryPicker">
+        <Dialog title="'Add expense'" size="'md'" contentClass="'o_fin_entry_dialog'">
+            <div class="o_fin_ui_form">
+                <button t-foreach="categories" t-as="category" t-key="category.key" type="button"
+                        t-attf-class="o_fin_cat_button o_fin_cat_#{category.key}"
+                        t-on-click="() => this.pick(category)">
+                    <span class="o_fin_cat_icon"><i t-attf-class="fa fa-2x #{category.icon}" role="img" t-att-title="category.label"/></span>
+                    <span class="o_fin_cat_text">
+                        <span class="o_fin_cat_label" t-esc="category.label"/>
+                        <span class="o_fin_cat_hint" t-esc="category.hint"/>
+                    </span>
+                    <i class="fa fa-chevron-right o_fin_cat_chevron" role="img" title="Open"/>
+                </button>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
             </t>
         </Dialog>
     </t>

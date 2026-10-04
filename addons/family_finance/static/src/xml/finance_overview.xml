@@ -24,8 +24,7 @@
                 <div t-attf-class="o_fin_hero_amount #{d.balance &lt; 0 ? 'o_negative' : ''}" t-esc="money(d.balance)"/>
                 <div class="o_fin_hero_row">
                     <span><i class="fa fa-arrow-down" role="img" title="Income"/> Income <b t-esc="money(d.income.total)"/></span>
-                    <span><i class="fa fa-shopping-basket" role="img" title="Groceries"/> Groceries <b t-esc="money(d.groceries.total)"/></span>
-                    <span><i class="fa fa-home" role="img" title="Housing"/> Housing <b t-esc="money(d.housing.total)"/></span>
+                    <span><i class="fa fa-shopping-basket" role="img" title="Expenses"/> Expenses <b t-esc="money(d.spent)"/></span>
                     <span><i class="fa fa-university" role="img" title="Saved"/> Saved <b t-esc="money(d.saved)"/></span>
                 </div>
                 <t t-if="d.limits.total.limit">
@@ -55,55 +54,41 @@
 
             <div class="o_fin_section">
                 <div class="o_fin_section_head">
-                    <span class="o_fin_section_title">Groceries</span>
-                    <button type="button" class="o_fin_add" t-on-click="() => this.openNew('bill')">
-                        <i class="fa fa-plus" role="img" title="Add"/> Add bill
+                    <span class="o_fin_section_title">Expenses</span>
+                    <button type="button" class="o_fin_add" t-on-click="openExpensePicker">
+                        <i class="fa fa-plus" role="img" title="Add"/> Add expense
                     </button>
                 </div>
                 <div class="o_fin_panel">
                     <div class="o_fin_total_row">
-                        <b class="o_fin_total" t-esc="money(d.groceries.total)"/>
-                        <span class="o_fin_muted"><t t-esc="d.groceries.count"/> bill<t t-if="d.groceries.count != 1">s</t></span>
+                        <b class="o_fin_total" t-esc="money(d.expenses.total)"/>
+                        <span class="o_fin_muted">this month</span>
                     </div>
-                    <div class="o_fin_split" t-if="d.groceries.total > 0">
-                        <div class="o_fin_split_food" t-attf-style="width: #{pct(d.groceries.food, d.groceries.total)}%"/>
-                        <div class="o_fin_split_house" t-attf-style="width: #{pct(d.groceries.household, d.groceries.total)}%"/>
-                    </div>
-                    <div class="o_fin_legend">
-                        <span><i class="o_fin_dot o_fin_dot_food"/> Food <b t-esc="money(d.groceries.food)"/></span>
-                        <span><i class="o_fin_dot o_fin_dot_house"/> Household <b t-esc="money(d.groceries.household)"/></span>
-                    </div>
-                    <t t-if="d.limits.groceries.limit">
-                        <div class="o_fin_limit">
-                            <div class="o_fin_limit_text"><span>Limit <t t-esc="money(d.limits.groceries.limit)"/></span><b t-esc="d.limits.groceries.percent + '%'"/></div>
-                            <div class="o_fin_progress"><div t-attf-class="o_fin_progress_bar o_limit #{limitClass(d.limits.groceries)}" t-attf-style="width: #{Math.min(d.limits.groceries.percent, 100)}%"/></div>
+                    <t t-foreach="d.expenses.rows" t-as="row" t-key="row.key">
+                        <div t-if="row.amount > 0 or row.limit.limit" class="o_fin_exp_row">
+                            <span t-attf-class="o_fin_exp_icon o_fin_exp_#{row.key}"><i t-attf-class="fa #{row.icon}" role="img" t-att-title="row.label"/></span>
+                            <span class="o_fin_exp_body">
+                                <span class="o_fin_exp_head">
+                                    <span class="o_fin_exp_label" t-esc="row.label"/>
+                                    <b t-esc="money(row.amount)"/>
+                                </span>
+                                <span t-if="row.key == 'groceries' and d.groceries.household > 0" class="o_fin_muted">
+                                    Food <t t-esc="money(d.groceries.food)"/> · Household <t t-esc="money(d.groceries.household)"/>
+                                </span>
+                                <t t-if="row.limit.limit">
+                                    <span class="o_fin_exp_limit">
+                                        <span class="o_fin_progress"><span t-attf-class="o_fin_progress_bar o_limit #{limitClass(row.limit)}" t-attf-style="width: #{Math.min(row.limit.percent, 100)}%"/></span>
+                                        <span class="o_fin_muted"><t t-esc="row.limit.percent"/>% of <t t-esc="money(row.limit.limit)"/></span>
+                                    </span>
+                                </t>
+                            </span>
                         </div>
                     </t>
+                    <div t-if="!d.expenses.total" class="o_fin_empty">Nothing spent this month yet.</div>
                 </div>
-            </div>
-
-            <div class="o_fin_section">
-                <div class="o_fin_section_head">
-                    <span class="o_fin_section_title">Housing</span>
-                    <button type="button" class="o_fin_add" t-on-click="() => this.openNew('housing')">
-                        <i class="fa fa-plus" role="img" title="Add"/> Add payment
-                    </button>
-                </div>
-                <div class="o_fin_panel">
-                    <div class="o_fin_total_row">
-                        <b class="o_fin_total" t-esc="money(d.housing.total)"/>
-                        <span class="o_fin_muted">rent &amp; utilities</span>
-                    </div>
-                    <div t-foreach="d.housing.by_kind" t-as="row" t-key="row.kind" class="o_fin_kind_row">
-                        <span t-esc="row.label"/><b t-esc="money(row.amount)"/>
-                    </div>
-                    <t t-if="d.limits.housing.limit">
-                        <div class="o_fin_limit">
-                            <div class="o_fin_limit_text"><span>Limit <t t-esc="money(d.limits.housing.limit)"/></span><b t-esc="d.limits.housing.percent + '%'"/></div>
-                            <div class="o_fin_progress"><div t-attf-class="o_fin_progress_bar o_limit #{limitClass(d.limits.housing)}" t-attf-style="width: #{Math.min(d.limits.housing.percent, 100)}%"/></div>
-                        </div>
-                    </t>
-                </div>
+                <button type="button" class="o_fin_link" t-on-click="openExpenses">
+                    All categories <i class="fa fa-chevron-right" role="img" title="Open"/>
+                </button>
             </div>
 
             <div class="o_fin_section">

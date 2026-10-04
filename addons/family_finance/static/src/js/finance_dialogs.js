@@ -48,10 +48,51 @@ export const KINDS = {
         heroLabel: _t("What are you planning?"),
         amountField: null,
     },
+    // The plain expense categories all live in finance.expense, told apart by `category`.
+    subscriptions: expenseKind("subscriptions", _t("Subscription"), "fa-repeat", _t("Netflix, Spotify, phone..."),
+        ["Netflix", "Spotify", "YouTube", "iCloud", "Phone", "Gym pass"]),
+    restaurants: expenseKind("restaurants", _t("Restaurant"), "fa-cutlery", _t("Where did you eat?"), []),
+    clothes: expenseKind("clothes", _t("Clothes"), "fa-tag", _t("What did you buy?"), []),
+    car: expenseKind("car", _t("Car expense"), "fa-car", _t("Fuel, service..."),
+        ["Fuel", "Service", "Insurance", "Parking", "Tires", "Car wash"]),
+    other: expenseKind("other", _t("Expense"), "fa-ellipsis-h", _t("What was it?"), []),
 };
 
+function expenseKind(category, title, icon, placeholder, presets) {
+    return {
+        model: "finance.expense", category, title, icon, heroLabel: _t("Amount"),
+        amountField: "amount", titlePlaceholder: placeholder, presets,
+    };
+}
+
+export const EXPENSE_KINDS = ["subscriptions", "restaurants", "clothes", "car", "other"];
+
 // Which dialog handles which model (finance_views.js uses this to take over "New" / card click).
-export const KIND_BY_MODEL = Object.fromEntries(Object.entries(KINDS).map(([kind, k]) => [k.model, kind]));
+// finance.expense is not here: its kind depends on the record's category.
+export const KIND_BY_MODEL = Object.fromEntries(
+    Object.entries(KINDS)
+        .filter(([kind]) => !EXPENSE_KINDS.includes(kind))
+        .map(([kind, k]) => [k.model, kind])
+);
+
+// Every spending category, in display order: the Expenses screen's big buttons and the
+// "+ Add" picker. `kind` picks the entry dialog, `action` the list that browses them.
+export const CATEGORIES = [
+    { key: "groceries", kind: "bill", label: _t("Groceries"), hint: _t("Bills, food & household items"),
+      icon: "fa-shopping-basket", action: "family_finance.action_finance_bill" },
+    { key: "housing", kind: "housing", label: _t("Housing"), hint: _t("Rent & utilities"),
+      icon: "fa-home", action: "family_finance.action_finance_housing" },
+    { key: "subscriptions", kind: "subscriptions", label: _t("Subscriptions"), hint: _t("Streaming, phone, memberships"),
+      icon: "fa-repeat", action: "family_finance.action_finance_expense_subscriptions" },
+    { key: "restaurants", kind: "restaurants", label: _t("Restaurants"), hint: _t("Eating out, cafés, delivery"),
+      icon: "fa-cutlery", action: "family_finance.action_finance_expense_restaurants" },
+    { key: "clothes", kind: "clothes", label: _t("Clothes"), hint: _t("Clothes & shoes"),
+      icon: "fa-tag", action: "family_finance.action_finance_expense_clothes" },
+    { key: "car", kind: "car", label: _t("Car"), hint: _t("Fuel, service, insurance"),
+      icon: "fa-car", action: "family_finance.action_finance_expense_car" },
+    { key: "other", kind: "other", label: _t("Other"), hint: _t("Anything else"),
+      icon: "fa-ellipsis-h", action: "family_finance.action_finance_expense_other" },
+];
 
 const HOUSING_KINDS = [
     ["rent", _t("Rent")],
@@ -153,6 +194,8 @@ export class FinanceEntryDialog extends Component {
             period: todayString().slice(0, 7),
             userId: session.uid || session.user_id,
             users: [],
+            titleText: "",
+            titles: [],
             housingKind: "rent",
             source: "salary",
             savingKind: defaults.savingKind || "deposit",
@@ -196,13 +239,14 @@ export class FinanceEntryDialog extends Component {
         ];
         if (this.kind !== "plan") {
             jobs.push(
-                this.orm
-                    .searchRead("res.users", [["share", "=", false]], ["name"], { order: "name" })
-                    .then((users) => (state.users = users))
+                this.orm.call("finance.overview", "get_family_users", []).then((users) => (state.users = users))
             );
         }
         if (this.kind === "bill") {
             jobs.push(this.loadStores());
+        }
+        if (this.isExpense) {
+            jobs.push(this.loadTitles());
         }
         if (this.kind === "saving") {
             jobs.push(
@@ -224,6 +268,29 @@ export class FinanceEntryDialog extends Component {
                 await this.setCurrency(match.id);
             }
         }
+    }
+
+    get isExpense() {
+        return EXPENSE_KINDS.includes(this.kind);
+    }
+
+    // Quick picks for "What": the category's usual things first, then what you entered lately.
+    async loadTitles() {
+        const recent = await this.orm.searchRead(
+            "finance.expense",
+            [["category", "=", this.cfg.category], ["title", "!=", false]],
+            ["title"],
+            { order: "date desc, id desc", limit: 80 }
+        );
+        const seen = new Set();
+        this.state.titles = [...this.cfg.presets, ...recent.map((r) => r.title)].filter((title) => {
+            const key = title.toLowerCase();
+            if (seen.has(key)) {
+                return false;
+            }
+            seen.add(key);
+            return true;
+        });
     }
 
     // Stores you shopped at most recently come first.
@@ -260,6 +327,9 @@ export class FinanceEntryDialog extends Component {
         if (this.kind === "bill") {
             state.household = rec.household_amount ? shown(rec.household_amount) : "";
             state.storeText = rec.store_id ? rec.store_id[1] : "";
+        }
+        if (this.isExpense) {
+            state.titleText = rec.title || "";
         }
         if (this.kind === "housing") {
             state.housingKind = rec.kind;
@@ -364,7 +434,7 @@ export class FinanceEntryDialog extends Component {
     }
 
     get hasPhotos() {
-        return this.kind === "bill" || this.kind === "housing";
+        return this.kind === "bill" || this.kind === "housing" || this.isExpense;
     }
 
     get needsWho() {
@@ -373,11 +443,9 @@ export class FinanceEntryDialog extends Component {
 
     get whoLabel() {
         return {
-            bill: _t("Paid by"),
-            housing: _t("Paid by"),
             income: _t("Whose income"),
             saving: _t("From whose income"),
-        }[this.kind];
+        }[this.kind] || _t("Paid by");
     }
 
     get householdValue() {
@@ -461,6 +529,15 @@ export class FinanceEntryDialog extends Component {
         const { state } = this;
         const amount = num(state.amount);
         const notes = state.notes.trim() || false;
+        if (this.isExpense) {
+            if (amount <= 0) {
+                throw new Error(_t("Enter the amount."));
+            }
+            return {
+                category: this.cfg.category, title: state.titleText.trim() || false, amount,
+                date: state.date, user_id: state.userId, notes, photo_ids: this.photoCommands(),
+            };
+        }
         switch (this.kind) {
             case "bill": {
                 if (amount <= 0) {
@@ -569,7 +646,18 @@ export class FinanceEntryDialog extends Component {
     }
 }
 
-// Spending limits: a small dialog in the same style.
+// Monthly limits, one per category plus an overall one.
+export const LIMIT_ROWS = [
+    ["groceries", _t("Groceries per month")],
+    ["housing", _t("Housing per month")],
+    ["subscriptions", _t("Subscriptions per month")],
+    ["restaurants", _t("Restaurants per month")],
+    ["clothes", _t("Clothes per month")],
+    ["car", _t("Car per month")],
+    ["other", _t("Other per month")],
+    ["total", _t("All spending per month")],
+];
+
 export class FinanceLimitsDialog extends Component {
     static template = "family_finance.LimitsDialog";
     static components = { Dialog };
@@ -577,11 +665,10 @@ export class FinanceLimitsDialog extends Component {
 
     setup() {
         this.orm = useService("orm");
+        this.rows = LIMIT_ROWS;
         this.state = useState({
             currency: { symbol: "", position: "before" },
-            groceries: "",
-            housing: "",
-            total: "",
+            values: {},
             error: "",
             saving: false,
         });
@@ -591,24 +678,24 @@ export class FinanceLimitsDialog extends Component {
                 this.orm.call("finance.budget", "get_limits", []),
             ]);
             this.state.currency = currencies.base;
-            for (const key of ["groceries", "housing", "total"]) {
-                this.state[key] = limits[key] ? shown(limits[key]) : "";
+            for (const [key] of LIMIT_ROWS) {
+                this.state.values[key] = limits[key] ? shown(limits[key]) : "";
             }
         });
     }
 
     onInput(ev, key) {
-        this.state[key] = decimalOnly(ev);
+        this.state.values[key] = decimalOnly(ev);
     }
 
     async save() {
         this.state.saving = true;
         try {
-            await this.orm.call("finance.budget", "set_limits", [], {
-                groceries: num(this.state.groceries),
-                housing: num(this.state.housing),
-                total: num(this.state.total),
-            });
+            const limits = {};
+            for (const [key] of LIMIT_ROWS) {
+                limits[key] = num(this.state.values[key]);
+            }
+            await this.orm.call("finance.budget", "set_limits", [limits]);
             if (this.props.onSaved) {
                 this.props.onSaved();
             }
@@ -616,5 +703,22 @@ export class FinanceLimitsDialog extends Component {
         } finally {
             this.state.saving = false;
         }
+    }
+}
+
+// "+ Add expense": pick the category first (big buttons, like Shopping List & Stock), then the
+// matching entry dialog opens.
+export class FinanceCategoryPicker extends Component {
+    static template = "family_finance.CategoryPicker";
+    static components = { Dialog };
+    static props = { onPick: Function, close: Function };
+
+    setup() {
+        this.categories = CATEGORIES;
+    }
+
+    pick(category) {
+        this.props.close();
+        this.props.onPick(category.kind);
     }
 }

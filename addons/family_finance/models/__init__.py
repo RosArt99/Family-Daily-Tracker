@@ -3,6 +3,7 @@ from . import finance_store
 from . import finance_photo
 from . import finance_bill
 from . import finance_housing
+from . import finance_expense
 from . import finance_income
 from . import finance_saving
 from . import finance_plan

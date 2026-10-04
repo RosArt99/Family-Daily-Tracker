@@ -3,7 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onWillStart, useState } from "@odoo/owl";
-import { FinanceEntryDialog, FinanceLimitsDialog } from "./finance_dialogs";
+import { FinanceCategoryPicker, FinanceEntryDialog, FinanceLimitsDialog } from "./finance_dialogs";
 
 // The Finance landing screen: one month at a glance - what came in, what went on groceries
 // (food vs household), what is left, a 6-month trend and the plans being saved for. All the
@@ -60,6 +60,15 @@ class FinanceOverview extends Component {
             kind,
             onSaved: () => this.load(this.state.data.year, this.state.data.month),
         });
+    }
+
+    // "+ Add" on Expenses: pick a category (big buttons), then fill in that category's dialog.
+    openExpensePicker() {
+        this.dialogService.add(FinanceCategoryPicker, { onPick: (kind) => this.openNew(kind) });
+    }
+
+    openExpenses() {
+        this.actionService.doAction("family_finance.action_finance_expenses");
     }
 
     openLimits() {

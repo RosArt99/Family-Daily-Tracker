@@ -4,6 +4,8 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 
+from .finance_expense import EXPENSE_CATEGORIES, PLAIN_CATEGORIES
+
 
 class FinanceOverview(models.AbstractModel):
     _name = 'finance.overview'
@@ -13,6 +15,18 @@ class FinanceOverview(models.AbstractModel):
         currency = currency or self.env.company.currency_id
         return {'id': currency.id, 'name': currency.name, 'symbol': currency.symbol,
                 'position': currency.position, 'decimals': currency.decimal_places}
+
+    @api.model
+    def get_family_users(self):
+        """The people the Finance dialogs offer as "who" - real accounts only: the demo data
+        users Odoo ships with (Mitchell Admin, Marc Demo) are left out."""
+        skip = [
+            ref.id for ref in (
+                self.env.ref('base.user_admin', raise_if_not_found=False),
+                self.env.ref('base.user_demo', raise_if_not_found=False)) if ref]
+        users = self.env['res.users'].search(
+            [('share', '=', False), ('id', 'not in', skip)], order='name')
+        return [{'id': user.id, 'name': user.name} for user in users]
 
     @api.model
     def get_currencies(self):
@@ -69,14 +83,11 @@ class FinanceOverview(models.AbstractModel):
         by_user.sort(key=lambda r: r['name'])
 
         groceries = bill_totals(first, nxt)
-        housing = {'total': housing_total(first, nxt), 'by_kind': []}
-        kinds = dict(Housing._fields['kind'].selection)
-        for row in Housing.read_group(
-                [('period', '>=', first), ('period', '<', nxt)], ['amount:sum'], ['kind']):
-            housing['by_kind'].append({
-                'kind': row['kind'], 'label': kinds[row['kind']], 'amount': row['amount'] or 0.0})
+        housing_sum = housing_total(first, nxt)
+        plain = self._plain_expense_totals(first, nxt)
+        amounts = {'groceries': groceries['total'], 'housing': housing_sum, **plain}
         income = sum(r['amount'] for r in by_user)
-        spent = groceries['total'] + housing['total']
+        spent = sum(amounts.values())
         saved = sum(
             row['signed_base'] or 0.0 for row in Saving.read_group(
                 [('date', '>=', first), ('date', '<', nxt)], ['signed_base:sum'], []))
@@ -88,16 +99,25 @@ class FinanceOverview(models.AbstractModel):
             trend.append({
                 'label': start.strftime('%b'),
                 'income': income_total(start, end),
-                'spent': bill_totals(start, end)['total'] + housing_total(start, end),
+                'spent': bill_totals(start, end)['total'] + housing_total(start, end)
+                + sum(self._plain_expense_totals(start, end).values()),
                 'current': back == 0,
             })
 
         limits = self.env['finance.budget'].get_limits()
-        spending = {'groceries': groceries['total'], 'housing': housing['total'], 'total': spent}
+        spending = {**amounts, 'total': spent}
         limit_rows = [{
             'key': key, 'limit': limits[key], 'spent': spending[key],
             'percent': round(spending[key] / limits[key] * 100.0) if limits[key] else 0,
-        } for key in ('groceries', 'housing', 'total')]
+        } for key in limits]
+        limits_by_key = {row['key']: row for row in limit_rows}
+        expenses = {
+            'total': spent,
+            'rows': [{
+                'key': key, 'label': EXPENSE_CATEGORIES[key][0], 'icon': EXPENSE_CATEGORIES[key][1],
+                'amount': amounts[key], 'limit': limits_by_key[key],
+            } for key in EXPENSE_CATEGORIES],
+        }
 
         plans = self.env['finance.plan'].search([('state', 'in', ('planning', 'saving'))], limit=5)
 
@@ -109,11 +129,11 @@ class FinanceOverview(models.AbstractModel):
             'currency': self._currency_info(),
             'income': {'total': income, 'by_user': by_user},
             'groceries': groceries,
-            'housing': housing,
+            'expenses': expenses,
             'spent': spent,
             'saved': saved,
             'balance': income - spent - saved,
-            'limits': {row['key']: row for row in limit_rows},
+            'limits': limits_by_key,
             'trend': trend,
             'plans': [{
                 'id': plan.id, 'name': plan.name, 'kind': plan.kind, 'state': plan.state,
@@ -122,6 +142,14 @@ class FinanceOverview(models.AbstractModel):
                 'target_date': fields.Date.to_string(plan.target_date) if plan.target_date else False,
             } for plan in plans],
         }
+
+    def _plain_expense_totals(self, start, end):
+        """Spending per plain category (subscriptions, restaurants, ...) between two dates."""
+        totals = dict.fromkeys(PLAIN_CATEGORIES, 0.0)
+        for row in self.env['finance.expense'].read_group(
+                [('date', '>=', start), ('date', '<', end)], ['amount:sum'], ['category']):
+            totals[row['category']] = row['amount'] or 0.0
+        return totals
 
     @api.model
     def get_savings(self):
