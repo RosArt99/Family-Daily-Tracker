@@ -88,7 +88,7 @@
             <graph string="Income" type="bar" stacked="1">
                 <field name="date" interval="month"/>
                 <field name="user_id"/>
-                <field name="amount" type="measure"/>
+                <field name="amount_base" type="measure"/>
             </graph>
         </field>
     </record>

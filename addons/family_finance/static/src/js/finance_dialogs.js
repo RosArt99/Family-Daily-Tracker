@@ -261,11 +261,14 @@ export class FinanceEntryDialog extends Component {
         } else if (this.kind === "plan") {
             state.planKind = (this.props.defaults || {}).planKind || "travel";
         } else if (this.hasCurrency) {
-            // Salary comes in hryvnias, savings sit in dollars (USDT); everything else is zlotys.
-            const wanted = this.kind === "income" ? "UAH" : "USD";
+            // Salary comes in hryvnias, savings sit in dollars (USDT); spending is zlotys unless
+            // you pick another currency (a tutor paid in hryvnias, a dollar subscription...).
+            const wanted = { income: "UAH", saving: "USD" }[this.kind];
             const match = state.currencies.find((c) => c.name === wanted);
             if (match) {
                 await this.setCurrency(match.id);
+            } else {
+                state.rate = "1";
             }
         }
     }
@@ -358,9 +361,9 @@ export class FinanceEntryDialog extends Component {
 
     // ------------------------------------------------------------------ input helpers
 
-    // ---- currency & exchange rate (income and savings only) ----
+    // ---- currency & exchange rate (everything except plans, whose budget is in zlotys) ----
     get hasCurrency() {
-        return this.kind === "income" || this.kind === "saving";
+        return this.kind !== "plan";
     }
 
     get isForeign() {
@@ -525,6 +528,14 @@ export class FinanceEntryDialog extends Component {
         ];
     }
 
+    // Currency of the entry and the rate to the base currency (1 when it is the base itself).
+    currencyVals() {
+        if (this.isForeign && num(this.state.rate) <= 0) {
+            throw new Error(_t("Enter the exchange rate."));
+        }
+        return { currency_id: this.state.currencyId, rate: this.isForeign ? num(this.state.rate) : 1 };
+    }
+
     async buildValues() {
         const { state } = this;
         const amount = num(state.amount);
@@ -536,6 +547,7 @@ export class FinanceEntryDialog extends Component {
             return {
                 category: this.cfg.category, title: state.titleText.trim() || false, amount,
                 date: state.date, user_id: state.userId, notes, photo_ids: this.photoCommands(),
+                ...this.currencyVals(),
             };
         }
         switch (this.kind) {
@@ -554,6 +566,7 @@ export class FinanceEntryDialog extends Component {
                 return {
                     total_amount: amount, household_amount: household, store_id: storeId,
                     date: state.date, user_id: state.userId, notes, photo_ids: this.photoCommands(),
+                    ...this.currencyVals(),
                 };
             }
             case "housing":
@@ -563,6 +576,7 @@ export class FinanceEntryDialog extends Component {
                 return {
                     kind: state.housingKind, amount, date: state.date, period: `${state.period}-01`,
                     user_id: state.userId, notes, photo_ids: this.photoCommands(),
+                    ...this.currencyVals(),
                 };
             case "income":
                 this.checkCurrencyInput(amount);

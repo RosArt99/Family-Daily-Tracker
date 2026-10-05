@@ -1,4 +1,5 @@
 from . import finance_fx
+from . import finance_currency_mixin
 from . import finance_store
 from . import finance_photo
 from . import finance_bill

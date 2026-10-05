@@ -4,6 +4,7 @@ from odoo.exceptions import ValidationError
 
 class FinanceBill(models.Model):
     _name = 'finance.bill'
+    _inherit = ['finance.currency.mixin']
     _description = 'Grocery Bill'
     _order = 'date desc, id desc'
 
@@ -12,8 +13,6 @@ class FinanceBill(models.Model):
                                help='Where it was bought (Biedronka, Lidl, ...).')
     user_id = fields.Many2one(
         'res.users', string='Paid by', default=lambda self: self.env.user, required=True, index=True)
-    currency_id = fields.Many2one(
-        'res.currency', default=lambda self: self.env.company.currency_id, required=True)
     # Only the bill's total and the household part are typed in - no per-product prices. Food is
     # whatever is left, so the three numbers can never disagree.
     total_amount = fields.Monetary(string='Bill total', currency_field='currency_id', required=True)
@@ -22,6 +21,16 @@ class FinanceBill(models.Model):
         help='The part of the bill spent on household chemicals, toilet paper and other non-food items.')
     food_amount = fields.Monetary(
         string='Food', currency_field='currency_id', compute='_compute_food_amount', store=True)
+    # The same three amounts converted to the company currency (what the statistics add up).
+    total_base = fields.Monetary(
+        string='Total (company currency)', currency_field='company_currency_id',
+        compute='_compute_bases', store=True)
+    household_base = fields.Monetary(
+        string='Household (company currency)', currency_field='company_currency_id',
+        compute='_compute_bases', store=True)
+    food_base = fields.Monetary(
+        string='Food (company currency)', currency_field='company_currency_id',
+        compute='_compute_bases', store=True)
     notes = fields.Char()
     photo_ids = fields.One2many('finance.photo', 'bill_id', string='Receipt photos')
     photo_count = fields.Integer(compute='_compute_photo_count')
@@ -35,6 +44,13 @@ class FinanceBill(models.Model):
     def _compute_food_amount(self):
         for bill in self:
             bill.food_amount = bill.total_amount - bill.household_amount
+
+    @api.depends('total_amount', 'household_amount', 'food_amount', 'rate', 'is_foreign')
+    def _compute_bases(self):
+        for bill in self:
+            bill.total_base = bill._to_base(bill.total_amount)
+            bill.household_base = bill._to_base(bill.household_amount)
+            bill.food_base = bill._to_base(bill.food_amount)
 
     @api.depends('photo_ids')
     def _compute_photo_count(self):

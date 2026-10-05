@@ -53,8 +53,9 @@ their own key.
   got it in (hryvnias, zlotys...). Both of you see everything, each can only edit their own.
 - **Savings**: move money from your income into savings (general, or for a plan) and take it out
   again; kept per currency (dollars/USDT), with what it is worth in zlotys today.
-- **Currencies**: books are in PLN; income and savings entries can be in UAH/USD and are
-  converted at the National Bank of Ukraine's official rate for the day (editable).
+- **Currencies**: books are in PLN; every entry (expenses, income, savings) can be in UAH/USD and is
+  converted at the National Bank of Ukraine's official rate for the day (editable). The overview
+  and limits always add up in zlotys.
 - **Plans**: trips and big purchases with a budget (flights, hotel, ...), the money put aside so
   far and a progress bar.
 - **Limits**: monthly limits per category and for everything together; the overview turns

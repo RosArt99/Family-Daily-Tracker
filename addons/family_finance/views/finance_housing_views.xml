@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form string="Housing payment">
                 <sheet>
-                    <field name="currency_id" invisible="1"/>
+                    <field name="company_currency_id" invisible="1"/>
                     <group>
                         <group>
                             <field name="kind"/>
@@ -16,7 +16,11 @@
                             <field name="user_id"/>
                         </group>
                         <group>
+                            <field name="currency_id"/>
                             <field name="amount"/>
+                            <field name="rate" invisible="not is_foreign"/>
+                            <field name="is_foreign" invisible="1"/>
+                            <field name="amount_base" invisible="not is_foreign"/>
                             <field name="notes"/>
                         </group>
                     </group>
@@ -48,7 +52,8 @@
                 <field name="kind"/>
                 <field name="date"/>
                 <field name="user_id" widget="many2one_avatar_user"/>
-                <field name="amount" sum="Total"/>
+                <field name="amount"/>
+                <field name="amount_base" sum="Total (company currency)"/>
                 <field name="currency_id" column_invisible="1"/>
             </tree>
         </field>
@@ -67,6 +72,9 @@
                 <field name="notes"/>
                 <field name="photo_count"/>
                 <field name="currency_id"/>
+                <field name="is_foreign"/>
+                <field name="amount_base"/>
+                <field name="company_currency_id"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
@@ -80,7 +88,10 @@
                                 </div>
                                 <div t-if="record.notes.raw_value" class="o_fin_card_meta"><field name="notes"/></div>
                             </div>
-                            <div class="o_fin_card_amount"><field name="amount"/></div>
+                            <div class="o_fin_card_amount">
+                                <field name="amount"/>
+                                <div t-if="record.is_foreign.raw_value" class="o_fin_card_sub">≈ <field name="amount_base"/></div>
+                            </div>
                         </div>
                     </t>
                 </templates>
@@ -95,7 +106,7 @@
             <graph string="Housing" type="bar" stacked="1">
                 <field name="period" interval="month"/>
                 <field name="kind"/>
-                <field name="amount" type="measure"/>
+                <field name="amount_base" type="measure"/>
             </graph>
         </field>
     </record>

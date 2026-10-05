@@ -55,20 +55,20 @@ class FinanceOverview(models.AbstractModel):
         def bill_totals(start, end):
             rows = Bill.read_group(
                 [('date', '>=', start), ('date', '<', end)],
-                ['total_amount:sum', 'household_amount:sum', 'food_amount:sum'], [])
+                ['total_base:sum', 'household_base:sum', 'food_base:sum'], [])
             row = rows[0] if rows else {}
             return {
-                'total': row.get('total_amount') or 0.0,
-                'household': row.get('household_amount') or 0.0,
-                'food': row.get('food_amount') or 0.0,
+                'total': row.get('total_base') or 0.0,
+                'household': row.get('household_base') or 0.0,
+                'food': row.get('food_base') or 0.0,
                 'count': row.get('__count') or 0,
             }
 
         def housing_total(start, end):
             # Counted in the month the payment is FOR, not the day it was paid.
             rows = Housing.read_group(
-                [('period', '>=', start), ('period', '<', end)], ['amount:sum'], [])
-            return (rows[0].get('amount') if rows else 0.0) or 0.0
+                [('period', '>=', start), ('period', '<', end)], ['amount_base:sum'], [])
+            return (rows[0].get('amount_base') if rows else 0.0) or 0.0
 
         def income_total(start, end):
             rows = Income.read_group(
@@ -147,8 +147,8 @@ class FinanceOverview(models.AbstractModel):
         """Spending per plain category (subscriptions, restaurants, ...) between two dates."""
         totals = dict.fromkeys(PLAIN_CATEGORIES, 0.0)
         for row in self.env['finance.expense'].read_group(
-                [('date', '>=', start), ('date', '<', end)], ['amount:sum'], ['category']):
-            totals[row['category']] = row['amount'] or 0.0
+                [('date', '>=', start), ('date', '<', end)], ['amount_base:sum'], ['category']):
+            totals[row['category']] = row['amount_base'] or 0.0
         return totals
 
     @api.model

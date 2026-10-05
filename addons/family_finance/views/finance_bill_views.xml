@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form string="Grocery Bill">
                 <sheet>
-                    <field name="currency_id" invisible="1"/>
+                    <field name="company_currency_id" invisible="1"/>
                     <group>
                         <group>
                             <field name="date"/>
@@ -15,9 +15,13 @@
                             <field name="user_id"/>
                         </group>
                         <group>
+                            <field name="currency_id"/>
+                            <field name="rate" invisible="not is_foreign"/>
+                            <field name="is_foreign" invisible="1"/>
                             <field name="total_amount"/>
                             <field name="household_amount"/>
                             <field name="food_amount"/>
+                            <field name="total_base" invisible="not is_foreign"/>
                             <field name="notes"/>
                         </group>
                     </group>
@@ -48,9 +52,10 @@
                 <field name="date"/>
                 <field name="store_id"/>
                 <field name="user_id" widget="many2one_avatar_user"/>
-                <field name="food_amount" sum="Food"/>
-                <field name="household_amount" sum="Household"/>
-                <field name="total_amount" sum="Total"/>
+                <field name="food_amount"/>
+                <field name="household_amount"/>
+                <field name="total_amount"/>
+                <field name="total_base" sum="Total (company currency)"/>
                 <field name="currency_id" column_invisible="1"/>
             </tree>
         </field>
@@ -69,6 +74,9 @@
                 <field name="food_amount"/>
                 <field name="household_amount"/>
                 <field name="currency_id"/>
+                <field name="is_foreign"/>
+                <field name="total_base"/>
+                <field name="company_currency_id"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
@@ -90,7 +98,10 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="o_fin_card_amount"><field name="total_amount"/></div>
+                            <div class="o_fin_card_amount">
+                                <field name="total_amount"/>
+                                <div t-if="record.is_foreign.raw_value" class="o_fin_card_sub">≈ <field name="total_base"/></div>
+                            </div>
                         </div>
                     </t>
                 </templates>
@@ -104,8 +115,8 @@
         <field name="arch" type="xml">
             <graph string="Grocery spending" type="bar" stacked="1">
                 <field name="date" interval="month"/>
-                <field name="food_amount" type="measure"/>
-                <field name="household_amount" type="measure"/>
+                <field name="food_base" type="measure"/>
+                <field name="household_base" type="measure"/>
             </graph>
         </field>
     </record>
