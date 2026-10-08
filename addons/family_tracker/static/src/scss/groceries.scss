@@ -810,3 +810,21 @@ $gsc-gradient-find: linear-gradient(135deg, #1f5f99, #3a8fd6);
         transform: translate(-50%, 0);
     }
 }
+
+// "Sort" button (groceries_stock_sort.js): same blue as Find Product in Scan Barcode.
+.o_gs_sort_btn {
+    padding: 6px 16px;
+    border: 0;
+    border-radius: 999px;   // pill; use 14px for a rounded rectangle like the mode buttons
+    background: $gsc-gradient-find;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: $gs-card-shadow;
+
+    &:hover,
+    &:focus,
+    &.show {
+        color: #fff;
+        filter: brightness(1.08);
+    }
+}

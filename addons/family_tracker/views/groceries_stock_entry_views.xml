@@ -69,7 +69,8 @@
         <field name="name">groceries.stock_entry.kanban</field>
         <field name="model">groceries.stock_entry</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" quick_create="false" class="o_gs_kanban">
+            <kanban default_group_by="state" quick_create="false" class="o_gs_kanban"
+                    js_class="groceries_stock_kanban">
                 <field name="product_id"/>
                 <field name="quantity"/>
                 <field name="uom_id"/>

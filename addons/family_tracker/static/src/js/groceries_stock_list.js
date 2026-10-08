@@ -5,6 +5,8 @@ import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useService } from "@web/core/utils/hooks";
 import { listView } from "@web/views/list/list_view";
+import { ListController } from "@web/views/list/list_controller";
+import { withSort } from "./groceries_stock_sort";
 import { Component } from "@odoo/owl";
 
 // What the "List" tab of Shopping List & Stock shows: same physical packs Kanban shows one
@@ -64,7 +66,13 @@ export class GroceriesStockListRenderer extends Component {
             group.count += 1;
             group.entryIds.push(record.resId);
         }
-        return [...byKey.values()].sort((a, b) => a.productName.localeCompare(b.productName));
+        const groups = [...byKey.values()];
+        // Records arrive from the server already ordered (the Sort button changes the model's
+        // orderBy). Sorting by name is ours to do; for dates the Map above already holds the
+        // groups in order of first appearance, i.e. newest first.
+        const orderBy = this.props.list.orderBy;
+        const byName = !orderBy.length || orderBy[0].name === "product_id";
+        return byName ? groups.sort((a, b) => a.productName.localeCompare(b.productName)) : groups;
     }
 
     get sections() {
@@ -145,6 +153,7 @@ export class GroceriesStockListRenderer extends Component {
 export const groceriesStockListView = {
     ...listView,
     Renderer: GroceriesStockListRenderer,
+    Controller: withSort(ListController, "family_tracker.StockListView"),
     buttonTemplate: "family_tracker.GroceriesStockList.Buttons",
 };
 

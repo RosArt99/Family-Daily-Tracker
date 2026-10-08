@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- The Sort dropdown itself. It is rendered inside the controller, so `sortMode` / `sortBy`
+         are the controller's (withSort in groceries_stock_sort.js). -->
+    <t t-name="family_tracker.StockSort.Dropdown">
+        <Dropdown togglerClass="'o_gs_sort_btn'" class="'o_gs_sort'">
+            <t t-set-slot="toggler">
+                <i class="fa fa-sort" role="img" title="Sort"/> Sort
+            </t>
+            <DropdownItem class="sortMode === 'name' ? 'active' : ''" onSelected="() => this.sortBy('name')">
+                By name
+            </DropdownItem>
+            <DropdownItem class="sortMode === 'date' ? 'active' : ''" onSelected="() => this.sortBy('date')">
+                By date added
+            </DropdownItem>
+        </Dropdown>
+    </t>
+
+    <!-- Odoo's own Kanban / List screens, plus the Sort dropdown in the slot that stays visible on
+         a phone (next to the view switcher and the search icon). -->
+    <t t-name="family_tracker.StockKanbanView" t-inherit="web.KanbanView" t-inherit-mode="primary">
+        <xpath expr="//t[@t-set-slot='control-panel-navigation-additional']" position="inside">
+            <t t-call="family_tracker.StockSort.Dropdown"/>
+        </xpath>
+    </t>
+
+    <t t-name="family_tracker.StockListView" t-inherit="web.ListView" t-inherit-mode="primary">
+        <xpath expr="//t[@t-set-slot='control-panel-navigation-additional']" position="inside">
+            <t t-call="family_tracker.StockSort.Dropdown"/>
+        </xpath>
+    </t>
+
+</templates>
