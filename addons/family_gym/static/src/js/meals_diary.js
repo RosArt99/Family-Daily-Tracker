@@ -5,7 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { Component, onWillStart, useState } from "@odoo/owl";
-import { AddFoodDialog, ProductAmountDialog } from "./meals_recipes";
+import { AddFoodDialog, ProductAmountDialog, RestaurantDialog } from "./meals_recipes";
 import { GroceriesPickerDialog } from "./groceries_picker";
 
 const MEAL_STYLE = {
@@ -103,6 +103,13 @@ class MealsDiary extends Component {
             mealLabel,
             date: this.state.date,
             onPantry: () => this.addFromPantry(meal, mealLabel),
+            onRestaurants: () =>
+                this.dialog.add(RestaurantDialog, {
+                    meal,
+                    mealLabel,
+                    date: this.state.date,
+                    onDone: () => this.load(),
+                }),
             onDone: () => this.load(),
         });
     }
@@ -133,6 +140,11 @@ class MealsDiary extends Component {
         if (entry.recipe_id) {
             // A recipe entry is only about how much of it you ate.
             this.dialog.add(AddFoodDialog, { entry, onDone: () => this.load() });
+            return;
+        }
+        if (entry.menu_item_id) {
+            // A restaurant dish: just how many portions.
+            this.dialog.add(RestaurantDialog, { entry, onDone: () => this.load() });
             return;
         }
         if (entry.product_id) {

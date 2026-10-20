@@ -1,0 +1,1025 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Popular fast-food places and their (Polish) menu. noupdate: edits made in Odoo are kept.
+         Values come from FatSecret Poland community data (kcal and macros per portion) and can differ
+         slightly from the chain's own figures; combos ("... Menu") are sums of their parts. -->
+    <data noupdate="1">
+
+        <record id="restaurant_mcdonalds" model="gym.restaurant">
+            <field name="name">McDonald's</field>
+            <field name="sequence">10</field>
+            <field name="logo" type="base64" file="family_gym/static/src/img/restaurants/mcdonalds.png"/>
+        </record>
+        <record id="item_mcdonalds_big_mac" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">10</field>
+            <field name="name">Big Mac</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">544</field>
+            <field name="proteins">27</field>
+            <field name="carbs">42</field>
+            <field name="fat">29</field>
+        </record>
+        <record id="item_mcdonalds_mcroyal" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">20</field>
+            <field name="name">McRoyal</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">547</field>
+            <field name="proteins">33</field>
+            <field name="carbs">38</field>
+            <field name="fat">29</field>
+        </record>
+        <record id="item_mcdonalds_mcdouble" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">30</field>
+            <field name="name">McDouble</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">408</field>
+            <field name="proteins">24</field>
+            <field name="carbs">30</field>
+            <field name="fat">21</field>
+        </record>
+        <record id="item_mcdonalds_cheeseburger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">40</field>
+            <field name="name">Cheeseburger</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">306</field>
+            <field name="proteins">16</field>
+            <field name="carbs">30</field>
+            <field name="fat">13</field>
+        </record>
+        <record id="item_mcdonalds_hamburger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">50</field>
+            <field name="name">Hamburger</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">258</field>
+            <field name="proteins">13</field>
+            <field name="carbs">29</field>
+            <field name="fat">9.5</field>
+        </record>
+        <record id="item_mcdonalds_wiesmac" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">60</field>
+            <field name="name">WieśMac</field>
+            <field name="category">burger</field>
+            <field name="serving_g">0</field>
+            <field name="calories">607</field>
+            <field name="proteins">31</field>
+            <field name="carbs">35</field>
+            <field name="fat">38</field>
+        </record>
+        <record id="item_mcdonalds_mcchicken" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">70</field>
+            <field name="name">McChicken</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">0</field>
+            <field name="calories">433</field>
+            <field name="proteins">21</field>
+            <field name="carbs">48</field>
+            <field name="fat">17</field>
+        </record>
+        <record id="item_mcdonalds_chikker" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">80</field>
+            <field name="name">Chikker</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">0</field>
+            <field name="calories">407</field>
+            <field name="proteins">14</field>
+            <field name="carbs">45</field>
+            <field name="fat">18</field>
+        </record>
+        <record id="item_mcdonalds_mcwrap_klasyczny_chrupiacy_kurczak" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">90</field>
+            <field name="name">McWrap Klasyczny Chrupiący Kurczak</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">0</field>
+            <field name="calories">572</field>
+            <field name="proteins">25</field>
+            <field name="carbs">64</field>
+            <field name="fat">23</field>
+        </record>
+        <record id="item_mcdonalds_snack_wrap" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">100</field>
+            <field name="name">Snack Wrap</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">0</field>
+            <field name="calories">294</field>
+            <field name="proteins">12</field>
+            <field name="carbs">36</field>
+            <field name="fat">11</field>
+        </record>
+        <record id="item_mcdonalds_mcnuggets_4_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">110</field>
+            <field name="name">McNuggets 4 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">0</field>
+            <field name="calories">175</field>
+            <field name="proteins">11</field>
+            <field name="carbs">14</field>
+            <field name="fat">8.3</field>
+        </record>
+        <record id="item_mcdonalds_mcnuggets_6_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">120</field>
+            <field name="name">McNuggets 6 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">0</field>
+            <field name="calories">262</field>
+            <field name="proteins">16</field>
+            <field name="carbs">21</field>
+            <field name="fat">12</field>
+        </record>
+        <record id="item_mcdonalds_mccrispy_strips_2_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">130</field>
+            <field name="name">McCrispy Strips 2 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">0</field>
+            <field name="calories">251</field>
+            <field name="proteins">17</field>
+            <field name="carbs">18</field>
+            <field name="fat">12</field>
+        </record>
+        <record id="item_mcdonalds_frytki_male" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">140</field>
+            <field name="name">Frytki małe</field>
+            <field name="category">side</field>
+            <field name="serving_g">0</field>
+            <field name="calories">229</field>
+            <field name="proteins">2.9</field>
+            <field name="carbs">29</field>
+            <field name="fat">11</field>
+        </record>
+        <record id="item_mcdonalds_frytki_srednie" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">150</field>
+            <field name="name">Frytki średnie</field>
+            <field name="category">side</field>
+            <field name="serving_g">0</field>
+            <field name="calories">327</field>
+            <field name="proteins">4.1</field>
+            <field name="carbs">41</field>
+            <field name="fat">15</field>
+        </record>
+        <record id="item_mcdonalds_frytki_duze" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">160</field>
+            <field name="name">Frytki duże</field>
+            <field name="category">side</field>
+            <field name="serving_g">0</field>
+            <field name="calories">430</field>
+            <field name="proteins">5.4</field>
+            <field name="carbs">54</field>
+            <field name="fat">20</field>
+        </record>
+        <record id="item_mcdonalds_kawa_z_mlekiem_srednia" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">170</field>
+            <field name="name">Kawa z mlekiem średnia</field>
+            <field name="category">drink</field>
+            <field name="serving_g">0</field>
+            <field name="calories">64</field>
+            <field name="proteins">3.7</field>
+            <field name="carbs">5</field>
+            <field name="fat">3.3</field>
+        </record>
+        <record id="item_mcdonalds_coca_cola_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">180</field>
+            <field name="name">Coca-Cola 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">168</field>
+            <field name="proteins">0</field>
+            <field name="carbs">42</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_mcdonalds_coca_cola_zero_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">190</field>
+            <field name="name">Coca-Cola Zero 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">0</field>
+            <field name="proteins">0</field>
+            <field name="carbs">0</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_mcdonalds_big_mac_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">200</field>
+            <field name="name">Big Mac Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">0</field>
+            <field name="calories">1039</field>
+            <field name="proteins">31.1</field>
+            <field name="carbs">125</field>
+            <field name="fat">44</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Big Mac + frytki średnie + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_mcdonalds_mcroyal_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">210</field>
+            <field name="name">McRoyal Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">0</field>
+            <field name="calories">1042</field>
+            <field name="proteins">37.1</field>
+            <field name="carbs">121</field>
+            <field name="fat">44</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">McRoyal + frytki średnie + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_mcdonalds_mcchicken_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">220</field>
+            <field name="name">McChicken Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">0</field>
+            <field name="calories">928</field>
+            <field name="proteins">25.1</field>
+            <field name="carbs">131</field>
+            <field name="fat">32</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">McChicken + frytki średnie + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_mcdonalds_wiesmac_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">230</field>
+            <field name="name">WieśMac Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">0</field>
+            <field name="calories">1102</field>
+            <field name="proteins">35.1</field>
+            <field name="carbs">118</field>
+            <field name="fat">53</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">WieśMac + frytki średnie + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_mcdonalds_cheeseburger_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_mcdonalds"/>
+            <field name="sequence">240</field>
+            <field name="name">Cheeseburger Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">0</field>
+            <field name="calories">801</field>
+            <field name="proteins">20.1</field>
+            <field name="carbs">113</field>
+            <field name="fat">28</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Cheeseburger + frytki średnie + Coca-Cola 0,4 l</field>
+        </record>
+
+        <record id="restaurant_kfc" model="gym.restaurant">
+            <field name="name">KFC</field>
+            <field name="sequence">20</field>
+            <field name="logo" type="base64" file="family_gym/static/src/img/restaurants/kfc.png"/>
+        </record>
+        <record id="item_kfc_zinger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">10</field>
+            <field name="name">Zinger</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">170</field>
+            <field name="calories">445</field>
+            <field name="proteins">25</field>
+            <field name="carbs">36</field>
+            <field name="fat">22</field>
+        </record>
+        <record id="item_kfc_twister_classic" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">20</field>
+            <field name="name">Twister Classic</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">226</field>
+            <field name="calories">579</field>
+            <field name="proteins">23</field>
+            <field name="carbs">57</field>
+            <field name="fat">30</field>
+        </record>
+        <record id="item_kfc_itwist_classic" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">30</field>
+            <field name="name">iTwist Classic</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">132</field>
+            <field name="calories">350</field>
+            <field name="proteins">11</field>
+            <field name="carbs">38</field>
+            <field name="fat">18</field>
+        </record>
+        <record id="item_kfc_longer" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">40</field>
+            <field name="name">Longer</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">127</field>
+            <field name="calories">309</field>
+            <field name="proteins">15</field>
+            <field name="carbs">43</field>
+            <field name="fat">8</field>
+        </record>
+        <record id="item_kfc_cheeseburger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">50</field>
+            <field name="name">Cheeseburger</field>
+            <field name="category">burger</field>
+            <field name="serving_g">125</field>
+            <field name="calories">309</field>
+            <field name="proteins">17</field>
+            <field name="carbs">40</field>
+            <field name="fat">9</field>
+        </record>
+        <record id="item_kfc_grander" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">60</field>
+            <field name="name">Grander</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">300</field>
+            <field name="calories">756</field>
+            <field name="proteins">37</field>
+            <field name="carbs">61</field>
+            <field name="fat">38</field>
+        </record>
+        <record id="item_kfc_qurrito" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">70</field>
+            <field name="name">Qurrito</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">230</field>
+            <field name="calories">692</field>
+            <field name="proteins">35</field>
+            <field name="carbs">53</field>
+            <field name="fat">38</field>
+        </record>
+        <record id="item_kfc_mega_pocket" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">80</field>
+            <field name="name">Mega Pocket</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">287</field>
+            <field name="calories">715</field>
+            <field name="proteins">30</field>
+            <field name="carbs">62</field>
+            <field name="fat">37</field>
+        </record>
+        <record id="item_kfc_hot_wings_1_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">90</field>
+            <field name="name">Hot Wings 1 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">36</field>
+            <field name="calories">114</field>
+            <field name="proteins">7</field>
+            <field name="carbs">5</field>
+            <field name="fat">7.4</field>
+        </record>
+        <record id="item_kfc_hot_spicy_strips_1_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">100</field>
+            <field name="name">Hot &amp; Spicy Strips 1 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">32</field>
+            <field name="calories">92</field>
+            <field name="proteins">6.6</field>
+            <field name="carbs">3.2</field>
+            <field name="fat">5</field>
+        </record>
+        <record id="item_kfc_hot_spicy_bites" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">110</field>
+            <field name="name">Hot &amp; Spicy Bites</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">90</field>
+            <field name="calories">291</field>
+            <field name="proteins">17</field>
+            <field name="carbs">14</field>
+            <field name="fat">18</field>
+        </record>
+        <record id="item_kfc_skrzydelko_kentucky_1_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">120</field>
+            <field name="name">Skrzydełko Kentucky 1 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">65</field>
+            <field name="calories">189</field>
+            <field name="proteins">16</field>
+            <field name="carbs">7.2</field>
+            <field name="fat">11</field>
+        </record>
+        <record id="item_kfc_nozka_kentucky_1_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">130</field>
+            <field name="name">Nóżka Kentucky 1 szt.</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">69</field>
+            <field name="calories">169</field>
+            <field name="proteins">15</field>
+            <field name="carbs">6.1</field>
+            <field name="fat">10</field>
+        </record>
+        <record id="item_kfc_frytki_9x9" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">140</field>
+            <field name="name">Frytki 9x9</field>
+            <field name="category">side</field>
+            <field name="serving_g">80</field>
+            <field name="calories">202</field>
+            <field name="proteins">3</field>
+            <field name="carbs">30</field>
+            <field name="fat">8.4</field>
+        </record>
+        <record id="item_kfc_duze_frytki" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">150</field>
+            <field name="name">Duże frytki</field>
+            <field name="category">side</field>
+            <field name="serving_g">115</field>
+            <field name="calories">290</field>
+            <field name="proteins">4</field>
+            <field name="carbs">43</field>
+            <field name="fat">12</field>
+        </record>
+        <record id="item_kfc_coca_cola_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">160</field>
+            <field name="name">Coca-Cola 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">168</field>
+            <field name="proteins">0</field>
+            <field name="carbs">42</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_kfc_coca_cola_zero_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">170</field>
+            <field name="name">Coca-Cola Zero 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">0</field>
+            <field name="proteins">0</field>
+            <field name="carbs">0</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_kfc_zinger_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">180</field>
+            <field name="name">Zinger Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">685</field>
+            <field name="calories">903</field>
+            <field name="proteins">29</field>
+            <field name="carbs">121</field>
+            <field name="fat">34</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Zinger + duże frytki + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_kfc_twister_classic_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">190</field>
+            <field name="name">Twister Classic Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">741</field>
+            <field name="calories">1037</field>
+            <field name="proteins">27</field>
+            <field name="carbs">142</field>
+            <field name="fat">42</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Twister Classic + duże frytki + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_kfc_longer_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">200</field>
+            <field name="name">Longer Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">642</field>
+            <field name="calories">767</field>
+            <field name="proteins">19</field>
+            <field name="carbs">128</field>
+            <field name="fat">20</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Longer + duże frytki + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_kfc_grander_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_kfc"/>
+            <field name="sequence">210</field>
+            <field name="name">Grander Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">815</field>
+            <field name="calories">1214</field>
+            <field name="proteins">41</field>
+            <field name="carbs">146</field>
+            <field name="fat">50</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Grander + duże frytki + Coca-Cola 0,4 l</field>
+        </record>
+
+        <record id="restaurant_burger_king" model="gym.restaurant">
+            <field name="name">Burger King</field>
+            <field name="sequence">30</field>
+            <field name="logo" type="base64" file="family_gym/static/src/img/restaurants/burger_king.png"/>
+        </record>
+        <record id="item_burger_king_whopper" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">10</field>
+            <field name="name">Whopper</field>
+            <field name="category">burger</field>
+            <field name="serving_g">297</field>
+            <field name="calories">617</field>
+            <field name="proteins">27</field>
+            <field name="carbs">50</field>
+            <field name="fat">34</field>
+        </record>
+        <record id="item_burger_king_double_whopper" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">20</field>
+            <field name="name">Double Whopper</field>
+            <field name="category">burger</field>
+            <field name="serving_g">378</field>
+            <field name="calories">836</field>
+            <field name="proteins">45</field>
+            <field name="carbs">50</field>
+            <field name="fat">50</field>
+        </record>
+        <record id="item_burger_king_whopper_junior" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">30</field>
+            <field name="name">Whopper Junior</field>
+            <field name="category">burger</field>
+            <field name="serving_g">152</field>
+            <field name="calories">320</field>
+            <field name="proteins">13</field>
+            <field name="carbs">29</field>
+            <field name="fat">16</field>
+        </record>
+        <record id="item_burger_king_bacon_cheese_whopper" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">40</field>
+            <field name="name">Bacon &amp; Cheese Whopper</field>
+            <field name="category">burger</field>
+            <field name="serving_g">329</field>
+            <field name="calories">733</field>
+            <field name="proteins">34</field>
+            <field name="carbs">51</field>
+            <field name="fat">43</field>
+        </record>
+        <record id="item_burger_king_big_king" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">50</field>
+            <field name="name">Big King</field>
+            <field name="category">burger</field>
+            <field name="serving_g">189</field>
+            <field name="calories">502</field>
+            <field name="proteins">25</field>
+            <field name="carbs">31</field>
+            <field name="fat">31</field>
+        </record>
+        <record id="item_burger_king_big_king_xxl" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">60</field>
+            <field name="name">Big King XXL</field>
+            <field name="category">burger</field>
+            <field name="serving_g">362</field>
+            <field name="calories">995</field>
+            <field name="proteins">58</field>
+            <field name="carbs">50</field>
+            <field name="fat">58</field>
+        </record>
+        <record id="item_burger_king_cheeseburger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">70</field>
+            <field name="name">Cheeseburger</field>
+            <field name="category">burger</field>
+            <field name="serving_g">118</field>
+            <field name="calories">293</field>
+            <field name="proteins">15</field>
+            <field name="carbs">29</field>
+            <field name="fat">13</field>
+        </record>
+        <record id="item_burger_king_double_cheeseburger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">80</field>
+            <field name="name">Double Cheeseburger</field>
+            <field name="category">burger</field>
+            <field name="serving_g">162</field>
+            <field name="calories">422</field>
+            <field name="proteins">24</field>
+            <field name="carbs">30</field>
+            <field name="fat">22</field>
+        </record>
+        <record id="item_burger_king_steakhouse" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">90</field>
+            <field name="name">Steakhouse</field>
+            <field name="category">burger</field>
+            <field name="serving_g">298</field>
+            <field name="calories">678</field>
+            <field name="proteins">33</field>
+            <field name="carbs">53</field>
+            <field name="fat">37</field>
+        </record>
+        <record id="item_burger_king_chicken_burger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">100</field>
+            <field name="name">Chicken Burger</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">131</field>
+            <field name="calories">377</field>
+            <field name="proteins">10</field>
+            <field name="carbs">40</field>
+            <field name="fat">20</field>
+        </record>
+        <record id="item_burger_king_crispy_chicken" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">110</field>
+            <field name="name">Crispy Chicken</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">183</field>
+            <field name="calories">489</field>
+            <field name="proteins">18</field>
+            <field name="carbs">39</field>
+            <field name="fat">29</field>
+        </record>
+        <record id="item_burger_king_ranch_burger" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">120</field>
+            <field name="name">Ranch Burger</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">131</field>
+            <field name="calories">354</field>
+            <field name="proteins">16</field>
+            <field name="carbs">37</field>
+            <field name="fat">16</field>
+        </record>
+        <record id="item_burger_king_crispy_chicken_wrap" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">130</field>
+            <field name="name">Crispy Chicken Wrap</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">195</field>
+            <field name="calories">398</field>
+            <field name="proteins">18</field>
+            <field name="carbs">43</field>
+            <field name="fat">17</field>
+        </record>
+        <record id="item_burger_king_chili_cheese_nuggets" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">140</field>
+            <field name="name">Chili Cheese Nuggets</field>
+            <field name="category">chicken</field>
+            <field name="serving_g">90</field>
+            <field name="calories">275</field>
+            <field name="proteins">8</field>
+            <field name="carbs">29</field>
+            <field name="fat">15</field>
+        </record>
+        <record id="item_burger_king_frytki_male" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">150</field>
+            <field name="name">Frytki małe</field>
+            <field name="category">side</field>
+            <field name="serving_g">74</field>
+            <field name="calories">200</field>
+            <field name="proteins">3.5</field>
+            <field name="carbs">25</field>
+            <field name="fat">9.7</field>
+        </record>
+        <record id="item_burger_king_frytki_duze" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">160</field>
+            <field name="name">Frytki duże</field>
+            <field name="category">side</field>
+            <field name="serving_g">116</field>
+            <field name="calories">314</field>
+            <field name="proteins">6</field>
+            <field name="carbs">39</field>
+            <field name="fat">14</field>
+        </record>
+        <record id="item_burger_king_frytki_xxl" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">170</field>
+            <field name="name">Frytki XXL</field>
+            <field name="category">side</field>
+            <field name="serving_g">220</field>
+            <field name="calories">596</field>
+            <field name="proteins">10</field>
+            <field name="carbs">75</field>
+            <field name="fat">29</field>
+        </record>
+        <record id="item_burger_king_onion_rings_6_szt" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">180</field>
+            <field name="name">Onion Rings 6 szt.</field>
+            <field name="category">side</field>
+            <field name="serving_g">120</field>
+            <field name="calories">312</field>
+            <field name="proteins">5</field>
+            <field name="carbs">41</field>
+            <field name="fat">15</field>
+        </record>
+        <record id="item_burger_king_coca_cola_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">190</field>
+            <field name="name">Coca-Cola 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">168</field>
+            <field name="proteins">0</field>
+            <field name="carbs">42</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_burger_king_coca_cola_zero_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">200</field>
+            <field name="name">Coca-Cola Zero 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">0</field>
+            <field name="proteins">0</field>
+            <field name="carbs">0</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_burger_king_whopper_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">210</field>
+            <field name="name">Whopper Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">813</field>
+            <field name="calories">1099</field>
+            <field name="proteins">33</field>
+            <field name="carbs">131</field>
+            <field name="fat">48</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Whopper + frytki duże + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_burger_king_big_king_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">220</field>
+            <field name="name">Big King Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">705</field>
+            <field name="calories">984</field>
+            <field name="proteins">31</field>
+            <field name="carbs">112</field>
+            <field name="fat">45</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Big King + frytki duże + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_burger_king_crispy_chicken_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">230</field>
+            <field name="name">Crispy Chicken Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">699</field>
+            <field name="calories">971</field>
+            <field name="proteins">24</field>
+            <field name="carbs">120</field>
+            <field name="fat">43</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Crispy Chicken + frytki duże + Coca-Cola 0,4 l</field>
+        </record>
+        <record id="item_burger_king_bacon_cheese_whopper_menu" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_burger_king"/>
+            <field name="sequence">240</field>
+            <field name="name">Bacon &amp; Cheese Whopper Menu</field>
+            <field name="category">menu</field>
+            <field name="serving_g">845</field>
+            <field name="calories">1215</field>
+            <field name="proteins">40</field>
+            <field name="carbs">132</field>
+            <field name="fat">57</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Bacon &amp; Cheese Whopper + frytki duże + Coca-Cola 0,4 l</field>
+        </record>
+
+        <record id="restaurant_subway" model="gym.restaurant">
+            <field name="name">Subway</field>
+            <field name="sequence">40</field>
+            <field name="logo" type="base64" file="family_gym/static/src/img/restaurants/subway.png"/>
+        </record>
+        <record id="item_subway_kurczak_teriyaki_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">10</field>
+            <field name="name">Kurczak Teriyaki 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">240</field>
+            <field name="calories">296</field>
+            <field name="proteins">20</field>
+            <field name="carbs">45</field>
+            <field name="fat">3</field>
+        </record>
+        <record id="item_subway_grillowana_piers_kurczaka_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">20</field>
+            <field name="name">Grillowana pierś kurczaka 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">219</field>
+            <field name="calories">304</field>
+            <field name="proteins">24</field>
+            <field name="carbs">46.3</field>
+            <field name="fat">3.7</field>
+        </record>
+        <record id="item_subway_indyk_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">30</field>
+            <field name="name">Indyk 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">219</field>
+            <field name="calories">287</field>
+            <field name="proteins">21.2</field>
+            <field name="carbs">45.4</field>
+            <field name="fat">3.4</field>
+        </record>
+        <record id="item_subway_szynka_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">40</field>
+            <field name="name">Szynka 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">205</field>
+            <field name="calories">273</field>
+            <field name="proteins">17.3</field>
+            <field name="carbs">45.9</field>
+            <field name="fat">4</field>
+        </record>
+        <record id="item_subway_pieczona_wolowina_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">50</field>
+            <field name="name">Pieczona wołowina 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">219</field>
+            <field name="calories">300</field>
+            <field name="proteins">23.5</field>
+            <field name="carbs">45.5</field>
+            <field name="fat">4</field>
+        </record>
+        <record id="item_subway_tunczyk_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">60</field>
+            <field name="name">Tuńczyk 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">226</field>
+            <field name="calories">357</field>
+            <field name="proteins">19.8</field>
+            <field name="carbs">40.8</field>
+            <field name="fat">12.4</field>
+        </record>
+        <record id="item_subway_spicy_italian_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">70</field>
+            <field name="name">Spicy Italian 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">210</field>
+            <field name="calories">438</field>
+            <field name="proteins">19.1</field>
+            <field name="carbs">45.4</field>
+            <field name="fat">21.5</field>
+        </record>
+        <record id="item_subway_subway_melt_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">80</field>
+            <field name="name">Subway Melt 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">249</field>
+            <field name="calories">376</field>
+            <field name="proteins">28</field>
+            <field name="carbs">46.3</field>
+            <field name="fat">10.3</field>
+        </record>
+        <record id="item_subway_b_l_t_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">90</field>
+            <field name="name">B.L.T. 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">0</field>
+            <field name="calories">320</field>
+            <field name="proteins">15</field>
+            <field name="carbs">43</field>
+            <field name="fat">9</field>
+        </record>
+        <record id="item_subway_stek_z_serem_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">100</field>
+            <field name="name">Stek z serem 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">225</field>
+            <field name="calories">336</field>
+            <field name="proteins">21</field>
+            <field name="carbs">47</field>
+            <field name="fat">7</field>
+        </record>
+        <record id="item_subway_t_l_c_teriyaki_15_cm" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">110</field>
+            <field name="name">T.L.C. Teriyaki 15 cm</field>
+            <field name="category">sandwich</field>
+            <field name="serving_g">226</field>
+            <field name="calories">271</field>
+            <field name="proteins">21</field>
+            <field name="carbs">39</field>
+            <field name="fat">3</field>
+        </record>
+        <record id="item_subway_ciastko_z_rodzynkami" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">120</field>
+            <field name="name">Ciastko z rodzynkami</field>
+            <field name="category">dessert</field>
+            <field name="serving_g">45</field>
+            <field name="calories">190</field>
+            <field name="proteins">2.3</field>
+            <field name="carbs">25.3</field>
+            <field name="fat">8.8</field>
+        </record>
+        <record id="item_subway_coca_cola_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">130</field>
+            <field name="name">Coca-Cola 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">168</field>
+            <field name="proteins">0</field>
+            <field name="carbs">42</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_subway_coca_cola_zero_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_subway"/>
+            <field name="sequence">140</field>
+            <field name="name">Coca-Cola Zero 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">0</field>
+            <field name="proteins">0</field>
+            <field name="carbs">0</field>
+            <field name="fat">0</field>
+        </record>
+
+        <record id="restaurant_berlin_doner_kebap" model="gym.restaurant">
+            <field name="name">Berlin Döner Kebap</field>
+            <field name="sequence">50</field>
+            <field name="logo" type="base64" file="family_gym/static/src/img/restaurants/berlin_doner_kebap.png"/>
+        </record>
+        <record id="item_berlin_doner_kebap_rollo_kebap_kurczak" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_berlin_doner_kebap"/>
+            <field name="sequence">10</field>
+            <field name="name">Rollo Kebap Kurczak</field>
+            <field name="category">wrap</field>
+            <field name="serving_g">327</field>
+            <field name="calories">457</field>
+            <field name="proteins">27.7</field>
+            <field name="carbs">55.9</field>
+            <field name="fat">15.3</field>
+        </record>
+        <record id="item_berlin_doner_kebap_kebab_w_bulce_typowy" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_berlin_doner_kebap"/>
+            <field name="sequence">20</field>
+            <field name="name">Kebab w bułce (typowy)</field>
+            <field name="category">kebab</field>
+            <field name="serving_g">0</field>
+            <field name="calories">626</field>
+            <field name="proteins">37.8</field>
+            <field name="carbs">79.1</field>
+            <field name="fat">16.5</field>
+            <field name="is_estimate" eval="True"/>
+            <field name="note">Typical value for a kebab in a bun, not the chain's own figure</field>
+        </record>
+        <record id="item_berlin_doner_kebap_coca_cola_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_berlin_doner_kebap"/>
+            <field name="sequence">30</field>
+            <field name="name">Coca-Cola 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">168</field>
+            <field name="proteins">0</field>
+            <field name="carbs">42</field>
+            <field name="fat">0</field>
+        </record>
+        <record id="item_berlin_doner_kebap_coca_cola_zero_0_4_l" model="gym.restaurant.item">
+            <field name="restaurant_id" ref="restaurant_berlin_doner_kebap"/>
+            <field name="sequence">40</field>
+            <field name="name">Coca-Cola Zero 0,4 l</field>
+            <field name="category">drink</field>
+            <field name="serving_g">400</field>
+            <field name="calories">0</field>
+            <field name="proteins">0</field>
+            <field name="carbs">0</field>
+            <field name="fat">0</field>
+        </record>
+
+    </data>
+</odoo>

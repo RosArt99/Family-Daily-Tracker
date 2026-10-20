@@ -25,6 +25,8 @@ class GymMealLog(models.Model):
     # entry is saved, so editing the recipe later does not rewrite past days.
     recipe_id = fields.Many2one('gym.recipe', string='Recipe', ondelete='set null')
     servings = fields.Float(string='Servings eaten', default=1.0)
+    # A dish from a restaurant menu (see gym.restaurant), eaten by portions (`servings`).
+    menu_item_id = fields.Many2one('gym.restaurant.item', string='Restaurant dish', ondelete='set null')
     name = fields.Char(compute='_compute_name', store=True, readonly=False)
     quantity_g = fields.Float(string='Amount (g/ml)', default=100.0)
     calories = fields.Float(string='kcal', compute='_compute_nutrition', store=True, readonly=False)
@@ -36,21 +38,29 @@ class GymMealLog(models.Model):
         ('quantity_positive', 'check(quantity_g >= 0)', 'Amount cannot be negative.'),
     ]
 
-    @api.depends('product_id', 'recipe_id')
+    @api.depends('product_id', 'recipe_id', 'menu_item_id')
     def _compute_name(self):
         for meal in self:
-            if meal.recipe_id:
+            if meal.menu_item_id:
+                meal.name = meal.menu_item_id.name
+            elif meal.recipe_id:
                 meal.name = meal.recipe_id.name
             elif meal.product_id:
                 meal.name = meal.product_id.name
 
-    @api.depends('product_id', 'quantity_g', 'recipe_id', 'servings')
+    @api.depends('product_id', 'quantity_g', 'recipe_id', 'servings', 'menu_item_id')
     def _compute_nutrition(self):
         # Values are only (re)computed from a recipe or a product; without either they stay as
         # typed. Deliberately no dependency on the recipe's own nutrition (see recipe_id).
         for meal in self:
             product = meal.product_id
-            if meal.recipe_id:
+            if meal.menu_item_id:
+                item = meal.menu_item_id
+                meal.calories = round(item.calories * meal.servings, 1)
+                meal.proteins = round(item.proteins * meal.servings, 1)
+                meal.carbs = round(item.carbs * meal.servings, 1)
+                meal.fat = round(item.fat * meal.servings, 1)
+            elif meal.recipe_id:
                 per = meal.recipe_id._per_serving()
                 meal.calories = round(per['calories'] * meal.servings, 1)
                 meal.proteins = round(per['protein'] * meal.servings, 1)
@@ -76,6 +86,26 @@ class GymMealLog(models.Model):
             'recipe_id': recipe.id, 'meal_type': meal_type, 'date': date,
             'servings': servings, 'quantity_g': grams,
         }).id
+
+    @api.model
+    def log_menu_item(self, item_id, meal_type, date, servings):
+        """Put `servings` portions of a restaurant dish into the current user's diary."""
+        item = self.env['gym.restaurant.item'].browse(item_id).exists()
+        if not item:
+            raise UserError(_('This menu item no longer exists.'))
+        if not servings or servings <= 0:
+            raise UserError(_('Eat at least a part of it.'))
+        return self.create({
+            'menu_item_id': item.id, 'meal_type': meal_type, 'date': date, 'servings': servings,
+            'quantity_g': (item.serving_g or 0.0) * servings,
+        }).id
+
+    def set_menu_servings(self, servings):
+        if not servings or servings <= 0:
+            raise UserError(_('Eat at least a part of it.'))
+        for meal in self:
+            meal.write({'servings': servings, 'quantity_g': (meal.menu_item_id.serving_g or 0.0) * servings})
+        return True
 
     @api.model
     def log_product(self, product_id, meal_type, date, grams):
@@ -143,9 +173,11 @@ class GymMealLog(models.Model):
                 'entries': [{
                     'id': e.id,
                     'name': e.name or e.product_id.name or '',
-                    'amount_label': '%d g' % round(e.quantity_g),
+                    'amount_label': ('%g × %s' % (e.servings, e.menu_item_id.restaurant_id.name))
+                    if e.menu_item_id else '%d g' % round(e.quantity_g),
                     'recipe_id': e.recipe_id.id,
                     'product_id': e.product_id.id,
+                    'menu_item_id': e.menu_item_id.id,
                     'servings': e.servings,
                     'quantity_g': e.quantity_g,
                     'calories': round(e.calories),

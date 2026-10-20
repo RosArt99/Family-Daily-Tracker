@@ -1764,3 +1764,97 @@ $gw-bad: #d9534f;
 .o_ge_canvas {
     height: 240px;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Restaurants (RestaurantDialog in meals_recipes.js)
+// ---------------------------------------------------------------------------------------------
+.o_gym_addfood_tile .o_gym_addfood_tile_icon.o_rest {
+    border-color: transparent;
+    background: linear-gradient(135deg, #f0a30a, #f7c14a);
+    color: #fff;
+}
+
+.o_gym_rest_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.o_gym_rest_card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 10px;
+    border: 0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+
+    .o_gym_rest_logo {
+        width: 96px;
+        height: 96px;
+        border-radius: 14px;
+        object-fit: contain;
+        background: #fff;
+    }
+
+    span {
+        color: #7c6a70;
+        font-size: 12px;
+    }
+}
+
+.o_gym_rest_disclaimer {
+    margin: 14px 4px 0;
+    color: #7c6a70;
+    font-size: 12px;
+    text-align: center;
+}
+
+.o_gym_rest_cats {
+    margin: 10px 0;
+}
+
+.o_gym_rest_item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 8px;
+    border: 0;
+    text-align: left;
+
+    .o_gym_saved_main {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .o_gym_rest_est {
+        margin-left: 6px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: #fff3d6;
+        color: #8a5a00;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 700;
+    }
+
+    .o_gym_rest_kcal {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 56px;
+
+        b {
+            font-size: 20px;
+        }
+
+        small {
+            color: #7c6a70;
+        }
+    }
+}

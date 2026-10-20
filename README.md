@@ -39,7 +39,9 @@ their own key.
   see the whole month as a calendar of squares: green on days you trained, labelled Legs / Upper
   / Back / Cardio from what you did. A progress chart follows any exercise's best set.
 - **Meals**: a food diary (breakfast/lunch/dinner/snacks) with calories and macros pulled from
-  the product catalog.
+  the product catalog. "+" on a meal offers Groceries, My Saved Food and **Restaurants**: McDonald's,
+  KFC, Burger King, Subway and Berlin Döner Kebap with their Polish menus (logos, kcal and macros
+  per portion, menu combos).
 - **Goals**: personal targets per person.
 
 ### `family_finance` — Finance

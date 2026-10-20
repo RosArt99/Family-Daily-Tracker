@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_gym_restaurant_form" model="ir.ui.view">
+        <field name="name">gym.restaurant.form</field>
+        <field name="model">gym.restaurant</field>
+        <field name="arch" type="xml">
+            <form string="Restaurant">
+                <sheet>
+                    <field name="logo" widget="image" class="oe_avatar"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="McDonald's"/></h1></div>
+                    <group><field name="sequence"/></group>
+                    <field name="item_ids">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="category"/>
+                            <field name="serving_g" optional="show"/>
+                            <field name="calories"/>
+                            <field name="proteins"/>
+                            <field name="carbs"/>
+                            <field name="fat"/>
+                            <field name="is_estimate" optional="show"/>
+                            <field name="note" optional="hide"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gym_restaurant_list" model="ir.ui.view">
+        <field name="name">gym.restaurant.list</field>
+        <field name="model">gym.restaurant</field>
+        <field name="arch" type="xml">
+            <tree string="Restaurants">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="item_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_gym_restaurant" model="ir.actions.act_window">
+        <field name="name">Restaurants</field>
+        <field name="res_model">gym.restaurant</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

@@ -253,6 +253,7 @@ export class AddFoodDialog extends Component {
         // Editing the servings of a recipe entry that is already in the diary.
         entry: { type: Object, optional: true },
         onPantry: { type: Function, optional: true },
+        onRestaurants: { type: Function, optional: true },
         onDone: Function,
         close: Function,
     };
@@ -307,6 +308,11 @@ export class AddFoodDialog extends Component {
     pantry() {
         this.props.close();
         this.props.onPantry();
+    }
+
+    restaurants() {
+        this.props.close();
+        this.props.onRestaurants();
     }
 
     async openSaved() {
@@ -550,6 +556,157 @@ export class ProductAmountDialog extends Component {
                     this.props.meal,
                     this.props.date,
                     this.gramsEaten,
+                ]);
+            }
+            this.props.onDone();
+            this.props.close();
+        } finally {
+            this.state.busy = false;
+        }
+    }
+}
+
+// "Restaurants": pick a place (logos), then a dish from its menu, then how many portions you ate.
+// Values are for the Polish menu (they differ between countries); the same dialog edits an entry
+// that is already in the diary.
+export class RestaurantDialog extends Component {
+    static template = "family_gym.RestaurantDialog";
+    static components = { Dialog };
+    static props = {
+        meal: { type: String, optional: true },
+        mealLabel: { type: String, optional: true },
+        date: { type: String, optional: true },
+        entry: { type: Object, optional: true },
+        onDone: Function,
+        close: Function,
+    };
+
+    setup() {
+        this.orm = useService("orm");
+        this.state = useState({
+            step: this.props.entry ? "amount" : "list",
+            restaurants: [],
+            menu: null,
+            search: "",
+            category: "",
+            item: null,
+            servings: this.props.entry ? String(this.props.entry.servings) : "1",
+            busy: false,
+        });
+        onWillStart(async () => {
+            if (this.props.entry) {
+                this.state.item = await this.orm.call("gym.restaurant.item", "get_item", [
+                    this.props.entry.menu_item_id,
+                ]);
+            } else {
+                this.state.restaurants = await this.orm.call("gym.restaurant", "get_restaurants", []);
+            }
+        });
+    }
+
+    get title() {
+        if (this.state.step === "amount") {
+            return this.state.item.name;
+        }
+        if (this.state.step === "menu") {
+            return this.state.menu.name;
+        }
+        return _t("Restaurants");
+    }
+
+    fmt(value) {
+        return fmt(value);
+    }
+
+    logoUrl(restaurantId) {
+        return `/web/image/gym.restaurant/${restaurantId}/logo/256x256`;
+    }
+
+    // ---- navigation ----
+    back() {
+        this.state.step = this.state.step === "amount" ? "menu" : "list";
+        if (this.state.step === "list") {
+            this.state.search = "";
+            this.state.category = "";
+        }
+    }
+
+    async openRestaurant(restaurant) {
+        this.state.menu = await this.orm.call("gym.restaurant", "get_menu", [restaurant.id]);
+        this.state.search = "";
+        this.state.category = "";
+        this.state.step = "menu";
+    }
+
+    // ---- menu list ----
+    get items() {
+        const search = this.state.search.trim().toLowerCase();
+        return this.state.menu.items.filter(
+            (item) =>
+                (!this.state.category || item.category === this.state.category) &&
+                (!search || item.name.toLowerCase().includes(search))
+        );
+    }
+
+    onSearchInput(ev) {
+        this.state.search = ev.target.value;
+    }
+
+    setCategory(key) {
+        this.state.category = this.state.category === key ? "" : key;
+    }
+
+    pick(item) {
+        this.state.item = item;
+        this.state.servings = "1";
+        this.state.step = "amount";
+    }
+
+    // ---- how many portions ----
+    get servingsEaten() {
+        return num(this.state.servings);
+    }
+
+    onServingsInput(ev) {
+        const cleaned = ev.target.value.replace(/[^\d.,]/g, "");
+        ev.target.value = cleaned;
+        this.state.servings = cleaned;
+    }
+
+    stepServings(delta) {
+        this.state.servings = String(Math.max(0.5, this.servingsEaten + delta * 0.5));
+    }
+
+    setServings(value) {
+        this.state.servings = String(value);
+    }
+
+    get preview() {
+        const item = this.state.item;
+        const n = this.servingsEaten;
+        return {
+            calories: fmt(item.calories * n),
+            protein: fmt(item.protein * n),
+            carbs: fmt(item.carbs * n),
+            fat: fmt(item.fat * n),
+            grams: item.serving_g ? fmt(item.serving_g * n) : 0,
+        };
+    }
+
+    async confirm() {
+        if (this.servingsEaten <= 0) {
+            return;
+        }
+        this.state.busy = true;
+        try {
+            if (this.props.entry) {
+                await this.orm.call("gym.meal_log", "set_menu_servings", [[this.props.entry.id], this.servingsEaten]);
+            } else {
+                await this.orm.call("gym.meal_log", "log_menu_item", [
+                    this.state.item.id,
+                    this.props.meal,
+                    this.props.date,
+                    this.servingsEaten,
                 ]);
             }
             this.props.onDone();

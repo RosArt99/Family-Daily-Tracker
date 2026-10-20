@@ -131,6 +131,14 @@
                         </span>
                         <i class="fa fa-chevron-right"/>
                     </button>
+                    <button type="button" class="o_gym_addfood_tile" t-on-click="restaurants">
+                        <span class="o_gym_addfood_tile_icon o_rest"><i class="fa fa-shopping-bag" role="img"/></span>
+                        <span class="o_gym_addfood_tile_text">
+                            <b>Restaurants</b>
+                            <span>McDonald's, KFC, Burger King...</span>
+                        </span>
+                        <i class="fa fa-chevron-right"/>
+                    </button>
                     <button type="button" class="o_gym_addfood_tile" t-on-click="openSaved">
                         <span class="o_gym_addfood_tile_icon o_saved"><i class="fa fa-bookmark" role="img"/></span>
                         <span class="o_gym_addfood_tile_text">
@@ -249,6 +257,95 @@
                     </div>
                     <button type="button" class="btn btn-primary o_gym_addfood_confirm"
                             t-att-disabled="state.busy or gramsEaten lte 0" t-on-click="confirm">
+                        <t t-if="props.entry">Save</t>
+                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+    <!-- ============================== Restaurants ============================== -->
+    <t t-name="family_gym.RestaurantDialog">
+        <Dialog title="title" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
+            <div class="o_gym_addfood o_gym_rest">
+
+                <button t-if="state.step !== 'list' and !props.entry" type="button" class="o_gym_addfood_back"
+                        t-on-click="back"><i class="fa fa-chevron-left"/> Back</button>
+
+                <!-- 1. the places -->
+                <t t-if="state.step === 'list'">
+                    <div class="o_gym_rest_grid">
+                        <button t-foreach="state.restaurants" t-as="restaurant" t-key="restaurant.id" type="button"
+                                class="o_gym_rest_card" t-on-click="() => this.openRestaurant(restaurant)">
+                            <img class="o_gym_rest_logo" alt="" t-att-src="logoUrl(restaurant.id)"/>
+                            <b t-esc="restaurant.name"/>
+                            <span><t t-esc="restaurant.count"/> items</span>
+                        </button>
+                    </div>
+                    <p class="o_gym_rest_disclaimer">
+                        Menu of the Polish restaurants. Values are community data (FatSecret) and can differ slightly
+                        from the chain's own figures; menu combos are the sum of their parts.
+                    </p>
+                </t>
+
+                <!-- 2. the menu -->
+                <t t-if="state.step === 'menu'">
+                    <input type="search" class="o_gym_addfood_search" placeholder="Search the menu..."
+                           t-att-value="state.search" t-on-input="onSearchInput"/>
+                    <div class="o_gym_ui_chips o_gym_rest_cats">
+                        <button t-foreach="state.menu.categories" t-as="cat" t-key="cat.key" type="button" class="o_gym_ui_chip"
+                                t-att-class="{ o_active: state.category === cat.key }"
+                                t-on-click="() => this.setCategory(cat.key)" t-esc="cat.label"/>
+                    </div>
+                    <div t-if="!items.length" class="o_gym_addfood_empty">Nothing matches.</div>
+                    <button t-foreach="items" t-as="item" t-key="item.id" type="button" class="o_gym_saved_card o_gym_rest_item"
+                            t-on-click="() => this.pick(item)">
+                        <span class="o_gym_saved_main">
+                            <span class="o_gym_saved_name">
+                                <t t-esc="item.name"/>
+                                <i t-if="item.estimate" class="o_gym_rest_est" title="Estimate">~</i>
+                            </span>
+                            <span class="o_gym_saved_macros">
+                                P <t t-esc="fmt(item.protein)"/> · C <t t-esc="fmt(item.carbs)"/> · F <t t-esc="fmt(item.fat)"/>
+                                <t t-if="item.serving_g"> · <t t-esc="fmt(item.serving_g)"/> g</t>
+                            </span>
+                        </span>
+                        <span class="o_gym_rest_kcal"><b t-esc="fmt(item.calories)"/><small>kcal</small></span>
+                    </button>
+                </t>
+
+                <!-- 3. how many portions -->
+                <div t-if="state.step === 'amount'" class="o_gym_addfood_servings">
+                    <div class="o_gym_ui_label" t-esc="state.item.restaurant"/>
+                    <div class="o_gym_ui_label">Portions eaten</div>
+                    <div class="o_gym_ui_stepper">
+                        <button type="button" class="o_gym_ui_step" aria-label="Less"
+                                t-on-click="() => this.stepServings(-1)"><i class="fa fa-minus"/></button>
+                        <input type="text" inputmode="decimal" class="o_gym_ui_number"
+                               t-att-value="state.servings" t-on-input="onServingsInput"/>
+                        <button type="button" class="o_gym_ui_step" aria-label="More"
+                                t-on-click="() => this.stepServings(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                    <div class="o_gym_ui_chips o_gym_product_presets">
+                        <button t-foreach="[0.5, 1, 2, 3]" t-as="preset" t-key="preset" type="button" class="o_gym_ui_chip"
+                                t-att-class="{ o_active: servingsEaten === preset }"
+                                t-on-click="() => this.setServings(preset)">× <t t-esc="preset"/></button>
+                    </div>
+                    <div class="o_gym_ui_bignumber"><b t-esc="preview.calories"/> <span>kcal</span></div>
+                    <div class="o_gym_ui_legend">
+                        <span><i class="o_gym_ui_dot" style="background:#1e88e5"/> Protein <b><t t-esc="preview.protein"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#f0a30a"/> Carbs <b><t t-esc="preview.carbs"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#ef7b5d"/> Fat <b><t t-esc="preview.fat"/> g</b></span>
+                    </div>
+                    <div class="o_gym_ui_hint" t-if="state.item.serving_g">
+                        One portion is about <t t-esc="fmt(state.item.serving_g)"/> g<t t-if="servingsEaten !== 1"> · you ate <t t-esc="preview.grams"/> g</t>
+                    </div>
+                    <div class="o_gym_ui_hint" t-if="state.item.estimate">
+                        <i class="fa fa-info-circle"/> Estimate<t t-if="state.item.note">: <t t-esc="state.item.note"/></t>
+                    </div>
+                    <button type="button" class="btn btn-primary o_gym_addfood_confirm"
+                            t-att-disabled="state.busy or servingsEaten lte 0" t-on-click="confirm">
                         <t t-if="props.entry">Save</t>
                         <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
                     </button>

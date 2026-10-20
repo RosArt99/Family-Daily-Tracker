@@ -1,6 +1,6 @@
 {
     'name': 'Family Gym & Fit',
-    'version': '17.0.1.9.0',
+    'version': '17.0.1.10.0',
     'category': 'Productivity',
     'summary': 'Workout calendar, strength & weight progress and meal/calorie log for the family',
     'author': 'Ros',
@@ -10,12 +10,14 @@
         'security/ir.model.access.csv',
         'security/gym_security.xml',
         'data/gym_exercise_data.xml',
+        'data/gym_restaurant_data.xml',
         'views/gym_workout_views.xml',
         'views/gym_strength_log_views.xml',
         'views/gym_weight_log_views.xml',
         'views/gym_meal_log_views.xml',
         'views/gym_profile_views.xml',
         'views/gym_exercise_views.xml',
+        'views/gym_restaurant_views.xml',
         'views/gym_menus.xml',
     ],
     'assets': {
