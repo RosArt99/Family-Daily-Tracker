@@ -3,15 +3,17 @@
 
     <menuitem id="menu_gym_root" name="Gym &amp; Fit" sequence="30"/>
 
-    <!-- Order: Meals, Weight, Calendar, Exercises (Reports/Goals are desktop extras). -->
+    <!-- Phone tabs: Meals, Weight, Exercises (see gym_app.js). The rest are desktop extras. -->
     <menuitem id="menu_gym_meals" name="Meals" parent="menu_gym_root"
               action="action_gym_meals_diary" sequence="10"/>
     <menuitem id="menu_gym_weight" name="Weight" parent="menu_gym_root"
               action="action_gym_weight_screen" sequence="20"/>
-    <menuitem id="menu_gym_calendar" name="Calendar" parent="menu_gym_root"
-              action="action_gym_workout" sequence="30"/>
     <menuitem id="menu_gym_exercises" name="Exercises" parent="menu_gym_root"
-              action="action_gym_strength_log" sequence="40"/>
+              action="action_gym_exercises_screen" sequence="30"/>
+    <menuitem id="menu_gym_sessions" name="Exercise Sessions" parent="menu_gym_root"
+              action="action_gym_strength_log" sequence="55"/>
+    <menuitem id="menu_gym_visits" name="Gym Visits" parent="menu_gym_root"
+              action="action_gym_workout" sequence="56"/>
     <menuitem id="menu_gym_meal_reports" name="Meal Reports" parent="menu_gym_root"
               action="action_gym_meal_log" sequence="60"/>
     <menuitem id="menu_gym_goals" name="Goals" parent="menu_gym_root"

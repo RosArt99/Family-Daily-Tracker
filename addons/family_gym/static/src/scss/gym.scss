@@ -1503,3 +1503,264 @@ $gw-bad: #d9534f;
     color: #a3302d;
     font-weight: 700;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Exercises screen (exercises_screen.js): same language as Weight - rounded cards, pills, bright.
+// ---------------------------------------------------------------------------------------------
+.o_ge {
+    .o_ge_nav {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--fam-color, #c41e3f);
+        box-shadow: $gw-shadow;
+    }
+}
+
+.o_ge_daybar,
+.o_ge_monthbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.o_ge_day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 16px;
+    background: $gw-gradient;
+    color: #fff;
+    box-shadow: $gw-shadow;
+
+    b {
+        font-size: 20px;
+    }
+
+    small {
+        opacity: 0.85;
+    }
+}
+
+.o_ge_monthbar b {
+    font-size: 17px;
+}
+
+.o_ge_visit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+
+    .o_gw_pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.o_ge_form {
+    .o_ge_form_head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .o_gw_card_title {
+            margin: 0;
+        }
+    }
+
+    .o_ge_input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid #f0d3da;
+        border-radius: 14px;
+        outline: 0;
+        background: #fff;
+        font-size: 17px;
+        font-weight: 600;
+
+        &:focus {
+            border-color: var(--fam-color, #c41e3f);
+        }
+    }
+
+    .o_ge_chips {
+        margin: 10px 0;
+    }
+
+    .o_ge_newtype {
+        margin-bottom: 10px;
+    }
+
+    .o_ge_sets_label {
+        margin-top: 4px;
+    }
+
+    .o_ge_best {
+        margin: 10px 0;
+        color: #7c6a70;
+        font-size: 14px;
+
+        b {
+            color: #2b1a1f;
+        }
+    }
+
+    .o_ge_notes {
+        margin: 8px 0;
+    }
+
+    .o_ge_save {
+        display: block;
+        width: 100%;
+        margin-top: 6px;
+        padding: 14px;
+        border: 0;
+        border-radius: 14px;
+        background: $gw-gradient;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        box-shadow: $gw-shadow;
+
+        &:disabled {
+            opacity: 0.6;
+        }
+    }
+}
+
+// ---- calendar squares ----
+.o_ge_grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+
+    &.o_ge_weekdays {
+        margin-bottom: 4px;
+        color: #7c6a70;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+    }
+}
+
+.o_ge_cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    padding: 2px;
+    border: 2px solid #f0d3da;
+    border-radius: 12px;
+    background: #fff;
+    color: #2b1a1f;
+
+    .o_ge_cell_day {
+        position: absolute;
+        top: 3px;
+        left: 6px;
+        font-size: 11px;
+        opacity: 0.7;
+    }
+
+    .o_ge_cell_label {
+        margin-top: 8px;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+        text-align: center;
+        word-break: break-word;
+    }
+
+    &.o_visit {
+        border-color: transparent;
+        background: linear-gradient(135deg, #1fa56a, #3dbb78);
+        color: #fff;
+    }
+
+    &.o_today {
+        border-color: var(--fam-color, #c41e3f);
+    }
+
+    &.o_future {
+        opacity: 0.55;
+    }
+
+    &.o_selected {
+        box-shadow: 0 0 0 3px rgba(196, 30, 63, 0.45);
+    }
+}
+
+// ---- entries ----
+.o_ge_entry {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 1px solid #f3dfe4;
+
+    .o_ge_entry_main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left;
+    }
+
+    .o_ge_entry_name {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .o_ge_entry_tag {
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: #fde4e9;
+        color: #a3213f;
+        font-size: 11px;
+        font-style: normal;
+        font-weight: 700;
+    }
+
+    .o_ge_entry_sets {
+        color: #4a3a40;
+        font-size: 14px;
+    }
+
+    .o_ge_entry_delete {
+        flex: none;
+        align-self: center;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 50%;
+        background: #fde4e3;
+        color: #a3302d;
+    }
+}
+
+.o_ge_scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.o_ge_canvas {
+    height: 240px;
+}

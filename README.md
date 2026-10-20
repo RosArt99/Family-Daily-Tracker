@@ -34,9 +34,10 @@ their own key.
   bright history chart with a period picker; switch on a **plan curve** (set your goal, age,
   height and gym visits per week and it works out the kcal a day and draws the path to your
   target date) and/or your partner's line on the same chart.
-- **Exercises**: pick an exercise (or type a new one to create it), log a row per set — weight
-  on the left, reps on the right — and the graph tracks your heaviest set of each session.
-- **Calendar**: workouts by day/type, with exercises and sets logged right inside.
+- **Exercises**: one day at a time, like the Meals diary. Log an exercise right at the top
+  (pick or type a new one, a row per set: weight and reps), mark that you were at the gym, and
+  see the whole month as a calendar of squares: green on days you trained, labelled Legs / Upper
+  / Back / Cardio from what you did. A progress chart follows any exercise's best set.
 - **Meals**: a food diary (breakfast/lunch/dinner/snacks) with calories and macros pulled from
   the product catalog.
 - **Goals**: personal targets per person.
@@ -73,6 +74,14 @@ their own key.
    duplicate instead of creating a second entry.
 
 See [`weight_sync.py`](addons/family_gym/controllers/weight_sync.py) for the endpoint.
+
+### Gym visits from the club Wi-Fi
+The gym is inside a mall, so a location trigger would fire for the whole mall. Instead two iPhone
+Shortcuts automations watch the club's Wi-Fi: *When I join it* → `POST /gym/visit {"event":"join"}`,
+*When I leave it* → `{"event":"leave"}` (same personal API key as the weight sync). The first join
+of a day starts the visit, leaving stores its length, and a stay under 15 minutes with no exercises
+logged is dropped (walking past the club). Green squares in Exercises light up by themselves.
+See [`visit_sync.py`](addons/family_gym/controllers/visit_sync.py).
 
 ## Running it
 

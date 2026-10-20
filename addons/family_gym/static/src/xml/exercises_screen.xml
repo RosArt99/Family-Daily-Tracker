@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_gym.ExercisesScreen">
+        <div class="o_gw o_ge" t-if="state.data">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- day bar: one day at a time, like the Meals diary -->
+            <div class="o_ge_daybar">
+                <button type="button" class="o_ge_nav" aria-label="Previous day" t-on-click="() => this.shiftDay(-1)"><i class="fa fa-chevron-left"/></button>
+                <button type="button" class="o_ge_day" t-on-click="() => this.selectDay(d.today)">
+                    <b t-esc="dayLabel"/>
+                    <small t-if="d.day !== d.today" t-esc="d.day"/>
+                </button>
+                <button type="button" class="o_ge_nav" aria-label="Next day" t-on-click="() => this.shiftDay(1)"><i class="fa fa-chevron-right"/></button>
+            </div>
+
+            <!-- gym visit -->
+            <div class="o_ge_visit">
+                <button type="button" class="o_gw_pill" t-att-class="{ o_active: d.visit }"
+                        t-att-disabled="d.entries.length > 0" t-on-click="toggleVisit">
+                    <i t-attf-class="fa #{d.visit ? 'fa-check-circle' : 'fa-circle-o'}" role="img" title="Gym visit"/>
+                    <t t-if="d.visit">At the gym<t t-if="d.visit_minutes"> · <t t-esc="d.visit_minutes"/> min</t></t><t t-else="">I was at the gym</t>
+                </button>
+                <span t-if="d.entries.length" class="o_gw_muted">counted from the exercises below</span>
+            </div>
+
+            <!-- log an exercise (what the "+ Add" window used to do) -->
+            <div class="o_gw_card o_ge_form" t-ref="form">
+                <div class="o_ge_form_head">
+                    <span class="o_gw_card_title" t-esc="state.editId ? 'Edit exercise' : 'Log an exercise'"/>
+                    <button t-if="state.editId" type="button" class="o_gw_pill o_small" t-on-click="cancelEdit">Cancel</button>
+                </div>
+                <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
+
+                <input type="text" class="o_ge_input" autocomplete="off" placeholder="Choose, or type a new exercise"
+                       t-att-value="state.text" t-on-input="onTextInput"/>
+                <div class="o_gym_ui_hint" t-if="state.last">Last time: <t t-esc="state.last"/></div>
+
+                <div class="o_gym_ui_chips o_ge_chips">
+                    <button t-foreach="suggestions" t-as="exercise" t-key="exercise.id" type="button" class="o_gym_ui_chip"
+                            t-att-class="{ o_active: selected and selected.id === exercise.id }"
+                            t-on-click="() => this.pick(exercise)" t-esc="exercise.name"/>
+                    <span t-if="isNew" class="o_gym_ui_chip o_create"><i class="fa fa-plus"/> New: <t t-esc="typed"/></span>
+                </div>
+
+                <div t-if="isNew" class="o_ge_newtype">
+                    <div class="o_gym_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.newMetric === 'strength' }"
+                                t-on-click="() => state.newMetric = 'strength'">Weight × reps</button>
+                        <button type="button" t-att-class="{ o_active: state.newMetric === 'reps' }"
+                                t-on-click="() => state.newMetric = 'reps'">Reps only</button>
+                    </div>
+                    <select class="o_gym_ui_select" t-model="state.newMuscle">
+                        <option t-foreach="muscleGroups" t-as="group" t-key="group[0]" t-att-value="group[0]" t-esc="group[1]"/>
+                    </select>
+                </div>
+
+                <div class="o_gym_ui_label o_ge_sets_label">Sets</div>
+                <div t-foreach="state.sets" t-as="set" t-key="set.key" class="o_gym_set_row">
+                    <span class="o_gym_set_no" t-esc="set_index + 1"/>
+                    <label t-if="!repsOnly" class="o_gym_set_field">
+                        <input type="text" inputmode="decimal" t-att-value="set.weight" placeholder="0"
+                               t-on-input="(ev) => this.onSetInput(ev, set, 'weight')"/>
+                        <span>kg</span>
+                    </label>
+                    <span t-if="!repsOnly" class="o_gym_set_times">×</span>
+                    <label class="o_gym_set_field">
+                        <input type="text" inputmode="numeric" t-att-value="set.reps" placeholder="0"
+                               t-on-input="(ev) => this.onSetInput(ev, set, 'reps')"/>
+                        <span>reps</span>
+                    </label>
+                    <button type="button" class="o_gym_set_remove" aria-label="Remove set"
+                            t-on-click="() => this.removeSet(set)"><i class="fa fa-times"/></button>
+                </div>
+                <button type="button" class="o_gym_ui_add" t-on-click="addSet"><i class="fa fa-plus"/> Add set</button>
+
+                <div class="o_ge_best" t-if="best">
+                    Best <b><t t-esc="fmt(best)"/> <t t-esc="repsOnly ? 'reps' : 'kg'"/></b>
+                    <t t-if="!repsOnly and volume"> · <t t-esc="filledSets.length"/> sets · <b><t t-esc="fmt(volume)"/> kg</b> lifted</t>
+                </div>
+
+                <textarea class="o_gym_ui_textarea o_ge_notes" rows="2" placeholder="Notes (optional)" t-model="state.notes"/>
+
+                <button type="button" class="o_ge_save" t-att-disabled="state.saving" t-on-click="save">
+                    <t t-if="state.editId">Save changes</t><t t-else="">Save exercise</t>
+                </button>
+            </div>
+
+            <!-- the calendar: one square per day -->
+            <div class="o_gw_card o_ge_calendar">
+                <div class="o_ge_monthbar">
+                    <button type="button" class="o_ge_nav" aria-label="Previous month" t-on-click="() => this.shiftMonth(-1)"><i class="fa fa-chevron-left"/></button>
+                    <b t-esc="monthLabel"/>
+                    <button type="button" class="o_ge_nav" aria-label="Next month" t-on-click="() => this.shiftMonth(1)"><i class="fa fa-chevron-right"/></button>
+                </div>
+                <div class="o_ge_grid o_ge_weekdays">
+                    <span t-foreach="weekdays" t-as="name" t-key="name_index" t-esc="name"/>
+                </div>
+                <div class="o_ge_grid">
+                    <t t-foreach="cells" t-as="cell" t-key="cell.key">
+                        <span t-if="cell.blank" class="o_ge_blank"/>
+                        <button t-else="" type="button"
+                                t-attf-class="o_ge_cell #{cell.visit ? 'o_visit' : ''} #{cell.today ? 'o_today' : ''} #{cell.selected ? 'o_selected' : ''} #{cell.future ? 'o_future' : ''}"
+                                t-on-click="() => this.selectDay(cell.iso)">
+                            <span class="o_ge_cell_day" t-esc="cell.day"/>
+                            <span class="o_ge_cell_label" t-esc="cell.label"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+
+            <!-- what the selected day holds -->
+            <div class="o_gw_card o_ge_entries">
+                <div class="o_gw_card_title">
+                    <t t-if="d.day === d.today">Today's workout</t><t t-else="">Workout of <t t-esc="dayLabel"/></t>
+                </div>
+                <div t-if="!d.entries.length" class="o_gw_muted">Nothing logged for this day yet.</div>
+                <div t-foreach="d.entries" t-as="entry" t-key="entry.id" class="o_ge_entry">
+                    <button type="button" class="o_ge_entry_main" t-on-click="() => this.editEntry(entry)">
+                        <span class="o_ge_entry_name">
+                            <t t-esc="entry.name"/>
+                            <i t-if="entry.muscle" class="o_ge_entry_tag" t-esc="entry.muscle"/>
+                        </span>
+                        <span class="o_ge_entry_sets" t-esc="entry.summary"/>
+                        <span t-if="entry.notes" class="o_gw_muted" t-esc="entry.notes"/>
+                    </button>
+                    <button type="button" class="o_ge_entry_delete" aria-label="Delete" t-on-click="() => this.deleteEntry(entry)">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- progress -->
+            <div class="o_gw_card o_gw_chart_card" t-if="chartExercises.length">
+                <div class="o_gw_card_title">Progress</div>
+                <div class="o_gw_chips o_ge_scroll">
+                    <button t-foreach="chartExercises" t-as="exercise" t-key="exercise.id" type="button" class="o_gw_pill"
+                            t-att-class="{ o_active: state.chartExercise === exercise.id }"
+                            t-on-click="() => this.chooseChartExercise(exercise.id)" t-esc="exercise.name"/>
+                </div>
+                <div class="o_gw_chips">
+                    <button t-foreach="presets" t-as="preset" t-key="preset.key" type="button" class="o_gw_pill o_small"
+                            t-att-class="{ o_active: state.preset === preset.key }"
+                            t-on-click="() => this.setPreset(preset.key)" t-esc="preset.label"/>
+                </div>
+                <t t-if="state.chartData">
+                    <div class="o_gw_stats">
+                        <span>First <b t-esc="state.chartData.stats.first ?? '–'"/></span>
+                        <span>Last <b t-esc="state.chartData.stats.last ?? '–'"/></span>
+                        <span>Best <b t-esc="state.chartData.stats.best ?? '–'"/></span>
+                        <span class="o_gw_muted" t-esc="unit"/>
+                    </div>
+                    <div class="o_gw_canvas_wrap o_ge_canvas">
+                        <canvas t-ref="canvas"/>
+                        <div t-if="!state.chartData.mine.length" class="o_gw_empty">No sessions in this period</div>
+                    </div>
+                    <div class="o_gw_legend">
+                        <span class="o_gw_legend_item o_fixed"><i class="o_gw_dot" style="background:#d81f4a"/> Me</span>
+                        <button t-if="othersWithPoints.length" type="button" class="o_gw_pill o_toggle"
+                                t-att-class="{ o_active: state.showOthers }" t-on-click="toggleOthers">
+                            <i class="o_gw_dot" style="background:#2f7fd6"/> <t t-esc="othersLabel"/>
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -13,6 +13,15 @@ LB_TO_KG = 0.45359237
 MIN_KG, MAX_KG = 20.0, 300.0
 
 
+def user_from_api_key():
+    """The user whose personal API key (`Authorization: Bearer <key>` or `X-Api-Key`) is on the
+    request, or None. Shared by the weigh-in and gym-visit endpoints."""
+    headers = request.httprequest.headers
+    auth = headers.get('Authorization', '')
+    key = auth[7:].strip() if auth.lower().startswith('bearer ') else headers.get('X-Api-Key', '').strip()
+    return (key and request.env['res.users.apikeys']._check_credentials(scope=API_KEY_SCOPE, key=key)) or None
+
+
 class GymWeightSyncController(http.Controller):
     """Receives weigh-ins from the iPhone Shortcut (Zepp Life -> Apple Health -> here).
 
@@ -24,10 +33,7 @@ class GymWeightSyncController(http.Controller):
     @http.route('/gym/weight', type='http', auth='public', methods=['POST'], csrf=False,
                 save_session=False)
     def sync_weight(self, **_kwargs):
-        headers = request.httprequest.headers
-        auth = headers.get('Authorization', '')
-        key = auth[7:].strip() if auth.lower().startswith('bearer ') else headers.get('X-Api-Key', '').strip()
-        uid = key and request.env['res.users.apikeys']._check_credentials(scope=API_KEY_SCOPE, key=key)
+        uid = user_from_api_key()
         if not uid:
             return self._reply({'error': 'Invalid or missing API key.'}, 401)
         request.update_env(user=uid)  # from here on record rules apply as that user

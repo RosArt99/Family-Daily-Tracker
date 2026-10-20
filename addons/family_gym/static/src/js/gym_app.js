@@ -12,11 +12,10 @@ registry.category("family_apps").add(
         color: "#c41e3f",
         pattern: "/family_gym/static/src/img/navbar_pattern_gym.png?v=2",
         modelPrefix: "gym.",
-        description: "Workouts, strength, weight & meals",
+        description: "Exercises, weight & meals",
         tabs: [
             { xmlid: "family_gym.menu_gym_meals", icon: "fa-cutlery" },
             { xmlid: "family_gym.menu_gym_weight", icon: "fa-balance-scale", svg: "/family_gym/static/src/img/icons/scale.svg" },
-            { xmlid: "family_gym.menu_gym_calendar", icon: "fa-calendar" },
             { xmlid: "family_gym.menu_gym_exercises", icon: "fa-line-chart", svg: "/family_gym/static/src/img/icons/dumbbell.svg" },
         ],
     },

@@ -10,3 +10,5 @@ cookies.txt
 .env
 *.sql.gz
 .claude/settings.local.json
+/docs/SORT_BUTTON_GUIDE.md
+/docs/meat_cuts_overview.jpg
