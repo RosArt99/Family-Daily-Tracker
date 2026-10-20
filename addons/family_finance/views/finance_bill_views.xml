@@ -20,6 +20,7 @@
                             <field name="is_foreign" invisible="1"/>
                             <field name="total_amount"/>
                             <field name="household_amount"/>
+                            <field name="personal_amount"/>
                             <field name="food_amount"/>
                             <field name="total_base" invisible="not is_foreign"/>
                             <field name="notes"/>
@@ -54,6 +55,7 @@
                 <field name="user_id" widget="many2one_avatar_user"/>
                 <field name="food_amount"/>
                 <field name="household_amount"/>
+                <field name="personal_amount" optional="show"/>
                 <field name="total_amount"/>
                 <field name="total_base" sum="Total (company currency)"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -73,6 +75,7 @@
                 <field name="total_amount"/>
                 <field name="food_amount"/>
                 <field name="household_amount"/>
+                <field name="personal_amount"/>
                 <field name="currency_id"/>
                 <field name="is_foreign"/>
                 <field name="total_base"/>
@@ -117,6 +120,7 @@
                 <field name="date" interval="month"/>
                 <field name="food_base" type="measure"/>
                 <field name="household_base" type="measure"/>
+                <field name="personal_base" type="measure"/>
             </graph>
         </field>
     </record>
@@ -132,6 +136,7 @@
                         domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
                 <filter string="Mine" name="filter_mine" domain="[('user_id', '=', uid)]"/>
                 <filter string="With household items" name="filter_household" domain="[('household_amount', '&gt;', 0)]"/>
+                <filter string="With personal care" name="filter_personal" domain="[('personal_amount', '&gt;', 0)]"/>
                 <group expand="0" string="Group By">
                     <filter string="Month" name="groupby_month" context="{'group_by': 'date:month'}"/>
                     <filter string="Store" name="groupby_store" context="{'group_by': 'store_id'}"/>

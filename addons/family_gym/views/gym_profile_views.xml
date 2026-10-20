@@ -16,7 +16,19 @@
                             <field name="fat_goal"/>
                         </group>
                         <group string="Body">
+                            <field name="sex"/>
+                            <field name="age"/>
                             <field name="height_cm"/>
+                            <field name="gym_days_per_week"/>
+                        </group>
+                    </group>
+                    <group string="Weight plan (see the Weight screen)">
+                        <group>
+                            <field name="plan_start_date"/>
+                            <field name="plan_start_weight"/>
+                        </group>
+                        <group>
+                            <field name="plan_target_date"/>
                             <field name="target_weight"/>
                         </group>
                     </group>

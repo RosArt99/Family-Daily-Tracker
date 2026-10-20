@@ -64,19 +64,58 @@ class GymMealLog(models.Model):
                 meal.fat = round(product.fat_100g * factor, 1)
 
     @api.model
-    def log_recipe(self, recipe_id, meal_type, date, servings):
-        """Put `servings` of a saved recipe into the current user's diary."""
-        if servings <= 0:
-            raise UserError(_('Eat at least a part of a serving.'))
+    def log_recipe(self, recipe_id, meal_type, date, servings=None, grams=None):
+        """Put a saved recipe into the current user's diary, by weight (what the kitchen scale
+        shows) or by servings. Both are stored: grams in quantity_g, servings as the fraction of
+        the recipe's serving they make up, which is what the nutrition is computed from."""
+        recipe = self.env['gym.recipe'].browse(recipe_id).exists()
+        if not recipe:
+            raise UserError(_('This recipe no longer exists.'))
+        servings, grams = self._recipe_amount(recipe, servings, grams)
         return self.create({
-            'recipe_id': recipe_id, 'meal_type': meal_type, 'date': date, 'servings': servings,
+            'recipe_id': recipe.id, 'meal_type': meal_type, 'date': date,
+            'servings': servings, 'quantity_g': grams,
         }).id
 
-    def set_servings(self, servings):
-        if servings <= 0:
-            raise UserError(_('Eat at least a part of a serving.'))
-        self.write({'servings': servings})
+    @api.model
+    def log_product(self, product_id, meal_type, date, grams):
+        """Put `grams` of a Groceries product into the current user's diary; the nutrition comes
+        from the product's per-100 g values."""
+        product = self.env['groceries.product'].browse(product_id).exists()
+        if not product:
+            raise UserError(_('This product no longer exists.'))
+        if not grams or grams <= 0:
+            raise UserError(_('Eat at least a little of it.'))
+        return self.create({
+            'product_id': product.id, 'meal_type': meal_type, 'date': date, 'quantity_g': grams,
+        }).id
+
+    def set_product_grams(self, grams):
+        if not grams or grams <= 0:
+            raise UserError(_('Eat at least a little of it.'))
+        self.write({'quantity_g': grams})
         return True
+
+    @api.model
+    def _recipe_amount(self, recipe, servings=None, grams=None):
+        serving_weight = recipe._serving_weight()
+        if grams:
+            servings = grams / serving_weight if serving_weight else 0.0
+        elif servings:
+            grams = servings * serving_weight
+        if not servings or servings <= 0 or not grams or grams <= 0:
+            raise UserError(_('Eat at least a little of it.'))
+        return servings, grams
+
+    def set_recipe_amount(self, servings=None, grams=None):
+        """Change how much of a recipe an entry is, by grams or by servings."""
+        for meal in self:
+            meal_servings, meal_grams = self._recipe_amount(meal.recipe_id, servings, grams)
+            meal.write({'servings': meal_servings, 'quantity_g': meal_grams})
+        return True
+
+    def set_servings(self, servings):
+        return self.set_recipe_amount(servings=servings)
 
     @api.model
     def get_diary(self, date=None):
@@ -104,10 +143,11 @@ class GymMealLog(models.Model):
                 'entries': [{
                     'id': e.id,
                     'name': e.name or e.product_id.name or '',
-                    'amount_label': ('%g serving%s' % (e.servings, '' if e.servings == 1 else 's'))
-                    if e.recipe_id else '%d g' % round(e.quantity_g),
+                    'amount_label': '%d g' % round(e.quantity_g),
                     'recipe_id': e.recipe_id.id,
+                    'product_id': e.product_id.id,
                     'servings': e.servings,
+                    'quantity_g': e.quantity_g,
                     'calories': round(e.calories),
                 } for e in items],
             })

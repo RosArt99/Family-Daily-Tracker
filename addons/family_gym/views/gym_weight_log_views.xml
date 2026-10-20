@@ -65,8 +65,15 @@
         </field>
     </record>
 
-    <record id="action_gym_weight_log" model="ir.actions.act_window">
+    <!-- The Weight tab: the redesigned screen (weight_screen.js). The graph/list below stays as
+         "All entries" for editing and deleting individual weigh-ins. -->
+    <record id="action_gym_weight_screen" model="ir.actions.client">
         <field name="name">Weight</field>
+        <field name="tag">family_gym.weight</field>
+    </record>
+
+    <record id="action_gym_weight_log" model="ir.actions.act_window">
+        <field name="name">Weigh-ins</field>
         <field name="res_model">gym.weight_log</field>
         <field name="view_mode">graph,tree,form</field>
         <field name="search_view_id" ref="view_gym_weight_log_search"/>

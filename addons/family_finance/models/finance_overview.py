@@ -55,11 +55,12 @@ class FinanceOverview(models.AbstractModel):
         def bill_totals(start, end):
             rows = Bill.read_group(
                 [('date', '>=', start), ('date', '<', end)],
-                ['total_base:sum', 'household_base:sum', 'food_base:sum'], [])
+                ['total_base:sum', 'household_base:sum', 'personal_base:sum', 'food_base:sum'], [])
             row = rows[0] if rows else {}
             return {
                 'total': row.get('total_base') or 0.0,
                 'household': row.get('household_base') or 0.0,
+                'personal': row.get('personal_base') or 0.0,
                 'food': row.get('food_base') or 0.0,
                 'count': row.get('__count') or 0,
             }
@@ -85,7 +86,9 @@ class FinanceOverview(models.AbstractModel):
         groceries = bill_totals(first, nxt)
         housing_sum = housing_total(first, nxt)
         plain = self._plain_expense_totals(first, nxt)
-        amounts = {'groceries': groceries['total'], 'housing': housing_sum, **plain}
+        # Personal care bought on a grocery receipt moves out of Groceries into its own category.
+        amounts = {'groceries': groceries['total'] - groceries['personal'], 'housing': housing_sum, **plain}
+        amounts['personal_care'] += groceries['personal']
         income = sum(r['amount'] for r in by_user)
         spent = sum(amounts.values())
         saved = sum(

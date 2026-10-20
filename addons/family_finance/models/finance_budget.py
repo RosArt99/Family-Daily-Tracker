@@ -11,6 +11,7 @@ class FinanceBudget(models.Model):
         'res.currency', default=lambda self: self.env.company.currency_id, required=True)
     groceries_limit = fields.Monetary(string='Groceries per month', currency_field='currency_id')
     housing_limit = fields.Monetary(string='Housing per month', currency_field='currency_id')
+    personal_care_limit = fields.Monetary(string='Personal care per month', currency_field='currency_id')
     subscriptions_limit = fields.Monetary(string='Subscriptions per month', currency_field='currency_id')
     restaurants_limit = fields.Monetary(string='Restaurants per month', currency_field='currency_id')
     clothes_limit = fields.Monetary(string='Clothes per month', currency_field='currency_id')
@@ -20,7 +21,8 @@ class FinanceBudget(models.Model):
 
     _sql_constraints = [
         ('limits_not_negative',
-         'check(groceries_limit >= 0 and housing_limit >= 0 and subscriptions_limit >= 0 '
+         'check(groceries_limit >= 0 and housing_limit >= 0 and personal_care_limit >= 0 '
+         'and subscriptions_limit >= 0 '
          'and restaurants_limit >= 0 and clothes_limit >= 0 and car_limit >= 0 '
          'and other_limit >= 0 and total_limit >= 0)',
          'A limit cannot be negative.'),
@@ -30,7 +32,7 @@ class FinanceBudget(models.Model):
     def _get_budget(self):
         return self.search([], limit=1) or self.create({})
 
-    LIMIT_KEYS = ('groceries', 'housing', 'subscriptions', 'restaurants', 'clothes', 'car', 'other', 'total')
+    LIMIT_KEYS = ('groceries', 'housing', 'personal_care', 'subscriptions', 'restaurants', 'clothes', 'car', 'other', 'total')
 
     @api.model
     def get_limits(self):

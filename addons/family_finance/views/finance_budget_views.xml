@@ -12,6 +12,7 @@
                     <group>
                         <field name="groceries_limit"/>
                         <field name="housing_limit"/>
+                        <field name="personal_care_limit"/>
                         <field name="subscriptions_limit"/>
                         <field name="restaurants_limit"/>
                         <field name="clothes_limit"/>

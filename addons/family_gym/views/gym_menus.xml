@@ -7,7 +7,7 @@
     <menuitem id="menu_gym_meals" name="Meals" parent="menu_gym_root"
               action="action_gym_meals_diary" sequence="10"/>
     <menuitem id="menu_gym_weight" name="Weight" parent="menu_gym_root"
-              action="action_gym_weight_log" sequence="20"/>
+              action="action_gym_weight_screen" sequence="20"/>
     <menuitem id="menu_gym_calendar" name="Calendar" parent="menu_gym_root"
               action="action_gym_workout" sequence="30"/>
     <menuitem id="menu_gym_exercises" name="Exercises" parent="menu_gym_root"

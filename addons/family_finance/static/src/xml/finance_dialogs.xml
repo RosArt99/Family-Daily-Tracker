@@ -26,8 +26,10 @@
                         <div class="o_fin_ui_hint" t-if="isForeign and state.amount and state.rate">
                             ≈ <b t-esc="moneyBase(baseValue)"/>
                         </div>
-                        <div class="o_fin_ui_hint" t-if="kind == 'bill' and state.household">
-                            Food <b t-esc="money(food)"/> · Household <b t-esc="money(householdValue)"/>
+                        <div class="o_fin_ui_hint" t-if="kind == 'bill' and (state.household or state.personal)">
+                            Food <b t-esc="money(food)"/>
+                            <t t-if="state.household"> · Household <b t-esc="money(householdValue)"/></t>
+                            <t t-if="state.personal"> · Personal <b t-esc="money(personalValue)"/></t>
                         </div>
                     </div>
                 </div>
@@ -148,6 +150,15 @@
                                t-att-value="state.household" t-on-input="onHouseholdInput"/>
                     </div>
                     <div class="o_fin_ui_hint">Cleaning supplies, toilet paper... The rest counts as food.</div>
+                </div>
+                <div class="o_fin_ui_card" t-if="kind == 'bill'">
+                    <div class="o_fin_ui_label">Of which personal care (hygiene)</div>
+                    <div class="o_fin_ui_inline">
+                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0.00"
+                               t-att-value="state.personal" t-on-input="onPersonalInput"/>
+                    </div>
+                    <div class="o_fin_ui_hint">Shower gel, toothpaste, deodorant... counted under Personal care, not Groceries.</div>
                 </div>
                 <div class="o_fin_ui_card" t-if="kind == 'bill'">
                     <div class="o_fin_ui_label">Store</div>

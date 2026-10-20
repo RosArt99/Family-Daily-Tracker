@@ -5,7 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { Component, onWillStart, useState } from "@odoo/owl";
-import { AddFoodDialog } from "./meals_recipes";
+import { AddFoodDialog, ProductAmountDialog } from "./meals_recipes";
 import { GroceriesPickerDialog } from "./groceries_picker";
 
 const MEAL_STYLE = {
@@ -102,23 +102,23 @@ class MealsDiary extends Component {
             meal,
             mealLabel,
             date: this.state.date,
-            onPantry: () => this.addFromPantry(meal),
+            onPantry: () => this.addFromPantry(meal, mealLabel),
             onDone: () => this.load(),
         });
     }
 
-    // Search the pantry (Groceries catalog, in-stock food first), then confirm the amount.
-    addFromPantry(meal) {
+    // Search the pantry (Groceries catalog, in-stock food first), then say how many grams you ate.
+    addFromPantry(meal, mealLabel) {
         this.dialog.add(GroceriesPickerDialog, {
             title: _t("Add food"),
             multiSelect: false,
             onSelected: ([productId]) =>
-                this.openForm(_t("Add food"), {
-                    context: {
-                        default_meal_type: meal,
-                        default_date: this.state.date,
-                        default_product_id: productId,
-                    },
+                this.dialog.add(ProductAmountDialog, {
+                    productId,
+                    meal,
+                    mealLabel,
+                    date: this.state.date,
+                    onDone: () => this.load(),
                 }),
         });
     }
@@ -131,8 +131,13 @@ class MealsDiary extends Component {
 
     editEntry(entry) {
         if (entry.recipe_id) {
-            // A recipe entry is only about how many servings you ate.
+            // A recipe entry is only about how much of it you ate.
             this.dialog.add(AddFoodDialog, { entry, onDone: () => this.load() });
+            return;
+        }
+        if (entry.product_id) {
+            // Same for a Groceries product: just the grams.
+            this.dialog.add(ProductAmountDialog, { entry, productId: entry.product_id, onDone: () => this.load() });
             return;
         }
         this.openForm(entry.name || _t("Food"), { resId: entry.id });

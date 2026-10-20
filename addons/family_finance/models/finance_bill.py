@@ -19,11 +19,20 @@ class FinanceBill(models.Model):
     household_amount = fields.Monetary(
         string='Household (non-food)', currency_field='currency_id', default=0.0,
         help='The part of the bill spent on household chemicals, toilet paper and other non-food items.')
+    # Hygiene bought on the same receipt (shower gel, toothpaste...): counted in the Personal care
+    # category of the statistics, not in Groceries.
+    personal_amount = fields.Monetary(
+        string='Personal care', currency_field='currency_id', default=0.0,
+        help='The part of the bill spent on personal hygiene products (shower gel, toothpaste, '
+             'deodorant...). It is counted under Personal care, not Groceries.')
     food_amount = fields.Monetary(
         string='Food', currency_field='currency_id', compute='_compute_food_amount', store=True)
     # The same three amounts converted to the company currency (what the statistics add up).
     total_base = fields.Monetary(
         string='Total (company currency)', currency_field='company_currency_id',
+        compute='_compute_bases', store=True)
+    personal_base = fields.Monetary(
+        string='Personal care (company currency)', currency_field='company_currency_id',
         compute='_compute_bases', store=True)
     household_base = fields.Monetary(
         string='Household (company currency)', currency_field='company_currency_id',
@@ -38,18 +47,20 @@ class FinanceBill(models.Model):
     _sql_constraints = [
         ('total_not_negative', 'check(total_amount >= 0)', 'The bill total cannot be negative.'),
         ('household_not_negative', 'check(household_amount >= 0)', 'The household part cannot be negative.'),
+        ('personal_not_negative', 'check(personal_amount >= 0)', 'The personal care part cannot be negative.'),
     ]
 
-    @api.depends('total_amount', 'household_amount')
+    @api.depends('total_amount', 'household_amount', 'personal_amount')
     def _compute_food_amount(self):
         for bill in self:
-            bill.food_amount = bill.total_amount - bill.household_amount
+            bill.food_amount = bill.total_amount - bill.household_amount - bill.personal_amount
 
-    @api.depends('total_amount', 'household_amount', 'food_amount', 'rate', 'is_foreign')
+    @api.depends('total_amount', 'household_amount', 'personal_amount', 'food_amount', 'rate', 'is_foreign')
     def _compute_bases(self):
         for bill in self:
             bill.total_base = bill._to_base(bill.total_amount)
             bill.household_base = bill._to_base(bill.household_amount)
+            bill.personal_base = bill._to_base(bill.personal_amount)
             bill.food_base = bill._to_base(bill.food_amount)
 
     @api.depends('photo_ids')
@@ -57,13 +68,13 @@ class FinanceBill(models.Model):
         for bill in self:
             bill.photo_count = len(bill.photo_ids)
 
-    @api.constrains('total_amount', 'household_amount')
-    def _check_household_within_total(self):
+    @api.constrains('total_amount', 'household_amount', 'personal_amount')
+    def _check_parts_within_total(self):
         for bill in self:
-            if bill.household_amount > bill.total_amount:
+            if bill.household_amount + bill.personal_amount > bill.total_amount:
                 raise ValidationError(
-                    'The household part (%s) cannot be more than the bill total (%s).'
-                    % (bill.household_amount, bill.total_amount))
+                    'Household (%s) and personal care (%s) together cannot be more than the bill '
+                    'total (%s).' % (bill.household_amount, bill.personal_amount, bill.total_amount))
 
     def name_get(self):
         return [(bill.id, '%s - %s' % (bill.store_id.name or 'Bill', bill.date)) for bill in self]

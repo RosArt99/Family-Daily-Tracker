@@ -30,8 +30,10 @@ their own key.
   Safari chrome).
 
 ### `family_gym` — Gym & Fit
-- **Weight**: log it by hand, or let the scale do it (see below). The graph shows both of you
-  on one line each, zoomed to your actual range — not flattened against a 0 axis.
+- **Weight**: log it by hand, or let the scale do it (see below). Last measurement, BMI and a
+  bright history chart with a period picker; switch on a **plan curve** (set your goal, age,
+  height and gym visits per week and it works out the kcal a day and draws the path to your
+  target date) and/or your partner's line on the same chart.
 - **Exercises**: pick an exercise (or type a new one to create it), log a row per set — weight
   on the left, reps on the right — and the graph tracks your heaviest set of each session.
 - **Calendar**: workouts by day/type, with exercises and sets logged right inside.
@@ -43,7 +45,7 @@ their own key.
 - **Overview**: one month at a glance - income (per person), grocery spending split into food and
   household, what is left, a 6-month trend and the plans being saved for.
 - **Expenses**: seven categories as big buttons - Groceries, Housing, Subscriptions, Restaurants,
-  Clothes, Car, Other. "+ Add expense" asks for the category first, then opens that category's
+  Personal care, Clothes, Car, Other. "+ Add expense" asks for the category first, then opens that category's
   entry window.
   - **Groceries**: just the receipt total plus how much of it was household items (cleaning
   supplies, toilet paper...); the rest counts as food. No per-product prices to type in. Pick the

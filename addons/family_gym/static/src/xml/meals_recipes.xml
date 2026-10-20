@@ -37,6 +37,20 @@
                 </div>
 
                 <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Weight of the finished dish</div>
+                    <div class="o_gym_recipe_weight o_gym_recipe_cooked">
+                        <input type="text" inputmode="decimal" t-att-value="state.cookedWeight"
+                               t-on-input="onCookedInput" aria-label="Weight of the finished dish in grams"
+                               t-att-placeholder="fmt(totals.weight)"/>
+                        <span>g</span>
+                    </div>
+                    <div class="o_gym_ui_hint">
+                        Weigh the whole pan after cooking (cooking changes the weight). Leave empty to use
+                        the ingredients' weight (<t t-esc="fmt(totals.weight)"/> g).
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
                     <div class="o_gym_ui_label">Ingredients</div>
                     <div t-if="!state.ingredients.length" class="o_gym_ui_empty">
                         Add food from your Groceries and set how much of it goes in.
@@ -69,6 +83,10 @@
                 <div class="o_gym_ui_card o_gym_recipe_nutrition" t-if="state.ingredients.length">
                     <div class="o_gym_ui_label">Per serving</div>
                     <div class="o_gym_ui_bignumber"><b t-esc="perServing.calories"/> <span>kcal</span></div>
+                    <div class="o_gym_ui_hint o_gym_serving_weight">
+                        <b><t t-esc="fmt(servingWeight)"/> g</b> per serving
+                        · <t t-esc="fmt(kcalPer100)"/> kcal / 100 g
+                    </div>
                     <div class="o_gym_ui_split">
                         <div t-foreach="macroSplit" t-as="macro" t-key="macro.key" class="o_gym_ui_split_part"
                              t-att-style="'width:' + macro.percent + '%; background:' + macro.color"/>
@@ -81,7 +99,7 @@
                     </div>
                     <div class="o_gym_ui_footnote">
                         Whole recipe: <b><t t-esc="fmt(totals.calories)"/> kcal</b>
-                        · <t t-esc="fmt(totals.weight)"/> g
+                        · <t t-esc="fmt(dishWeight)"/> g
                     </div>
                 </div>
 
@@ -144,6 +162,7 @@
                             </span>
                             <span class="o_gym_saved_macros">
                                 <b><t t-esc="fmt(recipe.per_serving.calories)"/> kcal</b> per serving
+                                (<t t-esc="fmt(recipe.serving_weight_g)"/> g)
                                 · P <t t-esc="fmt(recipe.per_serving.protein)"/>
                                 · C <t t-esc="fmt(recipe.per_serving.carbs)"/>
                                 · F <t t-esc="fmt(recipe.per_serving.fat)"/>
@@ -158,14 +177,25 @@
 
                 <!-- 3. how much did you eat -->
                 <div t-if="state.step === 'servings'" class="o_gym_addfood_servings">
-                    <div class="o_gym_ui_label">Servings eaten</div>
+                    <div class="o_gym_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.mode === 'g' }"
+                                t-on-click="() => this.setMode('g')">Grams</button>
+                        <button type="button" t-att-class="{ o_active: state.mode === 's' }"
+                                t-on-click="() => this.setMode('s')">Servings</button>
+                    </div>
+                    <div class="o_gym_ui_label" t-esc="state.mode === 'g' ? 'Grams eaten' : 'Servings eaten'"/>
                     <div class="o_gym_ui_stepper">
                         <button type="button" class="o_gym_ui_step" aria-label="Less"
-                                t-on-click="() => this.stepServings(-1)"><i class="fa fa-minus"/></button>
-                        <input type="text" inputmode="decimal" class="o_gym_ui_number"
+                                t-on-click="() => state.mode === 'g' ? this.stepGrams(-1) : this.stepServings(-1)"><i class="fa fa-minus"/></button>
+                        <input t-if="state.mode === 'g'" type="text" inputmode="decimal" class="o_gym_ui_number"
+                               t-att-value="state.grams" t-on-input="onGramsInput"/>
+                        <input t-else="" type="text" inputmode="decimal" class="o_gym_ui_number"
                                t-att-value="state.servings" t-on-input="onServingsInput"/>
                         <button type="button" class="o_gym_ui_step" aria-label="More"
-                                t-on-click="() => this.stepServings(1)"><i class="fa fa-plus"/></button>
+                                t-on-click="() => state.mode === 'g' ? this.stepGrams(1) : this.stepServings(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                    <div class="o_gym_ui_hint">
+                        = <b t-esc="equivalent"/> · 1 serving = <t t-esc="fmt(servingWeight)"/> g
                     </div>
                     <div class="o_gym_ui_bignumber"><b t-esc="preview.calories"/> <span>kcal</span></div>
                     <div class="o_gym_ui_legend">
@@ -173,9 +203,52 @@
                         <span><i class="o_gym_ui_dot" style="background:#f0a30a"/> Carbs <b><t t-esc="preview.carbs"/> g</b></span>
                         <span><i class="o_gym_ui_dot" style="background:#ef7b5d"/> Fat <b><t t-esc="preview.fat"/> g</b></span>
                     </div>
+                    <div class="o_gym_ui_hint">
+                        <t t-esc="fmt(state.recipe.per_100g.calories)"/> kcal per 100 g of this dish
+                    </div>
                     <p t-if="state.recipe.description" class="o_gym_addfood_desc" t-esc="state.recipe.description"/>
                     <button type="button" class="btn btn-primary o_gym_addfood_confirm"
-                            t-att-disabled="state.busy or servingsEaten lte 0" t-on-click="confirm">
+                            t-att-disabled="state.busy or gramsEaten lte 0" t-on-click="confirm">
+                        <t t-if="props.entry">Save</t>
+                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+    <!-- ===================== "From Groceries": grams eaten ===================== -->
+    <t t-name="family_gym.ProductAmountDialog">
+        <Dialog title="title" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
+            <div class="o_gym_addfood">
+                <div class="o_gym_addfood_servings o_gym_product_amount">
+                    <img class="o_gym_product_thumb" alt="" t-att-src="imageUrl()"/>
+                    <div class="o_gym_ui_label">Grams eaten</div>
+                    <div class="o_gym_ui_stepper">
+                        <button type="button" class="o_gym_ui_step" aria-label="Less"
+                                t-on-click="() => this.stepGrams(-1)"><i class="fa fa-minus"/></button>
+                        <input type="text" inputmode="decimal" class="o_gym_ui_number"
+                               t-att-value="state.grams" t-on-input="onGramsInput"/>
+                        <button type="button" class="o_gym_ui_step" aria-label="More"
+                                t-on-click="() => this.stepGrams(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                    <div class="o_gym_ui_chips o_gym_product_presets">
+                        <button t-foreach="presets" t-as="preset" t-key="preset" type="button" class="o_gym_ui_chip"
+                                t-att-class="{ o_active: gramsEaten === preset }"
+                                t-on-click="() => this.setGrams(preset)"><t t-esc="preset"/> g</button>
+                    </div>
+                    <div class="o_gym_ui_bignumber"><b t-esc="preview.calories"/> <span>kcal</span></div>
+                    <div class="o_gym_ui_legend">
+                        <span><i class="o_gym_ui_dot" style="background:#1e88e5"/> Protein <b><t t-esc="preview.protein"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#f0a30a"/> Carbs <b><t t-esc="preview.carbs"/> g</b></span>
+                        <span><i class="o_gym_ui_dot" style="background:#ef7b5d"/> Fat <b><t t-esc="preview.fat"/> g</b></span>
+                    </div>
+                    <div class="o_gym_ui_hint">
+                        <t t-if="noNutrition"><i class="fa fa-exclamation-triangle"/> No nutrition data for this product in Groceries yet</t>
+                        <t t-else=""><t t-esc="fmt(state.product.energy_kcal_100g)"/> kcal per 100 g (from Groceries)</t>
+                    </div>
+                    <button type="button" class="btn btn-primary o_gym_addfood_confirm"
+                            t-att-disabled="state.busy or gramsEaten lte 0" t-on-click="confirm">
                         <t t-if="props.entry">Save</t>
                         <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
                     </button>

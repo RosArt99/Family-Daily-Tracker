@@ -78,6 +78,7 @@
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click o_fin_card">
+                            <span t-if="record.category.raw_value == 'personal_care'" class="o_fin_card_icon o_fin_icon_personal_care"><i class="fa fa-shower" title="Personal care"/></span>
                             <span t-if="record.category.raw_value == 'subscriptions'" class="o_fin_card_icon o_fin_icon_subscriptions"><i class="fa fa-repeat" title="Subscriptions"/></span>
                             <span t-if="record.category.raw_value == 'restaurants'" class="o_fin_card_icon o_fin_icon_restaurants"><i class="fa fa-cutlery" title="Restaurants"/></span>
                             <span t-if="record.category.raw_value == 'clothes'" class="o_fin_card_icon o_fin_icon_clothes"><i class="fa fa-tag" title="Clothes"/></span>
@@ -139,6 +140,15 @@
 
     <!-- One action per category: the Expenses landing page (finance_expenses.js) opens these.
          default_category pre-selects the category for "New". -->
+    <record id="action_finance_expense_personal_care" model="ir.actions.act_window">
+        <field name="name">Personal care</field>
+        <field name="res_model">finance.expense</field>
+        <field name="view_mode">kanban,tree,graph,form</field>
+        <field name="domain">[('category', '=', 'personal_care')]</field>
+        <field name="context">{'default_category': 'personal_care'}</field>
+        <field name="search_view_id" ref="view_finance_expense_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No personal care expenses yet</p></field>
+    </record>
     <record id="action_finance_expense_subscriptions" model="ir.actions.act_window">
         <field name="name">Subscriptions</field>
         <field name="res_model">finance.expense</field>

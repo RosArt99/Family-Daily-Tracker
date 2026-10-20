@@ -983,3 +983,523 @@ $gym-fat: #ef7b5d;
         margin-right: 2px;
     }
 }
+
+// Recipe form: the "finished dish weight" input (own styles: the ingredient-row ones are scoped
+// to the rows).
+.o_gym_recipe_cooked {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+
+    input {
+        width: 130px;
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        outline: 0;
+        text-align: right;
+        font-size: 20px;
+        font-weight: 700;
+
+        &:focus {
+            border-color: var(--fam-color, #c41e3f);
+        }
+    }
+
+    span {
+        color: #6c757d;
+        font-size: 18px;
+    }
+
+    + .o_gym_ui_hint {
+        margin-top: 8px;
+        text-align: left;
+    }
+}
+
+.o_gym_addfood_servings .o_gym_ui_hint {
+    margin: 6px 0 8px;
+}
+
+.o_gym_serving_weight {
+    margin: 2px 0 10px;
+}
+
+// "From Groceries" amount screen: the product photo on top, quick gram presets under the stepper.
+.o_gym_product_amount {
+    .o_gym_product_thumb {
+        display: block;
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 8px;
+        border-radius: 12px;
+        background: #f5f6f8;
+        object-fit: contain;
+    }
+
+    .o_gym_product_presets {
+        justify-content: center;
+        margin: 10px 0 4px;
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Weight screen (weight_screen.js): rounded cards, pills, a bright chart. Same language as
+// Finance / Groceries.
+// ---------------------------------------------------------------------------------------------
+$gw-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+$gw-gradient: linear-gradient(135deg, var(--fam-color, #c41e3f), var(--fam-color-lighter, #e03557));
+$gw-rose: #fff4f6;
+$gw-good: #1fa56a;
+$gw-bad: #d9534f;
+
+.o_gw {
+    position: relative;
+    height: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 14px 14px 110px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.o_gw_card {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: $gw-shadow;
+    text-align: left;
+}
+
+.o_gw_card_title {
+    margin-bottom: 4px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.o_gw_muted {
+    color: #7c6a70;
+    font-size: 13px;
+}
+
+.o_gw_hint {
+    color: #7c6a70;
+    font-size: 13px;
+}
+
+.o_gw_last {
+    background: $gw-gradient;
+    color: #fff;
+
+    .o_gw_muted {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .o_gw_last_row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+    }
+
+    .o_gw_big {
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1.1;
+
+        small {
+            font-size: 20px;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+    }
+
+    .o_gw_delta {
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.22);
+        font-size: 14px;
+        font-weight: 700;
+    }
+}
+
+// ---- BMI ----
+.o_gw_bmi_head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+
+    .o_gw_card_title {
+        margin: 0;
+    }
+}
+
+.o_gw_bmi_bar {
+    position: relative;
+    display: flex;
+    height: 10px;
+    margin: 0 2px;
+    border-radius: 999px;
+    background: #eee;
+
+    .o_gw_bmi_band {
+        height: 100%;
+
+        &:first-of-type {
+            border-radius: 999px 0 0 999px;
+        }
+
+        &:last-of-type {
+            border-radius: 0 999px 999px 0;
+        }
+    }
+
+    .o_gw_bmi_marker {
+        position: absolute;
+        top: -7px;
+        width: 14px;
+        height: 14px;
+        margin-left: -7px;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        background: #343a40;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    }
+}
+
+.o_gw_bmi_ticks {
+    position: relative;
+    height: 18px;
+    margin: 6px 2px 0;
+    color: #7c6a70;
+    font-size: 12px;
+
+    span {
+        position: absolute;
+        transform: translateX(-50%);
+    }
+}
+
+// ---- plan ----
+.o_gw_plan {
+    .o_gw_plan_head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .o_gw_plan_head .o_gw_card_title {
+        margin: 0;
+    }
+
+    .o_gw_plan_line {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 6px 0 2px;
+        font-size: 18px;
+    }
+
+    .o_gw_status {
+        display: inline-block;
+        margin: 4px 0;
+        padding: 2px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+
+        &.o_good {
+            background: #dff5ea;
+            color: #167a4d;
+        }
+
+        &.o_bad {
+            background: #fde4e3;
+            color: #a3302d;
+        }
+    }
+}
+
+.o_gw_warning {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #fff3d6;
+    color: #8a5a00;
+    font-size: 13px;
+}
+
+.o_gw_plan_cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 2px dashed #e9b9c3;
+    background: $gw-rose;
+    color: #7a1f33;
+
+    .o_gw_plan_cta_icon {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: $gw-gradient;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .o_gw_plan_cta_text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        span {
+            color: #9a6a76;
+            font-size: 13px;
+        }
+    }
+}
+
+// ---- pills ----
+.o_gw_pill {
+    padding: 6px 16px;
+    border: 2px solid #f0d3da;
+    border-radius: 999px;
+    background: #fff;
+    color: #7a1f33;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &.o_small {
+        padding: 3px 12px;
+        font-size: 13px;
+    }
+
+    &.o_active {
+        border-color: transparent;
+        background: $gw-gradient;
+        color: #fff;
+    }
+
+    &.o_toggle:not(.o_active) {
+        opacity: 0.6;
+    }
+}
+
+// ---- chart card ----
+.o_gw_chart_card {
+    background: linear-gradient(180deg, #fff, $gw-rose);
+}
+
+.o_gw_chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 6px 0 10px;
+}
+
+.o_gw_stats {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 8px;
+    color: #7c6a70;
+    font-size: 14px;
+
+    b {
+        margin-left: 3px;
+        color: #2b1a1f;
+        font-size: 16px;
+    }
+}
+
+.o_gw_canvas_wrap {
+    position: relative;
+    height: 270px;
+    border-radius: 12px;
+    background: #fff;
+
+    canvas {
+        width: 100% !important;
+    }
+
+    .o_gw_empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9a6a76;
+        pointer-events: none;
+    }
+}
+
+.o_gw_legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 8px;
+
+    .o_gw_legend_item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #fff;
+        font-weight: 700;
+        box-shadow: $gw-shadow;
+    }
+
+    .o_gw_pill.o_toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+}
+
+.o_gw_dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.o_gw_line {
+    display: inline-block;
+    width: 18px;
+    height: 0;
+    border-top: 3px dashed $gw-good;
+}
+
+.o_gw_pill.o_active .o_gw_line {
+    border-top-color: #fff;
+}
+
+.o_gw_range {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #7c6a70;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    input {
+        padding: 6px 10px;
+        border: 2px solid #f0d3da;
+        border-radius: 12px;
+        background: #fff;
+        color: #2b1a1f;
+    }
+}
+
+.o_gw_link {
+    display: block;
+    margin: 0 auto 16px;
+    padding: 6px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--fam-color, #c41e3f);
+    font-weight: 700;
+}
+
+// round "+" like on the phone scale apps
+.o_gw_fab {
+    position: fixed;
+    right: 20px;
+    bottom: 110px;
+    z-index: 5;
+    width: 58px;
+    height: 58px;
+    border: 0;
+    border-radius: 50%;
+    background: $gw-gradient;
+    color: #fff;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+// ---- plan dialog ----
+.o_gw_hero_headline {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.o_gw_two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+
+    input[type="date"] {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .o_gym_ui_card {
+        margin-bottom: 12px;
+    }
+}
+
+.o_gw_input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    outline: 0;
+    background: #f5f6f8;
+    font-size: 20px;
+    font-weight: 700;
+
+    &:focus {
+        box-shadow: 0 0 0 2px rgba(196, 30, 63, 0.35);
+    }
+}
+
+.o_gym_ui_number.o_static {
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+    border-bottom: 0;
+}
+
+.o_gw_finish_hint {
+    margin: -4px 4px 12px;
+    text-align: left;
+}
+
+.o_gw_check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 0;
+    font-weight: 600;
+
+    input {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.o_gw_clear {
+    display: block;
+    margin: 4px auto 0;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #fde4e3;
+    color: #a3302d;
+    font-weight: 700;
+}

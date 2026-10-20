@@ -7,13 +7,14 @@ from odoo import api, fields, models
 EXPENSE_CATEGORIES = {
     'groceries': ('Groceries', 'fa-shopping-basket'),
     'housing': ('Housing', 'fa-home'),
+    'personal_care': ('Personal care', 'fa-shower'),
     'subscriptions': ('Subscriptions', 'fa-repeat'),
     'restaurants': ('Restaurants', 'fa-cutlery'),
     'clothes': ('Clothes', 'fa-tag'),
     'car': ('Car', 'fa-car'),
     'other': ('Other', 'fa-ellipsis-h'),
 }
-PLAIN_CATEGORIES = ('subscriptions', 'restaurants', 'clothes', 'car', 'other')
+PLAIN_CATEGORIES = ('personal_care', 'subscriptions', 'restaurants', 'clothes', 'car', 'other')
 
 
 class FinanceExpense(models.Model):

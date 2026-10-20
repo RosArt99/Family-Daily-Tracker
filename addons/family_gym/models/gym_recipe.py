@@ -22,6 +22,13 @@ class GymRecipe(models.Model):
     user_id = fields.Many2one(
         'res.users', string='Author', default=lambda self: self.env.user, required=True, index=True)
     servings = fields.Integer(string='Servings', default=1, required=True)
+    # What the finished dish weighs. Cooking changes the weight (water leaves cutlets, rice drinks
+    # it), and the scale at the table shows the cooked weight - so per-100 g nutrition has to be
+    # worked out against that. 0 = not weighed: the ingredients' own weights are used instead.
+    cooked_weight_g = fields.Float(
+        string='Finished dish weight (g)',
+        help='Weigh the whole pan/pot after cooking. Leave 0 to use the sum of the ingredients.')
+    total_weight_g = fields.Float(compute='_compute_totals', store=True)
     ingredient_ids = fields.One2many('gym.recipe.ingredient', 'recipe_id', string='Ingredients')
     # Whole-recipe totals; per-serving values are these divided by `servings`.
     calories = fields.Float(compute='_compute_totals', store=True)
@@ -34,7 +41,7 @@ class GymRecipe(models.Model):
     ]
 
     @api.depends(
-        'ingredient_ids.quantity_g', 'ingredient_ids.product_id.energy_kcal_100g',
+        'cooked_weight_g', 'ingredient_ids.quantity_g', 'ingredient_ids.product_id.energy_kcal_100g',
         'ingredient_ids.product_id.proteins_100g', 'ingredient_ids.product_id.carbohydrates_100g',
         'ingredient_ids.product_id.fat_100g')
     def _compute_totals(self):
@@ -48,6 +55,7 @@ class GymRecipe(models.Model):
                 carbs += product.carbohydrates_100g * factor
                 fat += product.fat_100g * factor
             recipe.calories, recipe.proteins, recipe.carbs, recipe.fat = calories, proteins, carbs, fat
+            recipe.total_weight_g = recipe.cooked_weight_g or sum(recipe.ingredient_ids.mapped('quantity_g'))
 
     def _per_serving(self):
         self.ensure_one()
@@ -55,6 +63,21 @@ class GymRecipe(models.Model):
         return {
             'calories': self.calories / n, 'protein': self.proteins / n,
             'carbs': self.carbs / n, 'fat': self.fat / n,
+        }
+
+    def _serving_weight(self):
+        """Grams in one serving (the finished dish split evenly)."""
+        self.ensure_one()
+        return (self.total_weight_g or 0.0) / max(self.servings, 1)
+
+    def _per_100g(self):
+        """Nutrition of 100 g of the finished dish - what grams eaten are multiplied by."""
+        self.ensure_one()
+        weight = self.total_weight_g
+        factor = 100.0 / weight if weight else 0.0
+        return {
+            'calories': self.calories * factor, 'protein': self.proteins * factor,
+            'carbs': self.carbs * factor, 'fat': self.fat * factor,
         }
 
     # ------------------------------------------------------------------ API for the Meals UI
@@ -68,6 +91,9 @@ class GymRecipe(models.Model):
             'description': self.description or '',
             'servings': self.servings,
             'per_serving': {key: round(value, 1) for key, value in per.items()},
+            'per_100g': {key: round(value, 1) for key, value in self._per_100g().items()},
+            'total_weight_g': round(self.total_weight_g, 1),
+            'serving_weight_g': round(self._serving_weight(), 1),
             'ingredient_count': len(self.ingredient_ids),
             'owner': self.user_id.name,
             'mine': self.user_id == self.env.user,
@@ -88,6 +114,8 @@ class GymRecipe(models.Model):
         if not recipe:
             raise UserError(_('This recipe no longer exists.'))
         data = recipe._card()
+        data['cooked_weight_g'] = recipe.cooked_weight_g
+        data['raw_weight_g'] = round(sum(recipe.ingredient_ids.mapped('quantity_g')), 1)
         data['ingredients'] = [{
             'product_id': line.product_id.id,
             'name': line.product_id.name,
@@ -106,6 +134,9 @@ class GymRecipe(models.Model):
         servings = int(data.get('servings') or 0)
         if servings < 1:
             raise UserError(_('A recipe makes at least one serving.'))
+        cooked = float(data.get('cooked_weight_g') or 0)
+        if cooked < 0:
+            raise UserError(_('The weight of the dish cannot be negative.'))
         lines = [
             (0, 0, {'product_id': int(line['product_id']), 'quantity_g': float(line['quantity_g'])})
             for line in data.get('ingredients') or []
@@ -116,6 +147,7 @@ class GymRecipe(models.Model):
             'name': name,
             'description': (data.get('description') or '').strip() or False,
             'servings': servings,
+            'cooked_weight_g': cooked,
             'ingredient_ids': [(5, 0, 0)] + lines,
         }
         if data.get('id'):

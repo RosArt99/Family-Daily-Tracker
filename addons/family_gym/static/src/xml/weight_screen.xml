@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================== Weight screen ============================== -->
+    <t t-name="family_gym.WeightScreen">
+        <div class="o_gw" t-if="state.data">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- Last measurement -->
+            <div class="o_gw_card o_gw_last">
+                <div class="o_gw_card_title">Last measurement</div>
+                <t t-if="last">
+                    <div class="o_gw_last_row">
+                        <span class="o_gw_big"><t t-esc="fmt(last.weight)"/> <small>kg</small></span>
+                        <span t-if="last.delta" t-attf-class="o_gw_delta #{deltaClass}">
+                            <i t-attf-class="fa #{last.delta &lt; 0 ? 'fa-arrow-down' : 'fa-arrow-up'}" role="img" title="Change"/>
+                            <t t-esc="fmt(Math.abs(last.delta))"/> kg
+                        </span>
+                    </div>
+                    <div class="o_gw_muted" t-esc="prettyDate(last.date)"/>
+                </t>
+                <div t-else="" class="o_gw_muted">No weigh-ins yet. Tap + to add the first one.</div>
+            </div>
+
+            <!-- BMI -->
+            <div class="o_gw_card" t-if="bmi">
+                <div class="o_gw_bmi_head">
+                    <span class="o_gw_card_title">BMI</span>
+                    <b><t t-esc="bmi.value"/>, <t t-esc="bmi.label"/></b>
+                </div>
+                <div class="o_gw_bmi_bar">
+                    <span t-foreach="bmiBands" t-as="band" t-key="band_index" class="o_gw_bmi_band"
+                          t-att-style="'width:' + band.width + '%; background:' + band.color"/>
+                    <i class="o_gw_bmi_marker" t-att-style="'left:' + bmi.position + '%'"/>
+                </div>
+                <div class="o_gw_bmi_ticks">
+                    <span t-foreach="bmiTicks" t-as="tick" t-key="tick.value" t-att-style="'left:' + tick.position + '%'" t-esc="tick.value"/>
+                </div>
+            </div>
+            <div class="o_gw_card o_gw_hint" t-elif="last">
+                <i class="fa fa-info-circle" role="img" title="Info"/> Add your height in the weight plan to see your BMI.
+            </div>
+
+            <!-- Plan status / call to action -->
+            <div class="o_gw_card o_gw_plan" t-if="plan">
+                <div class="o_gw_plan_head">
+                    <span class="o_gw_card_title">My plan</span>
+                    <button type="button" class="o_gw_pill o_small" t-on-click="openPlan"><i class="fa fa-pencil" role="img" title="Edit"/> Edit</button>
+                </div>
+                <div class="o_gw_plan_line">
+                    <b><t t-esc="fmt(plan.start_weight)"/> → <t t-esc="fmt(plan.target_weight)"/> kg</b>
+                    <span class="o_gw_muted">by <t t-esc="prettyDate(plan.target_date)"/></span>
+                </div>
+                <div t-if="planStatus" t-attf-class="o_gw_status #{planStatus.cls}" t-esc="planStatus.text"/>
+                <div class="o_gw_muted">
+                    About <b><t t-esc="plan.recommended_kcal"/> kcal</b> a day
+                    (you burn ~<t t-esc="plan.tdee_kcal"/>) · <t t-esc="fmt(Math.abs(plan.weekly_change))"/> kg a week
+                </div>
+                <div t-foreach="plan.warnings" t-as="warning" t-key="warning_index" class="o_gw_warning">
+                    <i class="fa fa-exclamation-triangle" role="img" title="Warning"/> <t t-esc="warning"/>
+                </div>
+            </div>
+            <button t-else="" type="button" class="o_gw_card o_gw_plan_cta" t-on-click="openPlan">
+                <span class="o_gw_plan_cta_icon"><i class="fa fa-flag-checkered" role="img" title="Plan"/></span>
+                <span class="o_gw_plan_cta_text">
+                    <b>Set a weight plan</b>
+                    <span>Pick a goal and a date: we draw the curve to follow</span>
+                </span>
+                <i class="fa fa-chevron-right" role="img" title="Open"/>
+            </button>
+
+            <!-- History chart -->
+            <div class="o_gw_card o_gw_chart_card">
+                <div class="o_gw_card_title">History</div>
+
+                <div class="o_gw_chips">
+                    <button t-foreach="presets" t-as="preset" t-key="preset.key" type="button" class="o_gw_pill"
+                            t-att-class="{ o_active: state.preset === preset.key }"
+                            t-on-click="() => this.setPreset(preset.key)" t-esc="preset.label"/>
+                </div>
+
+                <div class="o_gw_stats">
+                    <span>Min <b t-esc="fmt(d.stats.min)"/></span>
+                    <span>Avg <b t-esc="fmt(d.stats.avg)"/></span>
+                    <span>Max <b t-esc="fmt(d.stats.max)"/></span>
+                </div>
+
+                <div class="o_gw_canvas_wrap">
+                    <canvas t-ref="canvas"/>
+                    <div t-if="!d.mine.length" class="o_gw_empty">No weigh-ins in this period</div>
+                </div>
+
+                <!-- what to show -->
+                <div class="o_gw_legend">
+                    <span class="o_gw_legend_item o_fixed"><i class="o_gw_dot" style="background:#d81f4a"/> Me</span>
+                    <button t-if="plan" type="button" class="o_gw_pill o_toggle" t-att-class="{ o_active: state.showPlan }"
+                            t-on-click="togglePlan">
+                        <i class="o_gw_line o_dashed"/> Plan
+                    </button>
+                    <button t-if="others.length" type="button" class="o_gw_pill o_toggle" t-att-class="{ o_active: state.showOthers }"
+                            t-on-click="toggleOthers">
+                        <i class="o_gw_dot" style="background:#2f7fd6"/> <t t-esc="othersLabel"/>
+                    </button>
+                </div>
+
+                <div class="o_gw_range">
+                    <label>From <input type="date" t-att-value="state.from" t-on-change="onFromInput"/></label>
+                    <label>To <input type="date" t-att-value="state.to" t-on-change="onToInput"/></label>
+                </div>
+            </div>
+
+            <button type="button" class="o_gw_link" t-on-click="openAll">
+                All weigh-ins <i class="fa fa-chevron-right" role="img" title="Open"/>
+            </button>
+
+            <button type="button" class="o_gw_fab" aria-label="Add weight" t-on-click="addWeight">
+                <i class="fa fa-plus" role="img" title="Add weight"/>
+            </button>
+        </div>
+    </t>
+
+    <!-- ============================== Weight plan dialog ============================== -->
+    <t t-name="family_gym.WeightPlanDialog">
+        <Dialog title="'Weight plan'" size="'md'" contentClass="'o_gym_entry_dialog o_gw_plan_dialog'">
+            <div class="o_gym_ui_form">
+                <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
+
+                <div class="o_gym_ui_hero">
+                    <span class="o_gym_ui_hero_icon"><i class="fa fa-flag-checkered" role="img" title="Plan"/></span>
+                    <div class="o_gym_ui_hero_text">
+                        <label>Your goal</label>
+                        <div class="o_gw_hero_headline" t-esc="headline"/>
+                        <div t-if="ready" class="o_gym_ui_hint">
+                            <t t-esc="plan.start_weight"/> → <t t-esc="plan.target_weight"/> kg by
+                            <b t-esc="prettyDate(plan.target_date)"/><t t-if="plan.date_suggested"> (suggested date)</t>
+                        </div>
+                        <div t-else="" class="o_gym_ui_hint" t-esc="missingText"/>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Sex</div>
+                    <div class="o_gym_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.sex === 'male' }" t-on-click="() => this.setSex('male')">Male</button>
+                        <button type="button" t-att-class="{ o_active: state.sex === 'female' }" t-on-click="() => this.setSex('female')">Female</button>
+                    </div>
+                </div>
+
+                <div class="o_gw_two">
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Age</div>
+                        <input type="text" inputmode="numeric" class="o_gw_input" placeholder="years"
+                               t-att-value="state.age" t-on-input="(ev) => this.onNumber(ev, 'age')"/>
+                    </div>
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Height</div>
+                        <input type="text" inputmode="numeric" class="o_gw_input" placeholder="cm"
+                               t-att-value="state.height" t-on-input="(ev) => this.onNumber(ev, 'height')"/>
+                    </div>
+                </div>
+
+                <div class="o_gym_ui_card">
+                    <div class="o_gym_ui_label">Gym visits per week</div>
+                    <div class="o_gym_ui_stepper">
+                        <button type="button" class="o_gym_ui_step" aria-label="Fewer" t-on-click="() => this.stepDays(-1)"><i class="fa fa-minus"/></button>
+                        <span class="o_gym_ui_number o_static" t-esc="state.days"/>
+                        <button type="button" class="o_gym_ui_step" aria-label="More" t-on-click="() => this.stepDays(1)"><i class="fa fa-plus"/></button>
+                    </div>
+                </div>
+
+                <div class="o_gw_two">
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Current weight</div>
+                        <input type="text" inputmode="decimal" class="o_gw_input" placeholder="kg"
+                               t-att-value="state.startWeight" t-on-input="(ev) => this.onNumber(ev, 'startWeight')"/>
+                    </div>
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Target weight</div>
+                        <input type="text" inputmode="decimal" class="o_gw_input" placeholder="kg"
+                               t-att-value="state.targetWeight" t-on-input="(ev) => this.onNumber(ev, 'targetWeight')"/>
+                    </div>
+                </div>
+
+                <div class="o_gw_two">
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Start</div>
+                        <input type="date" class="o_gym_ui_date" t-model="state.startDate" t-on-change="changed"/>
+                    </div>
+                    <div class="o_gym_ui_card">
+                        <div class="o_gym_ui_label">Finish</div>
+                        <input type="date" class="o_gym_ui_date" t-model="state.targetDate" t-on-change="changed"/>
+                    </div>
+                </div>
+                <div class="o_gym_ui_hint o_gw_finish_hint">Leave Finish empty and a sensible date is suggested.</div>
+
+                <div class="o_gym_ui_card o_gw_preview" t-if="ready">
+                    <div class="o_gym_ui_label">The plan</div>
+                    <div class="o_gym_ui_bignumber"><b t-esc="plan.recommended_kcal"/> <span>kcal / day</span></div>
+                    <div class="o_gym_ui_hint">
+                        You burn about <b t-esc="plan.tdee_kcal"/> kcal a day, so that is
+                        <b><t t-esc="Math.abs(plan.daily_change_kcal)"/> kcal <t t-esc="plan.daily_change_kcal &lt; 0 ? 'below' : 'above'"/></b> it:
+                        about <b><t t-esc="Math.abs(plan.weekly_change)"/> kg</b> a week for <t t-esc="plan.weeks"/> weeks.
+                    </div>
+                    <div t-foreach="plan.warnings" t-as="warning" t-key="warning_index" class="o_gw_warning">
+                        <i class="fa fa-exclamation-triangle" role="img" title="Warning"/> <t t-esc="warning"/>
+                    </div>
+                    <label class="o_gw_check">
+                        <input type="checkbox" t-model="state.setCalories"/> Use it as my daily calorie goal
+                    </label>
+                </div>
+
+                <button t-if="state.hadPlan" type="button" class="o_gw_clear" t-on-click="clear">
+                    <i class="fa fa-trash-o" title="Remove"/> Remove the plan
+                </button>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving or !ready" t-on-click="save">Save plan</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

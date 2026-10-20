@@ -41,6 +41,7 @@ export class RecipeFormDialog extends Component {
             name: "",
             description: "",
             servings: "1",
+            cookedWeight: "",
             ingredients: [],
             error: "",
             saving: false,
@@ -51,6 +52,7 @@ export class RecipeFormDialog extends Component {
                 this.state.name = recipe.name;
                 this.state.description = recipe.description;
                 this.state.servings = String(recipe.servings);
+                this.state.cookedWeight = recipe.cooked_weight_g ? String(recipe.cooked_weight_g) : "";
                 this.state.ingredients = recipe.ingredients.map((line) =>
                     this.makeIngredient(line.product_id, line.name, line.quantity_g, line.per100)
                 );
@@ -148,6 +150,25 @@ export class RecipeFormDialog extends Component {
         return total;
     }
 
+    onCookedInput(ev) {
+        const cleaned = ev.target.value.replace(/[^\d.,]/g, "");
+        ev.target.value = cleaned;
+        this.state.cookedWeight = cleaned;
+    }
+
+    // What the finished dish weighs: the weight typed after cooking, else the ingredients' own.
+    get dishWeight() {
+        return num(this.state.cookedWeight) || this.totals.weight;
+    }
+
+    get servingWeight() {
+        return this.dishWeight / this.servingsCount;
+    }
+
+    get kcalPer100() {
+        return this.dishWeight ? (this.totals.calories / this.dishWeight) * 100 : 0;
+    }
+
     get perServing() {
         const total = this.totals;
         const n = this.servingsCount;
@@ -203,6 +224,7 @@ export class RecipeFormDialog extends Component {
                     name: state.name,
                     description: state.description,
                     servings: this.servingsCount,
+                    cooked_weight_g: num(state.cookedWeight),
                     ingredients: state.ingredients.map((line) => ({
                         product_id: line.product_id,
                         quantity_g: num(line.quantity),
@@ -243,6 +265,12 @@ export class AddFoodDialog extends Component {
             search: "",
             recipes: [],
             recipe: null,
+            // How the amount is typed in: grams off the kitchen scale (default) or servings.
+            mode: "g",
+            // Which of the two fields the person actually typed: the other one is derived from it,
+            // so flipping the tabs back and forth never drifts through rounding.
+            driver: "g",
+            grams: "",
             servings: this.props.entry ? String(this.props.entry.servings) : "1",
             busy: false,
         });
@@ -252,6 +280,7 @@ export class AddFoodDialog extends Component {
                 this.state.recipe = await this.orm.call("gym.recipe", "get_recipe", [
                     this.props.entry.recipe_id,
                 ]);
+                this.state.grams = String(Math.round(this.props.entry.quantity_g));
             }
         });
     }
@@ -319,52 +348,208 @@ export class AddFoodDialog extends Component {
     pick(recipe) {
         this.state.recipe = recipe;
         this.state.servings = "1";
+        // Start from one serving's weight: a small correction is then a couple of taps.
+        this.state.grams = String(Math.round(recipe.serving_weight_g));
+        this.state.mode = "g";
+        this.state.driver = "g";
         this.state.step = "servings";
     }
 
-    // ---- servings eaten (halves allowed) ----
+    // ---- how much was eaten: grams (default) or servings (halves allowed) ----
+    get servingWeight() {
+        return this.state.recipe.serving_weight_g;
+    }
+
+    get gramsEaten() {
+        return this.state.driver === "g" ? num(this.state.grams) : num(this.state.servings) * this.servingWeight;
+    }
+
     get servingsEaten() {
-        return num(this.state.servings);
+        if (this.state.driver === "s") {
+            return num(this.state.servings);
+        }
+        return this.servingWeight ? num(this.state.grams) / this.servingWeight : 0;
+    }
+
+    // The other way of saying the same amount ("= 1.85 servings" / "= 325 g").
+    get equivalent() {
+        return this.state.mode === "g"
+            ? `${Math.round(this.servingsEaten * 100) / 100} ${_t("servings")}`
+            : `${Math.round(this.gramsEaten)} g`;
+    }
+
+    setMode(mode) {
+        if (mode === this.state.mode) {
+            return;
+        }
+        // Show the derived value in the tab that was not typed into.
+        if (mode === "g" && this.state.driver === "s") {
+            this.state.grams = String(Math.round(this.gramsEaten));
+        } else if (mode === "s" && this.state.driver === "g") {
+            this.state.servings = String(Math.round(this.servingsEaten * 100) / 100);
+        }
+        this.state.mode = mode;
+    }
+
+    onGramsInput(ev) {
+        const cleaned = ev.target.value.replace(/[^\d.,]/g, "");
+        ev.target.value = cleaned;
+        this.state.grams = cleaned;
+        this.state.driver = "g";
+    }
+
+    stepGrams(delta) {
+        this.state.grams = String(Math.max(0, Math.round(this.gramsEaten + delta * 10)));
+        this.state.driver = "g";
     }
 
     onServingsInput(ev) {
         const cleaned = ev.target.value.replace(/[^\d.,]/g, "");
         ev.target.value = cleaned;
         this.state.servings = cleaned;
+        this.state.driver = "s";
     }
 
     stepServings(delta) {
         this.state.servings = String(Math.max(0.5, this.servingsEaten + delta * 0.5));
+        this.state.driver = "s";
     }
 
+    // Nutrition of what was eaten: per 100 g of the finished dish x grams.
     get preview() {
-        const per = this.state.recipe.per_serving;
-        const n = this.servingsEaten;
+        const per = this.state.recipe.per_100g;
+        const f = this.gramsEaten / 100;
         return {
-            calories: fmt(per.calories * n),
-            protein: fmt(per.protein * n),
-            carbs: fmt(per.carbs * n),
-            fat: fmt(per.fat * n),
+            calories: fmt(per.calories * f),
+            protein: fmt(per.protein * f),
+            carbs: fmt(per.carbs * f),
+            fat: fmt(per.fat * f),
         };
     }
 
     async confirm() {
-        if (this.servingsEaten <= 0) {
+        if (this.gramsEaten <= 0) {
+            return;
+        }
+        this.state.busy = true;
+        // Send what was actually typed (grams or servings), not a converted number.
+        const amount = this.state.driver === "g" ? { grams: this.gramsEaten } : { servings: this.servingsEaten };
+        try {
+            if (this.props.entry) {
+                await this.orm.call("gym.meal_log", "set_recipe_amount", [[this.props.entry.id]], amount);
+            } else {
+                await this.orm.call(
+                    "gym.meal_log",
+                    "log_recipe",
+                    [this.state.recipe.id, this.props.meal, this.props.date],
+                    amount
+                );
+            }
+            this.props.onDone();
+            this.props.close();
+        } finally {
+            this.state.busy = false;
+        }
+    }
+}
+
+// "From Groceries": how many grams of a product did you eat. Same look as the recipe's amount
+// screen (big number, +/- 10 g, kcal and macros updating live), but the nutrition is simply the
+// product's per-100 g values from Groceries - no servings, it is not a dish.
+export class ProductAmountDialog extends Component {
+    static template = "family_gym.ProductAmountDialog";
+    static components = { Dialog };
+    static props = {
+        productId: Number,
+        meal: { type: String, optional: true },
+        mealLabel: { type: String, optional: true },
+        date: { type: String, optional: true },
+        // Editing the grams of a product entry that is already in the diary.
+        entry: { type: Object, optional: true },
+        onDone: Function,
+        close: Function,
+    };
+
+    setup() {
+        this.orm = useService("orm");
+        this.presets = [50, 100, 150, 200];
+        this.state = useState({
+            product: null,
+            grams: this.props.entry ? String(Math.round(this.props.entry.quantity_g)) : "100",
+            busy: false,
+        });
+        onWillStart(async () => {
+            const [product] = await this.orm.read("groceries.product", [this.props.productId], [
+                "name",
+                "energy_kcal_100g",
+                "proteins_100g",
+                "carbohydrates_100g",
+                "fat_100g",
+            ]);
+            this.state.product = product;
+        });
+    }
+
+    get title() {
+        return this.state.product.name;
+    }
+
+    get gramsEaten() {
+        return num(this.state.grams);
+    }
+
+    get noNutrition() {
+        const p = this.state.product;
+        return !(p.energy_kcal_100g || p.proteins_100g || p.carbohydrates_100g || p.fat_100g);
+    }
+
+    get preview() {
+        const p = this.state.product;
+        const f = this.gramsEaten / 100;
+        return {
+            calories: fmt(p.energy_kcal_100g * f),
+            protein: fmt(p.proteins_100g * f),
+            carbs: fmt(p.carbohydrates_100g * f),
+            fat: fmt(p.fat_100g * f),
+        };
+    }
+
+    fmt(value) {
+        return fmt(value);
+    }
+
+    imageUrl() {
+        return `/web/image/groceries.product/${this.props.productId}/image/128x128`;
+    }
+
+    onGramsInput(ev) {
+        const cleaned = ev.target.value.replace(/[^\d.,]/g, "");
+        ev.target.value = cleaned;
+        this.state.grams = cleaned;
+    }
+
+    stepGrams(delta) {
+        this.state.grams = String(Math.max(0, Math.round(this.gramsEaten + delta * 10)));
+    }
+
+    setGrams(value) {
+        this.state.grams = String(value);
+    }
+
+    async confirm() {
+        if (this.gramsEaten <= 0) {
             return;
         }
         this.state.busy = true;
         try {
             if (this.props.entry) {
-                await this.orm.call("gym.meal_log", "set_servings", [
-                    [this.props.entry.id],
-                    this.servingsEaten,
-                ]);
+                await this.orm.call("gym.meal_log", "set_product_grams", [[this.props.entry.id], this.gramsEaten]);
             } else {
-                await this.orm.call("gym.meal_log", "log_recipe", [
-                    this.state.recipe.id,
+                await this.orm.call("gym.meal_log", "log_product", [
+                    this.props.productId,
                     this.props.meal,
                     this.props.date,
-                    this.servingsEaten,
+                    this.gramsEaten,
                 ]);
             }
             this.props.onDone();

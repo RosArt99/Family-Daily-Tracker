@@ -49,6 +49,8 @@ export const KINDS = {
         amountField: null,
     },
     // The plain expense categories all live in finance.expense, told apart by `category`.
+    personal_care: expenseKind("personal_care", _t("Personal care"), "fa-shower", _t("Shower gel, toothpaste..."),
+        ["Shower gel", "Toothpaste", "Shampoo", "Deodorant", "Cosmetics", "Pharmacy"]),
     subscriptions: expenseKind("subscriptions", _t("Subscription"), "fa-repeat", _t("Netflix, Spotify, phone..."),
         ["Netflix", "Spotify", "YouTube", "iCloud", "Phone", "Gym pass"]),
     restaurants: expenseKind("restaurants", _t("Restaurant"), "fa-cutlery", _t("Where did you eat?"), []),
@@ -65,7 +67,7 @@ function expenseKind(category, title, icon, placeholder, presets) {
     };
 }
 
-export const EXPENSE_KINDS = ["subscriptions", "restaurants", "clothes", "car", "other"];
+export const EXPENSE_KINDS = ["personal_care", "subscriptions", "restaurants", "clothes", "car", "other"];
 
 // Which dialog handles which model (finance_views.js uses this to take over "New" / card click).
 // finance.expense is not here: its kind depends on the record's category.
@@ -82,6 +84,8 @@ export const CATEGORIES = [
       icon: "fa-shopping-basket", action: "family_finance.action_finance_bill" },
     { key: "housing", kind: "housing", label: _t("Housing"), hint: _t("Rent & utilities"),
       icon: "fa-home", action: "family_finance.action_finance_housing" },
+    { key: "personal_care", kind: "personal_care", label: _t("Personal care"), hint: _t("Hygiene & body care"),
+      icon: "fa-shower", action: "family_finance.action_finance_expense_personal_care" },
     { key: "subscriptions", kind: "subscriptions", label: _t("Subscriptions"), hint: _t("Streaming, phone, memberships"),
       icon: "fa-repeat", action: "family_finance.action_finance_expense_subscriptions" },
     { key: "restaurants", kind: "restaurants", label: _t("Restaurants"), hint: _t("Eating out, cafés, delivery"),
@@ -188,6 +192,7 @@ export class FinanceEntryDialog extends Component {
             rateNote: "",
             amount: "",
             household: "",
+            personal: "",
             storeText: "",
             stores: [],
             date: this.props.kind === "plan" ? "" : todayString(),
@@ -329,6 +334,7 @@ export class FinanceEntryDialog extends Component {
         }
         if (this.kind === "bill") {
             state.household = rec.household_amount ? shown(rec.household_amount) : "";
+            state.personal = rec.personal_amount ? shown(rec.personal_amount) : "";
             state.storeText = rec.store_id ? rec.store_id[1] : "";
         }
         if (this.isExpense) {
@@ -436,6 +442,10 @@ export class FinanceEntryDialog extends Component {
         this.state.household = decimalOnly(ev);
     }
 
+    onPersonalInput(ev) {
+        this.state.personal = decimalOnly(ev);
+    }
+
     get hasPhotos() {
         return this.kind === "bill" || this.kind === "housing" || this.isExpense;
     }
@@ -455,8 +465,12 @@ export class FinanceEntryDialog extends Component {
         return num(this.state.household);
     }
 
+    get personalValue() {
+        return num(this.state.personal);
+    }
+
     get food() {
-        return Math.max(num(this.state.amount) - num(this.state.household), 0);
+        return Math.max(num(this.state.amount) - num(this.state.household) - num(this.state.personal), 0);
     }
 
     money(value) {
@@ -556,15 +570,16 @@ export class FinanceEntryDialog extends Component {
                     throw new Error(_t("Enter the bill total."));
                 }
                 const household = num(state.household);
-                if (household > amount) {
-                    throw new Error(_t("The household part can't be more than the bill total."));
+                const personal = num(state.personal);
+                if (household + personal > amount) {
+                    throw new Error(_t("Household and personal care together can't be more than the bill total."));
                 }
                 let storeId = this.selectedStore ? this.selectedStore.id : false;
                 if (!storeId && this.typedStore) {
                     [storeId] = await this.orm.create("finance.store", [{ name: this.typedStore }]);
                 }
                 return {
-                    total_amount: amount, household_amount: household, store_id: storeId,
+                    total_amount: amount, household_amount: household, personal_amount: personal, store_id: storeId,
                     date: state.date, user_id: state.userId, notes, photo_ids: this.photoCommands(),
                     ...this.currencyVals(),
                 };
@@ -664,6 +679,7 @@ export class FinanceEntryDialog extends Component {
 export const LIMIT_ROWS = [
     ["groceries", _t("Groceries per month")],
     ["housing", _t("Housing per month")],
+    ["personal_care", _t("Personal care per month")],
     ["subscriptions", _t("Subscriptions per month")],
     ["restaurants", _t("Restaurants per month")],
     ["clothes", _t("Clothes per month")],

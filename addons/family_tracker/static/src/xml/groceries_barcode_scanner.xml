@@ -34,9 +34,7 @@
                 </t>
             </div>
 
-            <div t-if="!isFindMode" class="o_groceries_count">
-                <div class="o_groceries_count_label">Quantity</div>
-                <div class="o_groceries_count_hint">packs in this scan</div>
+            <div t-if="!isFindMode" class="o_groceries_count" title="Packs in this scan">
                 <div class="o_groceries_count_stepper">
                     <button type="button" class="o_groceries_count_step" aria-label="Fewer"
                             t-on-click="() => this.stepCount(-1)">−</button>

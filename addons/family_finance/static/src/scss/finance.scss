@@ -415,6 +415,11 @@ body.o_family_theme .o_fin_kanban .o_kanban_record {
             color: #94650a;
         }
 
+        &.o_fin_chip_personal {
+            background: #d8f3f7;
+            color: #07707d;
+        }
+
         &.o_fin_chip_source {
             background: #e3f0f9;
             color: #2a6f9c;
@@ -1007,6 +1012,7 @@ $fin-over: #dc3545;
 // ---------------------------------------------------------------------------------------------
 $fin-cat-groceries: linear-gradient(135deg, #cf5f14, #f08a3c);
 $fin-cat-housing: linear-gradient(135deg, #2d78a6, #5fa8d6);
+$fin-cat-personal_care: linear-gradient(135deg, #0aa5b8, #4fd1e0);
 $fin-cat-subscriptions: linear-gradient(135deg, #6f42c1, #9b6fe0);
 $fin-cat-restaurants: linear-gradient(135deg, #c0392b, #e8665a);
 $fin-cat-clothes: linear-gradient(135deg, #c2185b, #ec5f98);
@@ -1028,6 +1034,7 @@ $fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
 
     &.o_fin_cat_groceries { background: $fin-cat-groceries; }
     &.o_fin_cat_housing { background: $fin-cat-housing; }
+    &.o_fin_cat_personal_care { background: $fin-cat-personal_care; }
     &.o_fin_cat_subscriptions { background: $fin-cat-subscriptions; }
     &.o_fin_cat_restaurants { background: $fin-cat-restaurants; }
     &.o_fin_cat_clothes { background: $fin-cat-clothes; }
@@ -1100,6 +1107,7 @@ $fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
 
         &.o_fin_exp_groceries { background: $fin-cat-groceries; }
         &.o_fin_exp_housing { background: $fin-cat-housing; }
+        &.o_fin_exp_personal_care { background: $fin-cat-personal_care; }
         &.o_fin_exp_subscriptions { background: $fin-cat-subscriptions; }
         &.o_fin_exp_restaurants { background: $fin-cat-restaurants; }
         &.o_fin_exp_clothes { background: $fin-cat-clothes; }
@@ -1140,6 +1148,7 @@ $fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
 
 // Kanban card icons for the plain expense categories
 .o_fin_card .o_fin_card_icon {
+    &.o_fin_icon_personal_care { background: $fin-cat-personal_care; }
     &.o_fin_icon_subscriptions { background: $fin-cat-subscriptions; }
     &.o_fin_icon_restaurants { background: $fin-cat-restaurants; }
     &.o_fin_icon_clothes { background: $fin-cat-clothes; }
