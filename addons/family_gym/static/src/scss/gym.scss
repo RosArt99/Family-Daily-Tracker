@@ -2,9 +2,12 @@
 // remaining/consumed, one card per meal with a "+" button.
 
 .o_gym_diary {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     max-width: 640px;
     margin: 0 auto;
-    padding: 12px 12px 24px;
+    padding: 12px 12px 110px;
 
     .o_gym_diary_day {
         display: flex;

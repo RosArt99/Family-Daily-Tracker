@@ -3,6 +3,8 @@
     <t t-name="family_gym.MealsDiary">
         <div class="o_gym_diary" t-if="state.data">
 
+            <div class="o_gym_diary">
+
             <!-- day navigation -->
             <div class="o_gym_diary_day">
                 <button type="button" class="o_gym_diary_nav" t-on-click="() => this.shift(-1)" aria-label="Previous day">
