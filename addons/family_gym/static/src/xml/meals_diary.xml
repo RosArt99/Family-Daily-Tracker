@@ -2,8 +2,8 @@
 <templates xml:space="preserve">
     <t t-name="family_gym.MealsDiary">
         <div class="o_gym_diary" t-if="state.data">
-
-            <div class="o_gym_diary">
+                <t t-name="family_gym.MealsDiary">
+                    <div class="o_gym_diary" t-if="state.data">
 
             <!-- day navigation -->
             <div class="o_gym_diary_day">
