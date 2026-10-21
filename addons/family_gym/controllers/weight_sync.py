@@ -1,7 +1,9 @@
 import logging
-from datetime import datetime, timezone
+import re
+from datetime import timezone
 
 import pytz
+from dateutil import parser as dateparser
 
 from odoo import fields, http
 from odoo.http import request
@@ -11,6 +13,26 @@ _logger = logging.getLogger(__name__)
 API_KEY_SCOPE = 'family_scale'
 LB_TO_KG = 0.45359237
 MIN_KG, MAX_KG = 20.0, 300.0
+
+
+def parse_aware(value):
+    """An ISO 8601-looking date/time from a phone Shortcut as an aware datetime.
+
+    Shortcuts are not always tidy: a stray space or newline around the value, an offset written
+    `+0200` or ` +02:00` (with a space), fractional seconds of any length. Python 3.10's
+    `fromisoformat` refuses all of those, so this cleans the value and uses dateutil. Several
+    dates at once (a whole list of Health samples was passed instead of one) is refused clearly.
+    Raises ValueError, whose message says what was received."""
+    text = str(value).strip()
+    if '\n' in text or '\r' in text:
+        raise ValueError('several dates were sent (%r) - the Shortcut must pass ONE sample '
+                         '(Find Health Samples: Limit 1)' % text[:60])
+    text = re.sub(r'\s+([+-]\d{2}(?::?\d{2})?|Z)$', r'\1', text)   # "... +02:00" -> "...+02:00"
+    text = re.sub(r'^(\d{4}-\d{2}-\d{2})\s+(?=\d)', r'\1T', text)  # "2026-10-21 11:37" -> "...T11:37"
+    try:
+        return dateparser.isoparse(text)
+    except (ValueError, OverflowError):
+        raise ValueError('could not read %r as an ISO 8601 date' % text[:60])
 
 
 def user_from_api_key():
@@ -55,9 +77,9 @@ class GymWeightSyncController(http.Controller):
 
         try:
             measured_at, day = self._parse_time(payload.get('measured_at'))
-        except ValueError:
-            return self._reply(
-                {'error': 'measured_at must be ISO 8601, e.g. 2026-09-21T07:30:00+02:00.'}, 400)
+        except ValueError as error:
+            return self._reply({'error': 'measured_at must be ISO 8601, e.g. '
+                                         '2026-09-21T07:30:00+02:00 (%s).' % error}, 400)
 
         WeightLog = request.env['gym.weight_log']
         domain = [('user_id', '=', uid), ('source', '=', 'scale')]
@@ -80,7 +102,7 @@ class GymWeightSyncController(http.Controller):
         """Return (naive UTC datetime or False, local date). No value -> today, no dedup key."""
         if not value:
             return False, fields.Date.context_today(request.env.user.with_context(tz=request.env.user.tz))
-        dt = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+        dt = parse_aware(value)
         if dt.tzinfo is None:  # naive: assume the user's own timezone
             dt = pytz.timezone(request.env.user.tz or 'UTC').localize(dt)
         return dt.astimezone(timezone.utc).replace(tzinfo=None), dt.date()
