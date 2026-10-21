@@ -36,8 +36,9 @@ their own key.
   target date) and/or your partner's line on the same chart.
 - **Exercises**: one day at a time, like the Meals diary. Log an exercise right at the top
   (pick or type a new one, a row per set: weight and reps), mark that you were at the gym, and
-  see the whole month as a calendar of squares: green on days you trained, labelled Legs / Upper
-  / Back / Cardio from what you did. A progress chart follows any exercise's best set.
+  mark the day as a **Gym Day** and pick one or more kinds of training (Legs / Upper / Back / Cardio / Full body) even without logging
+  exercises, and see the whole month as a calendar of squares: green on days you trained, labelled
+  with the type (or the muscle groups of the exercises you did). A progress chart follows any exercise's best set.
 - **Meals**: a food diary (breakfast/lunch/dinner/snacks) with calories and macros pulled from
   the product catalog. "+" on a meal offers Groceries, My Saved Food and **Restaurants**: McDonald's,
   KFC, Burger King, Subway and Berlin Döner Kebap with their Polish menus (logos, kcal and macros

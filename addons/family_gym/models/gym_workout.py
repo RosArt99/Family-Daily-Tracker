@@ -4,7 +4,8 @@ from odoo import api, fields, models
 
 from .gym_exercise import MUSCLE_GROUPS
 
-WORKOUT_TYPES = [t for t in MUSCLE_GROUPS if t[0] not in ('core',)] + [('full_body', 'Full Body')]
+WORKOUT_TYPES = [t for t in MUSCLE_GROUPS if t[0] not in ('core',)] + [
+    ('upper', 'Upper'), ('full_body', 'Full Body')]
 
 
 class GymWorkout(models.Model):
@@ -19,6 +20,9 @@ class GymWorkout(models.Model):
     duration_min = fields.Integer(string='Duration (min)')
     notes = fields.Text(help='Free text, e.g. "pressed 120 kg on legs - new personal record".')
     # Filled in by the club Wi-Fi automation (see wifi_event): when you joined/left its network.
+    # Several kinds of training in one day (Legs + Cardio): keys of WORKOUT_TYPES, comma-separated.
+    # `workout_type` keeps the first of them (and 'other' when there is none) for the old views.
+    workout_types = fields.Char(string='Types', help='e.g. "legs,cardio"')
     source = fields.Selection([('manual', 'Manual'), ('wifi', 'Club Wi-Fi')], default='manual', required=True)
     check_in = fields.Datetime()
     check_out = fields.Datetime()
@@ -85,3 +89,35 @@ class GymWorkout(models.Model):
             return {'status': 'dropped', 'minutes': minutes}
         workout.write({'check_out': moment, 'duration_min': minutes})
         return {'status': 'updated', 'id': workout.id, 'minutes': minutes}
+
+    def day_types(self):
+        """The kinds of training of this workout as a list of keys: the multi-select field, or -
+        for workouts made before it existed - the single `workout_type`."""
+        self.ensure_one()
+        keys = [key for key in (self.workout_types or '').split(',') if key]
+        if not keys and self.workout_type and self.workout_type != 'other':
+            keys = [self.workout_type]
+        # Chest / shoulders / arms are all "Upper" now; fold old values into it, without repeats.
+        folded = []
+        for key in keys:
+            key = 'upper' if key in ('chest', 'shoulders', 'arms') else key
+            if key not in folded:
+                folded.append(key)
+        return folded
+
+    @api.model
+    def toggle_type(self, day, workout_type):
+        """Tap a type on the Exercises screen: add it to that day's kinds of training, or take it
+        off again. Choosing one marks the day as a gym visit; removing the last keeps the visit."""
+        target = fields.Date.to_date(day) or fields.Date.context_today(self)
+        if workout_type not in dict(self._fields['workout_type'].selection) or workout_type == 'other':
+            return []
+        workout = self.search([('user_id', '=', self.env.uid), ('date', '=', target)], limit=1)
+        keys = workout.day_types() if workout else []
+        keys = [k for k in keys if k != workout_type] if workout_type in keys else keys + [workout_type]
+        vals = {'workout_types': ','.join(keys), 'workout_type': keys[0] if keys else 'other'}
+        if workout:
+            workout.write(vals)
+        else:
+            self.create(dict(vals, date=target))
+        return keys

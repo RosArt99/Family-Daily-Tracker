@@ -20,6 +20,14 @@ const MUSCLE_GROUPS = [
     ["cardio", _t("Cardio")],
     ["other", _t("Other")],
 ];
+// What kind of training the day was (the calendar square says it); several can be chosen.
+const DAY_TYPES = [
+    ["legs", _t("Legs")],
+    ["upper", _t("Upper")],
+    ["back", _t("Back")],
+    ["cardio", _t("Cardio")],
+    ["full_body", _t("Full body")],
+];
 const WEEKDAYS = [_t("Mon"), _t("Tue"), _t("Wed"), _t("Thu"), _t("Fri"), _t("Sat"), _t("Sun")];
 
 function pad(n) {
@@ -76,6 +84,7 @@ export class GymExercises extends Component {
         this.chart = null;
         this.nextKey = 1;
         this.weekdays = WEEKDAYS;
+        this.dayTypes = DAY_TYPES;
         this.muscleGroups = MUSCLE_GROUPS;
         this.state = useState({
             data: null,
@@ -174,7 +183,7 @@ export class GymExercises extends Component {
                 iso,
                 day,
                 visit: Boolean(info),
-                label: tags.slice(0, 2).join("/"),
+                label: tags.slice(0, 3).join("/"),
                 today: iso === data.today,
                 selected: iso === data.day,
                 future: iso > data.today,
@@ -185,6 +194,22 @@ export class GymExercises extends Component {
 
     get isFuture() {
         return this.state.data.day > this.state.data.today;
+    }
+
+    // The kinds of training chosen for the selected day (old chest/shoulders/arms workouts count as
+    // "Upper"). Several can be on at once: Legs + Cardio.
+    get dayTypeKeys() {
+        return this.state.data.workout_types;
+    }
+
+    isDayType(key) {
+        return this.dayTypeKeys.includes(key);
+    }
+
+    // Tap a type to add it, tap it again to take it off (the visit itself stays).
+    async toggleDayType(key) {
+        await this.orm.call("gym.workout", "toggle_type", [this.state.data.day, key]);
+        await this.load();
     }
 
     async toggleVisit() {

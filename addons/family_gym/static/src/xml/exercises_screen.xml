@@ -20,9 +20,15 @@
                 <button type="button" class="o_gw_pill" t-att-class="{ o_active: d.visit }"
                         t-att-disabled="d.entries.length > 0" t-on-click="toggleVisit">
                     <i t-attf-class="fa #{d.visit ? 'fa-check-circle' : 'fa-circle-o'}" role="img" title="Gym visit"/>
-                    <t t-if="d.visit">At the gym<t t-if="d.visit_minutes"> · <t t-esc="d.visit_minutes"/> min</t></t><t t-else="">I was at the gym</t>
+                    Gym Day<t t-if="d.visit and d.visit_minutes"> · <t t-esc="d.visit_minutes"/> min</t>
                 </button>
                 <span t-if="d.entries.length" class="o_gw_muted">counted from the exercises below</span>
+            </div>
+            <!-- what kind of training it was -->
+            <div class="o_ge_types">
+                <button t-foreach="dayTypes" t-as="type" t-key="type[0]" type="button" class="o_gw_pill o_small"
+                        t-att-class="{ o_active: isDayType(type[0]) }"
+                        t-on-click="() => this.toggleDayType(type[0])" t-esc="type[1]"/>
             </div>
 
             <!-- log an exercise (what the "+ Add" window used to do) -->

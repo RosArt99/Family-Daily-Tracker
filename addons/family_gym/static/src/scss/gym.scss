@@ -1861,3 +1861,11 @@ $gw-bad: #d9534f;
         }
     }
 }
+
+// Day type chips (Legs / Upper / Back / Cardio...) under the "At the gym" button.
+.o_ge_types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -2px 0 12px;
+}

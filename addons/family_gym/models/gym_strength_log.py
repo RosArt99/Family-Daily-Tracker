@@ -8,7 +8,7 @@ from odoo.exceptions import UserError
 # exercises done (or the type picked on an old workout). Chest/shoulders/arms are all "Upper".
 TAG_BY_GROUP = {
     'legs': 'Legs', 'back': 'Back', 'cardio': 'Cardio', 'core': 'Core',
-    'chest': 'Upper', 'shoulders': 'Upper', 'arms': 'Upper', 'full_body': 'Full body',
+    'chest': 'Upper', 'shoulders': 'Upper', 'arms': 'Upper', 'upper': 'Upper', 'full_body': 'Full body',
 }
 
 
@@ -71,9 +71,10 @@ class GymStrengthLog(models.Model):
             if tag and tag not in tags:
                 tags.append(tag)
         for workout in workouts:
-            tag = TAG_BY_GROUP.get(workout.workout_type)
-            if tag and tag not in tags:
-                tags.append(tag)
+            for key in workout.day_types():
+                tag = TAG_BY_GROUP.get(key)
+                if tag and tag not in tags:
+                    tags.append(tag)
         return tags
 
     def _entry_dict(self):
@@ -126,6 +127,7 @@ class GymStrengthLog(models.Model):
             'days': days,
             'visit': bool(entries or workout),
             'has_workout': bool(workout),
+            'workout_types': workout.day_types() if workout else [],
             'visit_minutes': workout.duration_min if workout else 0,
             'entries': [entry._entry_dict() for entry in entries],
             'exercises': [
