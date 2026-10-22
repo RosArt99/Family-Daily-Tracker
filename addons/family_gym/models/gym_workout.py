@@ -19,7 +19,8 @@ class GymWorkout(models.Model):
     workout_type = fields.Selection(WORKOUT_TYPES, string='Type', default='chest', required=True)
     duration_min = fields.Integer(string='Duration (min)')
     notes = fields.Text(help='Free text, e.g. "pressed 120 kg on legs - new personal record".')
-    # Filled in by the club Wi-Fi automation (see wifi_event): when you joined/left its network.
+    # check_in is filled in by the club Wi-Fi automation (see wifi_event). check_out / duration_min
+    # only hold old visits from when "leave" was tracked; nothing writes them any more.
     # Several kinds of training in one day (Legs + Cardio): keys of WORKOUT_TYPES, comma-separated.
     # `workout_type` keeps the first of them (and 'other' when there is none) for the old views.
     workout_types = fields.Char(string='Types', help='e.g. "legs,cardio"')
@@ -58,37 +59,24 @@ class GymWorkout(models.Model):
         self.create({'date': target, 'workout_type': 'other'})
         return True
 
-    # Joining the club Wi-Fi also happens just walking past it in the mall corridor; a stay shorter
-    # than this does not count (and is dropped if nothing was logged meanwhile).
-    MIN_VISIT_MINUTES = 15
-
     @api.model
     def wifi_event(self, event, moment):
-        """Handle "joined / left the club Wi-Fi" at `moment` (naive UTC) for the current user.
-        The first join of a day starts the visit; each leave updates its length; a stay under
-        MIN_VISIT_MINUTES with no exercises logged is removed again."""
+        """Handle "joined the club Wi-Fi" at `moment` (naive UTC) for the current user: the first
+        join of a day starts the visit, later ones (the signal flaps on a weak connection) change
+        nothing. "leave" is ignored: the Wi-Fi drops by itself while the phone lies on the gym
+        floor, so it says nothing about leaving, and the visit length is no longer tracked."""
+        if event != 'join':
+            return {'status': 'ignored', 'reason': 'only "join" is used'}
         tz = pytz.timezone(self.env.user.tz or 'UTC')
         day = pytz.utc.localize(moment).astimezone(tz).date()
         workout = self.search([('user_id', '=', self.env.uid), ('date', '=', day)], limit=1)
-        if event == 'join':
-            if not workout:
-                workout = self.create({
-                    'date': day, 'workout_type': 'other', 'source': 'wifi', 'check_in': moment})
-                return {'status': 'created', 'id': workout.id, 'date': fields.Date.to_string(day)}
-            if not workout.check_in:
-                workout.check_in = moment
-            return {'status': 'exists', 'id': workout.id, 'date': fields.Date.to_string(day)}
-        # leave
-        if not workout or not workout.check_in:
-            return {'status': 'ignored', 'reason': 'no visit started today'}
-        minutes = max(int((moment - workout.check_in).total_seconds() // 60), 0)
-        has_exercises = self.env['gym.strength_log'].search_count(
-            [('user_id', '=', self.env.uid), ('date', '=', day)])
-        if workout.source == 'wifi' and minutes < self.MIN_VISIT_MINUTES and not has_exercises:
-            workout.unlink()
-            return {'status': 'dropped', 'minutes': minutes}
-        workout.write({'check_out': moment, 'duration_min': minutes})
-        return {'status': 'updated', 'id': workout.id, 'minutes': minutes}
+        if not workout:
+            workout = self.create({
+                'date': day, 'workout_type': 'other', 'source': 'wifi', 'check_in': moment})
+            return {'status': 'created', 'id': workout.id, 'date': fields.Date.to_string(day)}
+        if not workout.check_in:
+            workout.check_in = moment
+        return {'status': 'exists', 'id': workout.id, 'date': fields.Date.to_string(day)}
 
     def day_types(self):
         """The kinds of training of this workout as a list of keys: the multi-select field, or -

@@ -15,9 +15,10 @@ class GymVisitSyncController(http.Controller):
     """Gym visits from the iPhone, driven by the club's Wi-Fi (the gym is inside a mall, so
     a location trigger would fire for the whole mall - the club's network name does not).
 
-    Two Shortcuts automations call this with the same personal API key as the weight sync:
+    One Shortcuts automation calls this with the same personal API key as the weight sync:
       "When I join <club Wi-Fi>"   ->  POST /gym/visit  {"event": "join"}
-      "When I leave <club Wi-Fi>"  ->  POST /gym/visit  {"event": "leave"}
+    "leave" is still accepted (old automations) but ignored: on a weak signal the phone drops
+    off the Wi-Fi again and again, so it does not mean the visit is over.
     `at` (ISO 8601) is optional; without it the server's clock is used.
     """
 

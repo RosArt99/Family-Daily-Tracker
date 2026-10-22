@@ -79,11 +79,12 @@ their own key.
 See [`weight_sync.py`](addons/family_gym/controllers/weight_sync.py) for the endpoint.
 
 ### Gym visits from the club Wi-Fi
-The gym is inside a mall, so a location trigger would fire for the whole mall. Instead two iPhone
-Shortcuts automations watch the club's Wi-Fi: *When I join it* → `POST /gym/visit {"event":"join"}`,
-*When I leave it* → `{"event":"leave"}` (same personal API key as the weight sync). The first join
-of a day starts the visit, leaving stores its length, and a stay under 15 minutes with no exercises
-logged is dropped (walking past the club). Green squares in Exercises light up by themselves.
+The gym is inside a mall, so a location trigger would fire for the whole mall. Instead an iPhone
+Shortcuts automation watches the club's Wi-Fi: *When I join it* → `POST /gym/visit {"event":"join"}`
+(same personal API key as the weight sync). The first join of a day starts the visit; further joins
+the same day change nothing. There is no "leave" automation: on a weak signal the phone drops off
+the Wi-Fi again and again, so leaving was unreliable (the server ignores `"leave"` if an old
+automation still sends it), and the visit length is not tracked. Green squares in Exercises light up by themselves.
 See [`visit_sync.py`](addons/family_gym/controllers/visit_sync.py).
 
 ## Running it
