@@ -5,6 +5,7 @@ import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { useDebounced } from "@web/core/utils/timing";
+import { BarcodeScanDialog } from "@family_tracker/js/barcode_scan_dialog";
 
 // A product picker styled like Shopping List & Stock's List cards (same o_gs_card classes from
 // family_tracker, so it also inherits whichever app's theme colour is active) instead of the
@@ -24,6 +25,8 @@ export class GroceriesPickerDialog extends Component {
 
     setup() {
         this.orm = useService("orm");
+        this.dialog = useService("dialog");
+        this.notification = useService("notification");
         this.state = useState({ search: "", inStockOnly: true, products: [], selected: [] });
         this.searchDebounced = useDebounced(() => this.load(), 250);
         onWillStart(() => this.load());
@@ -38,7 +41,8 @@ export class GroceriesPickerDialog extends Component {
         // hard-excluded, not a toggle, since there's no legitimate reason to see them here.
         const domain = [["is_food", "=", true]];
         if (this.state.search.trim()) {
-            domain.push(["name", "ilike", this.state.search.trim()]);
+            // Typed digits find a product by barcode too, not only by name.
+            domain.push("|", ["name", "ilike", this.state.search.trim()], ["barcode", "=", this.state.search.trim()]);
         }
         if (this.state.inStockOnly) {
             domain.push(["stock_quantity", ">", 0]);
@@ -54,6 +58,38 @@ export class GroceriesPickerDialog extends Component {
     onSearchInput(ev) {
         this.state.search = ev.target.value;
         this.searchDebounced();
+    }
+
+    // The camera finds the pack in your hand, so it does not matter whether the product is
+    // "in stock" - a scanned product is picked straight away.
+    scanBarcode() {
+        this.dialog.add(BarcodeScanDialog, { onScan: (barcode) => this.onScanned(barcode) });
+    }
+
+    async onScanned(barcode) {
+        const [product] = await this.orm.searchRead(
+            "groceries.product", [["barcode", "=", barcode]], ["name", "is_food"], { limit: 1 }
+        );
+        if (!product) {
+            this.notification.add(_t("No product with barcode %s in Groceries yet.", barcode), { type: "warning" });
+            return;
+        }
+        if (!product.is_food) {
+            this.notification.add(_t("%s is not a food product.", product.name), { type: "warning" });
+            return;
+        }
+        if (!this.props.multiSelect) {
+            this.props.onSelected([product.id]);
+            this.props.close();
+            return;
+        }
+        // Several products can be ticked: tick this one and show it in the list.
+        if (!this.state.selected.includes(product.id)) {
+            this.state.selected = [...this.state.selected, product.id];
+        }
+        this.state.search = product.name;
+        this.state.inStockOnly = false;
+        await this.load();
     }
 
     toggleInStock() {

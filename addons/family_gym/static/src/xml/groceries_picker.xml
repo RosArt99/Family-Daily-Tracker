@@ -7,6 +7,10 @@
                 <div class="o_gs_picker_toolbar">
                     <input type="search" class="o_gs_picker_search" placeholder="Search products..."
                            t-att-value="state.search" t-on-input="onSearchInput"/>
+                    <button type="button" class="o_gs_picker_scan" title="Scan barcode" aria-label="Scan barcode"
+                            t-on-click="scanBarcode">
+                        <i class="fa fa-barcode"/>
+                    </button>
                     <button type="button" class="o_gs_picker_filter" t-att-class="{'o_active': state.inStockOnly}"
                             t-on-click="toggleInStock">
                         <t t-if="state.inStockOnly">In Stock</t>

@@ -935,6 +935,17 @@ $gym-fat: #ef7b5d;
         box-shadow: $gym-card-shadow;
     }
 
+    .o_gs_picker_scan {
+        flex: none;
+        width: 44px;
+        border: 0;
+        border-radius: 12px;
+        background: $gym-gradient-light;
+        color: #fff;
+        font-size: 20px;
+        box-shadow: $gym-card-shadow;
+    }
+
     .o_gs_picker_filter {
         flex: none;
         padding: 0 14px;

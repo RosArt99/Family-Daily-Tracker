@@ -42,7 +42,8 @@ their own key.
 - **Meals**: a food diary (breakfast/lunch/dinner/snacks) with calories and macros pulled from
   the product catalog. "+" on a meal offers Groceries, My Saved Food and **Restaurants**: McDonald's,
   KFC, Burger King, Subway and Berlin Döner Kebap with their Polish menus (logos, kcal and macros
-  per portion, menu combos).
+  per portion, menu combos). In the Groceries picker the barcode button scans a pack with the
+  camera (or typed digits find it by barcode) and goes straight to "how many grams".
 - **Goals**: personal targets per person.
 
 ### `family_finance` — Finance

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="family_tracker.BarcodeScanDialog">
+        <Dialog title="title" size="'md'" footer="false">
+            <div class="o_groceries_scan_dialog">
+                <div t-if="isCameraSupported" class="o_groceries_viewfinder">
+                    <canvas t-ref="canvas"/>
+                    <div t-if="state.cameraActive" class="o_groceries_scan_line"/>
+                    <video t-ref="video" muted="true" autoplay="true" playsinline="true" webkit-playsinline="true"
+                           style="position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
+                </div>
+                <div t-else="" class="alert alert-warning">
+                    Camera scanning isn't supported in this browser. Type the barcode below.
+                </div>
+
+                <div t-if="isCameraSupported" class="o_groceries_camera_row">
+                    <button t-if="!state.cameraActive" type="button" class="o_groceries_camera_btn o_start"
+                            t-att-disabled="state.starting" t-on-click="startCamera">
+                        <i class="fa fa-camera"/> Start Camera
+                    </button>
+                    <div t-else="" class="o_groceries_find_hint flex-grow-1 m-0">
+                        <i class="fa fa-barcode me-1"/> Hold the barcode inside the frame.
+                    </div>
+                    <button type="button" t-attf-class="o_groceries_torch_btn #{state.torchOn ? 'o_on' : ''}"
+                            t-att-disabled="!state.cameraActive or !state.torchSupported"
+                            t-on-click="toggleTorch">
+                        <i class="fa fa-bolt"/> Flashlight
+                    </button>
+                </div>
+
+                <form t-on-submit="onManualSubmit" class="o_groceries_manual">
+                    <input type="text" inputmode="numeric" class="o_groceries_manual_input"
+                           placeholder="Enter barcode manually" t-model="state.manualBarcode"/>
+                    <button type="submit" class="o_groceries_manual_btn">Find</button>
+                </form>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>
