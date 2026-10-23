@@ -1,6 +1,6 @@
 {
     'name': 'Family Gym & Fit',
-    'version': '17.0.1.12.0',
+    'version': '17.0.1.13.0',
     'category': 'Productivity',
     'summary': 'Workout calendar, strength & weight progress and meal/calorie log for the family',
     'author': 'Ros',

@@ -40,10 +40,14 @@ their own key.
   exercises, and see the whole month as a calendar of squares: green on days you trained, labelled
   with the type (or the muscle groups of the exercises you did). A progress chart follows any exercise's best set.
 - **Meals**: a food diary (breakfast/lunch/dinner/snacks) with calories and macros pulled from
-  the product catalog. "+" on a meal offers Groceries, My Saved Food and **Restaurants**: McDonald's,
-  KFC, Burger King, Subway and Berlin Döner Kebap with their Polish menus (logos, kcal and macros
-  per portion, menu combos). In the Groceries picker the barcode button scans a pack with the
-  camera (or typed digits find it by barcode) and goes straight to "how many grams".
+  the product catalog; every food shows its protein / carbs / fat (P: C: F:) so you can see where
+  the totals came from. "+" on a meal offers Groceries (with a barcode-scan button), My Saved Food
+  and **Restaurants**: McDonald's, KFC, Burger King, Subway and Berlin Döner Kebap with their Polish
+  menus (logos, kcal and macros per portion, menu combos). Under them a **History** of what you
+  ate lately (from any source) adds it again with last time's amount. The **Me / other person**
+  switch at the top opens the other's diary, so one of you can fill in what the other ate. Recipes
+  can use **other recipes as ingredients** (crepes + a filling; change the filling and every dish
+  using it follows) and can be edited right from the open recipe.
 - **Goals**: personal targets per person.
 
 ### `family_finance` — Finance

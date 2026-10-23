@@ -74,22 +74,32 @@ class GymMealLog(models.Model):
                 meal.fat = round(product.fat_100g * factor, 1)
 
     @api.model
-    def log_recipe(self, recipe_id, meal_type, date, servings=None, grams=None):
-        """Put a saved recipe into the current user's diary, by weight (what the kitchen scale
-        shows) or by servings. Both are stored: grams in quantity_g, servings as the fraction of
-        the recipe's serving they make up, which is what the nutrition is computed from."""
+    def _target_user(self, user_id=None):
+        """Whose diary an entry goes into: the current user's, or - when one of you cooks for the
+        other - the other's (`user_id`)."""
+        user = self.env['res.users'].browse(user_id).exists() if user_id else self.env.user
+        if not user or user.share:
+            raise UserError(_('Choose a person of the family.'))
+        return user
+
+    @api.model
+    def log_recipe(self, recipe_id, meal_type, date, servings=None, grams=None, user_id=None):
+        """Put a saved recipe into a diary (the current user's unless `user_id` says otherwise),
+        by weight (what the kitchen scale shows) or by servings. Both are stored: grams in
+        quantity_g, servings as the fraction of the recipe's serving they make up, which is what
+        the nutrition is computed from."""
         recipe = self.env['gym.recipe'].browse(recipe_id).exists()
         if not recipe:
             raise UserError(_('This recipe no longer exists.'))
         servings, grams = self._recipe_amount(recipe, servings, grams)
         return self.create({
             'recipe_id': recipe.id, 'meal_type': meal_type, 'date': date,
-            'servings': servings, 'quantity_g': grams,
+            'servings': servings, 'quantity_g': grams, 'user_id': self._target_user(user_id).id,
         }).id
 
     @api.model
-    def log_menu_item(self, item_id, meal_type, date, servings):
-        """Put `servings` portions of a restaurant dish into the current user's diary."""
+    def log_menu_item(self, item_id, meal_type, date, servings, user_id=None):
+        """Put `servings` portions of a restaurant dish into a diary."""
         item = self.env['gym.restaurant.item'].browse(item_id).exists()
         if not item:
             raise UserError(_('This menu item no longer exists.'))
@@ -97,7 +107,7 @@ class GymMealLog(models.Model):
             raise UserError(_('Eat at least a part of it.'))
         return self.create({
             'menu_item_id': item.id, 'meal_type': meal_type, 'date': date, 'servings': servings,
-            'quantity_g': (item.serving_g or 0.0) * servings,
+            'quantity_g': (item.serving_g or 0.0) * servings, 'user_id': self._target_user(user_id).id,
         }).id
 
     def set_menu_servings(self, servings):
@@ -108,9 +118,9 @@ class GymMealLog(models.Model):
         return True
 
     @api.model
-    def log_product(self, product_id, meal_type, date, grams):
-        """Put `grams` of a Groceries product into the current user's diary; the nutrition comes
-        from the product's per-100 g values."""
+    def log_product(self, product_id, meal_type, date, grams, user_id=None):
+        """Put `grams` of a Groceries product into a diary; the nutrition comes from the
+        product's per-100 g values."""
         product = self.env['groceries.product'].browse(product_id).exists()
         if not product:
             raise UserError(_('This product no longer exists.'))
@@ -118,6 +128,7 @@ class GymMealLog(models.Model):
             raise UserError(_('Eat at least a little of it.'))
         return self.create({
             'product_id': product.id, 'meal_type': meal_type, 'date': date, 'quantity_g': grams,
+            'user_id': self._target_user(user_id).id,
         }).id
 
     def set_product_grams(self, grams):
@@ -147,13 +158,34 @@ class GymMealLog(models.Model):
     def set_servings(self, servings):
         return self.set_recipe_amount(servings=servings)
 
+    @staticmethod
+    def _amount_label(entry):
+        if entry.menu_item_id:
+            return '%g × %s' % (entry.servings, entry.menu_item_id.restaurant_id.name)
+        return '%d g' % round(entry.quantity_g)
+
     @api.model
-    def get_diary(self, date=None):
-        """Everything the Meals diary screen shows for ONE day of the current user:
-        goals, totals and the entries grouped into Breakfast/Lunch/Dinner/Snacks."""
+    def get_family_users(self):
+        """The people whose diary can be opened - real accounts only, not Odoo's demo users."""
+        skip = [
+            ref.id for ref in (
+                self.env.ref('base.user_admin', raise_if_not_found=False),
+                self.env.ref('base.user_demo', raise_if_not_found=False)) if ref]
+        users = self.env['res.users'].search(
+            [('share', '=', False), ('id', 'not in', skip)], order='name')
+        people = [{'id': user.id, 'name': user.name, 'is_me': user == self.env.user} for user in users]
+        return sorted(people, key=lambda person: not person['is_me'])      # you first
+
+    @api.model
+    def get_diary(self, date=None, user_id=None):
+        """Everything the Meals diary screen shows for ONE day of one person (you, unless
+        `user_id`): goals, totals and the entries grouped into Breakfast/Lunch/Dinner/Snacks."""
         day = fields.Date.to_date(date) if date else fields.Date.context_today(self)
-        profile = self.env['gym.profile']._get_profile()
-        entries = self.search([('user_id', '=', self.env.uid), ('date', '=', day)], order='id')
+        owner = self._target_user(user_id)
+        # A profile is created the first time its person needs it; the other one's is made as
+        # superuser, since the access rule lets you create only your own.
+        profile = self.env['gym.profile'].with_user(owner).sudo()._get_profile()
+        entries = self.search([('user_id', '=', owner.id), ('date', '=', day)], order='id')
 
         def totals(records):
             return {
@@ -173,20 +205,24 @@ class GymMealLog(models.Model):
                 'entries': [{
                     'id': e.id,
                     'name': e.name or e.product_id.name or '',
-                    'amount_label': ('%g × %s' % (e.servings, e.menu_item_id.restaurant_id.name))
-                    if e.menu_item_id else '%d g' % round(e.quantity_g),
+                    'amount_label': self._amount_label(e),
                     'recipe_id': e.recipe_id.id,
                     'product_id': e.product_id.id,
                     'menu_item_id': e.menu_item_id.id,
                     'servings': e.servings,
                     'quantity_g': e.quantity_g,
                     'calories': round(e.calories),
+                    'protein': round(e.proteins),
+                    'carbs': round(e.carbs),
+                    'fat': round(e.fat),
                 } for e in items],
             })
         eaten = totals(entries)
         return {
             'date': fields.Date.to_string(day),
             'is_today': day == fields.Date.context_today(self),
+            'owner': {'id': owner.id, 'name': owner.name, 'is_me': owner == self.env.user},
+            'people': self.get_family_users(),
             'profile_id': profile.id,
             'goals': {
                 'calories': profile.calorie_goal,
@@ -198,3 +234,40 @@ class GymMealLog(models.Model):
             'remaining': profile.calorie_goal - eaten['calories'],
             'sections': sections,
         }
+
+    @api.model
+    def get_history(self, user_id=None, limit=15):
+        """What a person ate lately, newest first, each food once whichever way it was added
+        (Groceries, a recipe, a restaurant dish or typed in): the "+" dialog offers it for a
+        quick repeat with the amount of last time."""
+        owner = self._target_user(user_id)
+        history, seen = [], set()
+        for entry in self.search([('user_id', '=', owner.id)], limit=400):
+            if entry.menu_item_id:
+                kind, ref = 'restaurant', entry.menu_item_id.id
+            elif entry.recipe_id:
+                kind, ref = 'recipe', entry.recipe_id.id
+            elif entry.product_id:
+                kind, ref = 'product', entry.product_id.id
+            else:
+                kind, ref = 'quick', ((entry.name or '').strip().lower(), round(entry.calories))
+            if (kind, ref) in seen:
+                continue
+            seen.add((kind, ref))
+            history.append({
+                'kind': kind,
+                'name': entry.name or '',
+                'amount_label': self._amount_label(entry) if kind != 'quick' else '',
+                'recipe_id': entry.recipe_id.id,
+                'product_id': entry.product_id.id,
+                'menu_item_id': entry.menu_item_id.id,
+                'servings': entry.servings,
+                'quantity_g': entry.quantity_g,
+                'calories': round(entry.calories),
+                'protein': round(entry.proteins),
+                'carbs': round(entry.carbs),
+                'fat': round(entry.fat),
+            })
+            if len(history) >= limit:
+                break
+        return history

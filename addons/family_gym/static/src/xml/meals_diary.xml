@@ -3,6 +3,18 @@
     <t t-name="family_gym.MealsDiary">
         <div class="o_gym_diary" t-if="state.data">
 
+            <!-- whose diary: you can add food to the other person's day -->
+            <div class="o_gym_diary_people" t-if="state.data.people.length gt 1">
+                <button t-foreach="state.data.people" t-as="person" t-key="person.id" type="button"
+                        class="o_gym_diary_person" t-att-class="{'o_active': person.id === owner.id}"
+                        t-on-click="() => this.openDiaryOf(person)">
+                    <t t-esc="person.is_me ? 'Me' : person.name"/>
+                </button>
+            </div>
+            <div class="o_gym_diary_banner" t-if="!owner.is_me">
+                <i class="fa fa-user" role="img"/> You are adding to <b t-esc="owner.name"/>'s diary
+            </div>
+
             <!-- day navigation -->
             <div class="o_gym_diary_day">
                 <button type="button" class="o_gym_diary_nav" t-on-click="() => this.shift(-1)" aria-label="Previous day">
@@ -32,7 +44,7 @@
                 </div>
                 <div class="o_gym_diary_goal">
                     Goal <t t-esc="state.data.goals.calories"/> kcal
-                    <button type="button" class="o_gym_diary_link" t-on-click="editGoals">Edit goals</button>
+                    <button t-if="owner.is_me" type="button" class="o_gym_diary_link" t-on-click="editGoals">Edit goals</button>
                 </div>
                 <div class="o_gym_diary_macros">
                     <div t-foreach="macros" t-as="macro" t-key="macro.key" class="o_gym_diary_macro">
@@ -64,6 +76,11 @@
                     <button type="button" class="o_gym_diary_entry_main" t-on-click="() => this.editEntry(entry)">
                         <span class="o_gym_diary_entry_name" t-esc="entry.name"/>
                         <span class="o_gym_diary_entry_amount" t-esc="entry.amount_label"/>
+                        <span class="o_gym_diary_entry_macros">
+                            <span class="o_p"><i>P:</i> <b t-esc="entry.protein"/></span>
+                            <span class="o_c"><i>C:</i> <b t-esc="entry.carbs"/></span>
+                            <span class="o_f"><i>F:</i> <b t-esc="entry.fat"/></span>
+                        </span>
                     </button>
                     <span class="o_gym_diary_entry_kcal"><t t-esc="entry.calories"/></span>
                     <button type="button" class="o_gym_diary_entry_delete" t-on-click="() => this.deleteEntry(entry)"

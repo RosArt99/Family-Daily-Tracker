@@ -53,15 +53,16 @@
                 <div class="o_gym_ui_card">
                     <div class="o_gym_ui_label">Ingredients</div>
                     <div t-if="!state.ingredients.length" class="o_gym_ui_empty">
-                        Add food from your Groceries and set how much of it goes in.
+                        Add food from your Groceries - or another recipe - and set how much of it goes in.
                     </div>
                     <div t-foreach="state.ingredients" t-as="line" t-key="line.key" class="o_gym_recipe_ing">
-                        <img class="o_gym_recipe_ing_img" alt=""
+                        <img t-if="line.product_id" class="o_gym_recipe_ing_img" alt=""
                              t-att-src="'/web/image/groceries.product/' + line.product_id + '/image/96x96'"/>
+                        <span t-else="" class="o_gym_recipe_ing_img o_sub" title="Recipe"><i class="fa fa-cutlery" role="img"/></span>
                         <div class="o_gym_recipe_ing_info">
                             <div class="o_gym_recipe_ing_name" t-esc="line.name"/>
                             <div class="o_gym_recipe_ing_kcal">
-                                <t t-esc="lineKcal(line)"/> kcal
+                                <t t-esc="lineKcal(line)"/> kcal<t t-if="line.sub_recipe_id"> · recipe</t>
                                 <span t-if="line.missing" class="o_gym_recipe_warn">
                                     <i class="fa fa-exclamation-triangle"/> no nutrition data
                                 </span>
@@ -75,9 +76,14 @@
                         <button type="button" class="o_gym_recipe_remove" aria-label="Remove"
                                 t-on-click="() => this.removeIngredient(line)"><i class="fa fa-times"/></button>
                     </div>
-                    <button type="button" class="o_gym_ui_add" t-on-click="addIngredients">
-                        <i class="fa fa-plus"/> Add ingredient
-                    </button>
+                    <div class="o_gym_ui_add_row">
+                        <button type="button" class="o_gym_ui_add" t-on-click="addIngredients">
+                            <i class="fa fa-plus"/> Add ingredient
+                        </button>
+                        <button type="button" class="o_gym_ui_add" t-on-click="addRecipe">
+                            <i class="fa fa-plus"/> Add recipe
+                        </button>
+                    </div>
                 </div>
 
                 <div class="o_gym_ui_card o_gym_recipe_nutrition" t-if="state.ingredients.length">
@@ -113,12 +119,38 @@
         </Dialog>
     </t>
 
+    <!-- ===================== a recipe as an ingredient of another recipe ===================== -->
+    <t t-name="family_gym.RecipePickerDialog">
+        <Dialog title="'Choose a recipe'" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
+            <div class="o_gym_addfood o_gym_addfood_saved">
+                <input type="search" class="o_gym_addfood_search" placeholder="Search saved food..."
+                       t-att-value="state.search" t-on-input="onSearchInput"/>
+                <div t-if="!state.recipes.length" class="o_gym_addfood_empty">
+                    <t t-if="state.search">Nothing matches your search.</t>
+                    <t t-else="">No other recipes yet.</t>
+                </div>
+                <div t-foreach="state.recipes" t-as="recipe" t-key="recipe.id" class="o_gym_saved_card">
+                    <button type="button" class="o_gym_saved_main" t-on-click="() => this.pick(recipe)">
+                        <span class="o_gym_saved_name" t-esc="recipe.name"/>
+                        <span class="o_gym_saved_meta">
+                            <t t-esc="fmt(recipe.total_weight_g)"/> g in total
+                            <t t-if="!recipe.mine"> · by <t t-esc="recipe.owner"/></t>
+                        </span>
+                        <span class="o_gym_saved_macros">
+                            <b><t t-esc="fmt(recipe.per_100g.calories)"/> kcal</b> per 100 g
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
     <!-- ===================== "+" on a meal: where does the food come from ===================== -->
     <t t-name="family_gym.AddFoodDialog">
         <Dialog title="title" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
             <div class="o_gym_addfood">
 
-                <button t-if="state.step !== 'menu' and !props.entry" type="button" class="o_gym_addfood_back"
+                <button t-if="canGoBack" type="button" class="o_gym_addfood_back"
                         t-on-click="back"><i class="fa fa-chevron-left"/> Back</button>
 
                 <!-- 1. the two sources -->
@@ -147,6 +179,23 @@
                         </span>
                         <i class="fa fa-chevron-right"/>
                     </button>
+
+                    <!-- what was eaten lately, from any source: tap to add it again -->
+                    <t t-if="state.history.length">
+                        <div class="o_gym_hist_title">History</div>
+                        <button t-foreach="state.history" t-as="item" t-key="item_index" type="button"
+                                class="o_gym_hist_row" t-on-click="() => this.repeat(item)">
+                            <span class="o_gym_hist_main">
+                                <span class="o_gym_hist_name" t-esc="item.name"/>
+                                <span class="o_gym_hist_meta">
+                                    <t t-if="item.amount_label"><t t-esc="item.amount_label"/> · </t>
+                                    P <t t-esc="item.protein"/> · C <t t-esc="item.carbs"/> · F <t t-esc="item.fat"/>
+                                </span>
+                            </span>
+                            <span class="o_gym_hist_kcal"><t t-esc="item.calories"/> kcal</span>
+                            <i class="fa fa-plus o_gym_hist_add" role="img"/>
+                        </button>
+                    </t>
                 </div>
 
                 <!-- 2. saved recipes -->
@@ -185,6 +234,11 @@
 
                 <!-- 3. how much did you eat -->
                 <div t-if="state.step === 'servings'" class="o_gym_addfood_servings">
+                    <div t-if="state.recipe.mine" class="d-flex">
+                        <button type="button" class="o_gym_saved_edit" t-on-click="editOpenRecipe">
+                            <i class="fa fa-pencil"/> Edit recipe
+                        </button>
+                    </div>
                     <div class="o_gym_ui_toggle">
                         <button type="button" t-att-class="{ o_active: state.mode === 'g' }"
                                 t-on-click="() => this.setMode('g')">Grams</button>
@@ -270,7 +324,7 @@
         <Dialog title="title" size="'md'" contentClass="'o_gym_addfood_dialog'" footer="false">
             <div class="o_gym_addfood o_gym_rest">
 
-                <button t-if="state.step !== 'list' and !props.entry" type="button" class="o_gym_addfood_back"
+                <button t-if="state.step !== 'list' and !props.entry and !props.itemId" type="button" class="o_gym_addfood_back"
                         t-on-click="back"><i class="fa fa-chevron-left"/> Back</button>
 
                 <!-- 1. the places -->

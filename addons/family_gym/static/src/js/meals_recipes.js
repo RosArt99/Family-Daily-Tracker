@@ -54,7 +54,7 @@ export class RecipeFormDialog extends Component {
                 this.state.servings = String(recipe.servings);
                 this.state.cookedWeight = recipe.cooked_weight_g ? String(recipe.cooked_weight_g) : "";
                 this.state.ingredients = recipe.ingredients.map((line) =>
-                    this.makeIngredient(line.product_id, line.name, line.quantity_g, line.per100)
+                    this.makeIngredient(line.product_id, line.name, line.quantity_g, line.per100, line.sub_recipe_id)
                 );
             }
         });
@@ -64,10 +64,12 @@ export class RecipeFormDialog extends Component {
         return this.props.recipeId ? _t("Edit recipe") : _t("New recipe");
     }
 
-    makeIngredient(productId, name, quantity, per100) {
+    // An ingredient is a Groceries product, or - `subRecipeId` - another recipe (crepes + filling).
+    makeIngredient(productId, name, quantity, per100, subRecipeId = false) {
         return {
             key: this.nextKey++,
             product_id: productId,
+            sub_recipe_id: subRecipeId,
             name,
             quantity: String(quantity),
             per100,
@@ -119,6 +121,22 @@ export class RecipeFormDialog extends Component {
                         })
                     );
                 }
+            },
+        });
+    }
+
+    // Another saved recipe as an ingredient, by the weight of it that goes in. Its own
+    // ingredients stay its business: change the filling and every dish using it follows.
+    addRecipe() {
+        this.dialog.add(RecipePickerDialog, {
+            excludeId: this.props.recipeId,
+            onSelected: (recipe) => {
+                if (this.state.ingredients.some((line) => line.sub_recipe_id === recipe.id)) {
+                    return;
+                }
+                this.state.ingredients.push(
+                    this.makeIngredient(false, recipe.name, Math.round(recipe.serving_weight_g) || 100, recipe.per_100g, recipe.id)
+                );
             },
         });
     }
@@ -227,6 +245,7 @@ export class RecipeFormDialog extends Component {
                     cooked_weight_g: num(state.cookedWeight),
                     ingredients: state.ingredients.map((line) => ({
                         product_id: line.product_id,
+                        sub_recipe_id: line.sub_recipe_id,
                         quantity_g: num(line.quantity),
                     })),
                 },
@@ -241,6 +260,44 @@ export class RecipeFormDialog extends Component {
     }
 }
 
+// Pick one saved recipe - to use it as an ingredient of another recipe (crepes + their filling).
+export class RecipePickerDialog extends Component {
+    static template = "family_gym.RecipePickerDialog";
+    static components = { Dialog };
+    static props = {
+        // The recipe being edited cannot be an ingredient of itself.
+        excludeId: { type: Number, optional: true },
+        onSelected: Function,
+        close: Function,
+    };
+
+    setup() {
+        this.orm = useService("orm");
+        this.state = useState({ search: "", recipes: [] });
+        this.searchDebounced = useDebounced(() => this.load(), 250);
+        onWillStart(() => this.load());
+    }
+
+    async load() {
+        const recipes = await this.orm.call("gym.recipe", "get_saved", [this.state.search]);
+        this.state.recipes = recipes.filter((recipe) => recipe.id !== this.props.excludeId);
+    }
+
+    onSearchInput(ev) {
+        this.state.search = ev.target.value;
+        this.searchDebounced();
+    }
+
+    fmt(value) {
+        return fmt(value);
+    }
+
+    pick(recipe) {
+        this.props.onSelected(recipe);
+        this.props.close();
+    }
+}
+
 // What the "+" of a meal opens: choose where the food comes from. "My Saved Food" lists the
 // recipes (with "Add New Recipe"), and tapping one asks how many servings you ate.
 export class AddFoodDialog extends Component {
@@ -252,8 +309,15 @@ export class AddFoodDialog extends Component {
         date: { type: String, optional: true },
         // Editing the servings of a recipe entry that is already in the diary.
         entry: { type: Object, optional: true },
+        // The diary the food goes into (null: the current user's) - one of you can fill the other's.
+        userId: { type: [Number, Boolean], optional: true },
+        // Repeating a recipe from the history: open it straight at the amount, starting from
+        // the grams of last time.
+        recipeId: { type: Number, optional: true },
+        grams: { type: Number, optional: true },
         onPantry: { type: Function, optional: true },
         onRestaurants: { type: Function, optional: true },
+        onHistory: { type: Function, optional: true },
         onDone: Function,
         close: Function,
     };
@@ -262,9 +326,10 @@ export class AddFoodDialog extends Component {
         this.orm = useService("orm");
         this.dialog = useService("dialog");
         this.state = useState({
-            step: this.props.entry ? "servings" : "menu",
+            step: this.props.entry || this.props.recipeId ? "servings" : "menu",
             search: "",
             recipes: [],
+            history: [],
             recipe: null,
             // How the amount is typed in: grams off the kitchen scale (default) or servings.
             mode: "g",
@@ -277,13 +342,27 @@ export class AddFoodDialog extends Component {
         });
         this.searchDebounced = useDebounced(() => this.loadRecipes(), 250);
         onWillStart(async () => {
-            if (this.props.entry) {
+            const known = this.props.entry || this.props.recipeId;
+            if (known) {
                 this.state.recipe = await this.orm.call("gym.recipe", "get_recipe", [
-                    this.props.entry.recipe_id,
+                    this.props.entry ? this.props.entry.recipe_id : this.props.recipeId,
                 ]);
-                this.state.grams = String(Math.round(this.props.entry.quantity_g));
+                this.state.grams = String(Math.round(this.props.entry ? this.props.entry.quantity_g : this.props.grams));
+            } else {
+                this.state.history = await this.orm.call("gym.meal_log", "get_history", [this.props.userId || false]);
             }
         });
+    }
+
+    // Back is for dialogs that opened at the menu; one opened on a recipe is simply closed.
+    get canGoBack() {
+        return this.state.step !== "menu" && !this.props.entry && !this.props.recipeId;
+    }
+
+    // ---- history ----
+    repeat(item) {
+        this.props.close();
+        this.props.onHistory(item);
     }
 
     get title() {
@@ -332,6 +411,16 @@ export class AddFoodDialog extends Component {
 
     newRecipe() {
         this.dialog.add(RecipeFormDialog, { onSaved: () => this.loadRecipes() });
+    }
+
+    // Edit the recipe that is open (not only from the list); its numbers refresh when saved.
+    editOpenRecipe() {
+        this.dialog.add(RecipeFormDialog, {
+            recipeId: this.state.recipe.id,
+            onSaved: (recipe) => {
+                this.state.recipe = recipe;
+            },
+        });
     }
 
     editRecipe(recipe) {
@@ -448,7 +537,7 @@ export class AddFoodDialog extends Component {
                     "gym.meal_log",
                     "log_recipe",
                     [this.state.recipe.id, this.props.meal, this.props.date],
-                    amount
+                    { ...amount, user_id: this.props.userId || false }
                 );
             }
             this.props.onDone();
@@ -472,6 +561,9 @@ export class ProductAmountDialog extends Component {
         date: { type: String, optional: true },
         // Editing the grams of a product entry that is already in the diary.
         entry: { type: Object, optional: true },
+        userId: { type: [Number, Boolean], optional: true },
+        // Start from this many grams (last time's, when repeating from the history).
+        grams: { type: Number, optional: true },
         onDone: Function,
         close: Function,
     };
@@ -481,7 +573,9 @@ export class ProductAmountDialog extends Component {
         this.presets = [50, 100, 150, 200];
         this.state = useState({
             product: null,
-            grams: this.props.entry ? String(Math.round(this.props.entry.quantity_g)) : "100",
+            grams: this.props.entry
+                ? String(Math.round(this.props.entry.quantity_g))
+                : String(Math.round(this.props.grams || 100)),
             busy: false,
         });
         onWillStart(async () => {
@@ -556,6 +650,7 @@ export class ProductAmountDialog extends Component {
                     this.props.meal,
                     this.props.date,
                     this.gramsEaten,
+                    this.props.userId || false,
                 ]);
             }
             this.props.onDone();
@@ -577,6 +672,10 @@ export class RestaurantDialog extends Component {
         mealLabel: { type: String, optional: true },
         date: { type: String, optional: true },
         entry: { type: Object, optional: true },
+        userId: { type: [Number, Boolean], optional: true },
+        // Repeating a dish from the history: open it straight at the portions of last time.
+        itemId: { type: Number, optional: true },
+        servings: { type: Number, optional: true },
         onDone: Function,
         close: Function,
     };
@@ -584,19 +683,19 @@ export class RestaurantDialog extends Component {
     setup() {
         this.orm = useService("orm");
         this.state = useState({
-            step: this.props.entry ? "amount" : "list",
+            step: this.props.entry || this.props.itemId ? "amount" : "list",
             restaurants: [],
             menu: null,
             search: "",
             category: "",
             item: null,
-            servings: this.props.entry ? String(this.props.entry.servings) : "1",
+            servings: this.props.entry ? String(this.props.entry.servings) : String(this.props.servings || 1),
             busy: false,
         });
         onWillStart(async () => {
-            if (this.props.entry) {
+            if (this.props.entry || this.props.itemId) {
                 this.state.item = await this.orm.call("gym.restaurant.item", "get_item", [
-                    this.props.entry.menu_item_id,
+                    this.props.entry ? this.props.entry.menu_item_id : this.props.itemId,
                 ]);
             } else {
                 this.state.restaurants = await this.orm.call("gym.restaurant", "get_restaurants", []);
@@ -707,6 +806,7 @@ export class RestaurantDialog extends Component {
                     this.props.meal,
                     this.props.date,
                     this.servingsEaten,
+                    this.props.userId || false,
                 ]);
             }
             this.props.onDone();

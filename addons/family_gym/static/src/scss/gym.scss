@@ -177,6 +177,28 @@
                 color: #6c757d;
                 font-size: 13px;
             }
+
+            // P: C: F: grams of what this food brought; letters in the macro colours used elsewhere.
+            .o_gym_diary_entry_macros {
+                display: flex;
+                gap: 10px;
+                font-size: 12px;
+                color: #6c757d;
+
+                b {
+                    color: #343a40;
+                    font-weight: 600;
+                }
+
+                i {
+                    font-style: normal;
+                    font-weight: 700;
+                }
+
+                .o_p i { color: #1e88e5; }
+                .o_c i { color: #f0a30a; }
+                .o_f i { color: #ef7b5d; }
+            }
         }
 
         .o_gym_diary_entry_kcal {
@@ -1879,4 +1901,118 @@ $gw-bad: #d9534f;
     flex-wrap: wrap;
     gap: 8px;
     margin: -2px 0 12px;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Meals: whose diary is open (the other person's day can be filled in) and the "+" dialog's history.
+// ---------------------------------------------------------------------------------------------
+.o_gym_diary_people {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .o_gym_diary_person {
+        flex: 1;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #6c757d;
+        font-weight: 600;
+        box-shadow: $gym-card-shadow;
+
+        &.o_active {
+            background: $gym-gradient-light;
+            color: #fff;
+        }
+    }
+}
+
+.o_gym_diary_banner {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #fff3cd;
+    color: #7a5b00;
+    font-size: 13px;
+    text-align: center;
+}
+
+.o_gym_hist_title {
+    margin: 18px 4px 8px;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.o_gym_hist_row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 14px;
+    background: #fff;
+    text-align: left;
+    box-shadow: $gym-card-shadow;
+
+    .o_gym_hist_main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_gym_hist_name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .o_gym_hist_meta {
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .o_gym_hist_kcal {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .o_gym_hist_add {
+        color: var(--fam-color, #c41e3f);
+    }
+}
+
+// Add ingredient / Add recipe sit side by side in the recipe form.
+.o_gym_ui_add_row {
+    display: flex;
+    gap: 8px;
+
+    .o_gym_ui_add {
+        flex: 1;
+    }
+}
+
+.o_gym_recipe_ing_img.o_sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: var(--fam-color, #c41e3f);
+    font-size: 20px;
+}
+
+.o_gym_saved_edit {
+    margin: 0 0 10px auto;
+    border: 0;
+    background: transparent;
+    color: var(--fam-color, #c41e3f);
+    font-weight: 600;
+    font-size: 13px;
 }

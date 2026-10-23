@@ -26,14 +26,26 @@ class MealsDiary extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.dialog = useService("dialog");
-        this.state = useState({ date: null, data: null });
+        // userId: whose diary is open - null is yours; choosing the other person lets you add to
+        // theirs (one of you cooks, the other eats).
+        this.state = useState({ date: null, userId: null, data: null });
         onWillStart(() => this.load());
     }
 
     async load() {
-        const data = await this.orm.call("gym.meal_log", "get_diary", [this.state.date]);
+        const data = await this.orm.call("gym.meal_log", "get_diary", [this.state.date, this.state.userId]);
         this.state.date = data.date;
         this.state.data = data;
+    }
+
+    // ---- whose diary ----
+    get owner() {
+        return this.state.data.owner;
+    }
+
+    async openDiaryOf(person) {
+        this.state.userId = person.is_me ? null : person.id;
+        await this.load();
     }
 
     // ---- day navigation ----
@@ -81,6 +93,7 @@ class MealsDiary extends Component {
     }
 
     // ---- actions (all forms open as dialogs and refresh the diary when closed) ----
+    // Every "add" below puts the food into the diary that is open (`owner`), not always yours.
     openForm(title, { resId, context } = {}) {
         this.actionService.doAction(
             {
@@ -96,22 +109,53 @@ class MealsDiary extends Component {
         );
     }
 
-    // "+" : first choose the source - Groceries (pantry) or My Saved Food (recipes).
+    // "+" : first choose the source - Groceries (pantry), Restaurants, My Saved Food (recipes) -
+    // or repeat something from the history listed under them.
     addFood(meal, mealLabel) {
         this.dialog.add(AddFoodDialog, {
             meal,
             mealLabel,
             date: this.state.date,
+            userId: this.owner.id,
             onPantry: () => this.addFromPantry(meal, mealLabel),
             onRestaurants: () =>
                 this.dialog.add(RestaurantDialog, {
                     meal,
                     mealLabel,
                     date: this.state.date,
+                    userId: this.owner.id,
                     onDone: () => this.load(),
                 }),
+            onHistory: (item) => this.repeatFood(item, meal, mealLabel),
             onDone: () => this.load(),
         });
+    }
+
+    // A history row: open the same amount screen the food came from, with last time's amount.
+    repeatFood(item, meal, mealLabel) {
+        const common = { meal, mealLabel, date: this.state.date, userId: this.owner.id, onDone: () => this.load() };
+        if (item.kind === "product") {
+            this.dialog.add(ProductAmountDialog, { ...common, productId: item.product_id, grams: item.quantity_g });
+        } else if (item.kind === "recipe") {
+            this.dialog.add(AddFoodDialog, { ...common, recipeId: item.recipe_id, grams: item.quantity_g });
+        } else if (item.kind === "restaurant") {
+            this.dialog.add(RestaurantDialog, { ...common, itemId: item.menu_item_id, servings: item.servings });
+        } else {
+            // Typed-in food: the plain form, filled in with what you typed last time.
+            this.openForm(item.name, {
+                context: {
+                    default_meal_type: meal,
+                    default_date: this.state.date,
+                    default_user_id: this.owner.id,
+                    default_name: item.name,
+                    default_quantity_g: item.quantity_g,
+                    default_calories: item.calories,
+                    default_proteins: item.protein,
+                    default_carbs: item.carbs,
+                    default_fat: item.fat,
+                },
+            });
+        }
     }
 
     // Search the pantry (Groceries catalog, in-stock food first), then say how many grams you ate.
@@ -125,6 +169,7 @@ class MealsDiary extends Component {
                     meal,
                     mealLabel,
                     date: this.state.date,
+                    userId: this.owner.id,
                     onDone: () => this.load(),
                 }),
         });
@@ -132,7 +177,7 @@ class MealsDiary extends Component {
 
     quickAdd(meal) {
         this.openForm(_t("Quick add"), {
-            context: { default_meal_type: meal, default_date: this.state.date },
+            context: { default_meal_type: meal, default_date: this.state.date, default_user_id: this.owner.id },
         });
     }
 
