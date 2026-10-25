@@ -26,6 +26,19 @@
                 </div>
             </div>
 
+            <div class="o_fin_section">
+                <div class="o_fin_section_head"><span class="o_fin_section_title">You can transfer</span><span class="o_fin_muted">from <t t-esc="d.month"/> income</span></div>
+                <div class="o_fin_panel">
+                    <div t-foreach="d.available" t-as="person" t-key="person.id" class="o_fin_person">
+                        <span class="o_fin_avatar" t-esc="initial(person.name)"/>
+                        <span class="o_fin_person_name" t-esc="person.name"/>
+                        <b t-if="person.amount > 0" class="o_fin_person_amount" t-esc="money(person.amount)"/>
+                        <span t-else="" class="o_fin_muted">nothing left</span>
+                    </div>
+                    <div class="o_fin_muted o_fin_avail_note">What is left of each income after what that person paid and already saved.</div>
+                </div>
+            </div>
+
             <div class="o_fin_section" t-if="d.by_user.length">
                 <div class="o_fin_section_head"><span class="o_fin_section_title">Whose</span><span class="o_fin_muted">in <t t-esc="d.currency.name"/></span></div>
                 <div class="o_fin_panel">

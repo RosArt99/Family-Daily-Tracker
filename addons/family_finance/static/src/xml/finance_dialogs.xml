@@ -111,7 +111,17 @@
                     <div class="o_fin_ui_chips o_tight">
                         <button t-foreach="state.users" t-as="user" t-key="user.id" type="button" class="o_fin_ui_chip"
                                 t-att-class="{ o_active: state.userId == user.id }"
-                                t-on-click="() => state.userId = user.id" t-esc="user.name"/>
+                                t-on-click="() => this.setUser(user.id)" t-esc="user.name"/>
+                    </div>
+                    <!-- A transfer from income cannot be more than what is left of it. -->
+                    <div t-if="limited and state.available !== null" class="o_fin_ui_limit"
+                         t-att-class="{ o_none: state.available lte 0 }">
+                        <t t-if="state.available gt 0">
+                            You can transfer up to <b t-esc="moneyBase(state.available)"/> from <t t-esc="state.availableMonth"/>
+                            <t t-if="isForeign">&#160;(≈ <b t-esc="money(availableHere)"/>)</t>
+                            <button type="button" class="o_fin_ui_limit_max" t-on-click="useMax">Use all</button>
+                        </t>
+                        <t t-else="">Nothing is left of this income in <t t-esc="state.availableMonth"/> - it has all been spent or saved.</t>
                     </div>
                 </div>
 

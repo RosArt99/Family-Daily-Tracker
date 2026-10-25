@@ -74,6 +74,9 @@ their own key.
   either of you, in any currency) to a plan, or takes it back; Planning turns into Saving by itself.
   **Done** can take the saved money out of the savings (paid) - reopening gives it back. Moves are
   not new saving, so the month's numbers do not change.
+- **Savings limit**: a transfer from income cannot be more than what is left of that person's income
+  in the month (income - what they paid - already saved). The Savings tab lists "You can transfer" per
+  person and the transfer window shows the limit with a "Use all" button.
 - **Limits**: monthly limits per category and for everything together; the overview turns
   amber at 80% and red when you go over.
 

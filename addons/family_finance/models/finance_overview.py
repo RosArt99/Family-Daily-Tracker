@@ -170,6 +170,32 @@ class FinanceOverview(models.AbstractModel):
             spent[row['user_id'][0]][row['category']] += row['amount_base'] or 0.0
         return spent
 
+    def _left_by_user(self, start, end, exclude_saving_ids=()):
+        """{user id: what is left of THEIR income between two dates} = income - what they paid -
+        what they already put aside. It is the most one can still move into savings: money that
+        was spent cannot be saved. `exclude_saving_ids` leaves a transfer out (the one being checked)."""
+        income = {
+            row['user_id'][0]: row['amount_base'] or 0.0
+            for row in self.env['finance.income'].read_group(
+                [('date', '>=', start), ('date', '<', end)], ['amount_base:sum'], ['user_id'])}
+        spent = {user: sum(by_category.values()) for user, by_category in self._spending_by_user(start, end).items()}
+        saved = {
+            row['user_id'][0]: row['signed_base'] or 0.0
+            for row in self.env['finance.saving'].read_group(
+                [('date', '>=', start), ('date', '<', end), ('move', '=', False),
+                 ('id', 'not in', list(exclude_saving_ids))], ['signed_base:sum'], ['user_id'])}
+        return {user: income.get(user, 0.0) - spent.get(user, 0.0) - saved.get(user, 0.0)
+                for user in set(income) | set(spent) | set(saved)}
+
+    @api.model
+    def get_available_to_save(self, user_id=None, date=None, exclude_id=None):
+        """How much `user_id` (you) can still transfer into savings in the month of `date`."""
+        day = fields.Date.to_date(date) if date else fields.Date.context_today(self)
+        start = day.replace(day=1)
+        left = self._left_by_user(
+            start, start + relativedelta(months=1), [exclude_id] if exclude_id else [])
+        return {'available': max(left.get(user_id or self.env.uid, 0.0), 0.0), 'month': start.strftime('%B %Y')}
+
     def _people_summary(self, start, end, income_by_user):
         """One card per person: what they earned this month, what they paid (by category), what
         they put aside, and so what is left of THEIR income."""
@@ -251,8 +277,13 @@ class FinanceOverview(models.AbstractModel):
             'plan': rec.plan_id.name or '', 'notes': rec.notes or '', 'move': rec.move or '',
         } for rec in Saving.search([], limit=10)]
 
+        start = today.replace(day=1)
+        left = self._left_by_user(start, start + relativedelta(months=1))
         return {
             'currency': self._currency_info(),
+            'month': start.strftime('%B %Y'),
+            'available': [{'id': person['id'], 'name': person['name'], 'amount': left.get(person['id'], 0.0)}
+                          for person in self.get_family_users()],
             'balances': balances,
             'total_now': total_now,
             'general': net_base([('plan_id', '=', False)]),

@@ -197,6 +197,9 @@ export class FinanceEntryDialog extends Component {
             housingKind: "rent",
             source: "salary",
             savingKind: defaults.savingKind || "deposit",
+            // What is left of this person's income in the month (a transfer cannot be more).
+            available: null,
+            availableMonth: "",
             planId: false,
             plans: [],
             notes: "",
@@ -261,6 +264,7 @@ export class FinanceEntryDialog extends Component {
                 state.rate = "1";
             }
         }
+        await this.refreshAvailable();
     }
 
     get isExpense() {
@@ -403,7 +407,42 @@ export class FinanceEntryDialog extends Component {
     }
 
     onDateChanged() {
+        this.refreshAvailable();
         return this.refreshRate();
+    }
+
+    // ---- transfer limit (savings): you can only put aside what is left of your income ----
+    get limited() {
+        return this.kind === "saving" && this.state.savingKind === "deposit";
+    }
+
+    async refreshAvailable() {
+        if (this.kind !== "saving") {
+            return;
+        }
+        const { state } = this;
+        const result = await this.orm.call("finance.overview", "get_available_to_save", [
+            state.userId,
+            state.date || todayString(),
+            this.props.resId || false,
+        ]);
+        state.available = result.available;
+        state.availableMonth = result.month;
+    }
+
+    setUser(id) {
+        this.state.userId = id;
+        this.refreshAvailable();
+    }
+
+    // The limit in the currency being typed (the limit itself is in the base currency).
+    get availableHere() {
+        const rate = this.isForeign ? num(this.state.rate) : 1;
+        return rate > 0 && this.state.available !== null ? this.state.available / rate : 0;
+    }
+
+    useMax() {
+        this.state.amount = String(Math.floor(this.availableHere * 100) / 100);
     }
 
     onRateInput(ev) {
@@ -574,6 +613,11 @@ export class FinanceEntryDialog extends Component {
                 };
             case "saving":
                 this.checkCurrencyInput(amount);
+                if (this.limited && state.available !== null && amount * (this.isForeign ? num(state.rate) : 1) > state.available + 0.005) {
+                    throw new Error(
+                        _t("You can transfer at most %s from the income of %s.", this.moneyBase(state.available), state.availableMonth)
+                    );
+                }
                 return {
                     amount, kind: state.savingKind, date: state.date, user_id: state.userId,
                     plan_id: state.planId || false, notes,

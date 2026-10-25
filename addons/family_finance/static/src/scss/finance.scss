@@ -1622,3 +1622,34 @@ $fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
     background: #e3f0f9;
     color: #2a6f9c;
 }
+
+// Savings: how much of an income can still be transferred
+.o_fin_avail_note {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.o_fin_ui_limit {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #e6f4ea;
+    color: #1e6b3a;
+    font-size: 13px;
+
+    &.o_none {
+        background: #fde4e6;
+        color: #a3212f;
+    }
+
+    .o_fin_ui_limit_max {
+        margin-left: 6px;
+        padding: 2px 10px;
+        border: 0;
+        border-radius: 999px;
+        background: $fin-gradient;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+    }
+}

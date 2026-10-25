@@ -1,4 +1,7 @@
-from odoo import api, fields, models
+from dateutil.relativedelta import relativedelta
+
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class FinanceSaving(models.Model):
@@ -53,6 +56,24 @@ class FinanceSaving(models.Model):
             rec.is_foreign = rec.currency_id != rec.company_currency_id
             rec.signed_amount = sign * rec.amount
             rec.signed_base = sign * (rec.amount * rec.rate if rec.is_foreign else rec.amount)
+
+    @api.constrains('kind', 'move', 'user_id', 'date', 'amount', 'rate', 'currency_id')
+    def _check_within_available(self):
+        """Money that has been spent cannot be put aside: a transfer from income may not be more
+        than what is left of that person's income in the month (moves between general savings and
+        a plan are exempt - the money is already saved)."""
+        for rec in self:
+            if rec.kind != 'deposit' or rec.move:
+                continue
+            start = rec.date.replace(day=1)
+            left = self.env['finance.overview']._left_by_user(
+                start, start + relativedelta(months=1), rec.ids).get(rec.user_id.id, 0.0)
+            if rec.signed_base > max(left, 0.0) + 0.005:
+                raise ValidationError(_(
+                    '%(user)s can transfer at most %(left).2f %(currency)s from the income of %(month)s - '
+                    'the rest has already been spent or put aside.',
+                    user=rec.user_id.name, left=max(left, 0.0),
+                    currency=rec.company_currency_id.name, month=start.strftime('%B %Y')))
 
     @api.model_create_multi
     def create(self, vals_list):
