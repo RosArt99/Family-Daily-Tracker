@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================== The Plans tab ============================== -->
+    <t t-name="family_finance.FinancePlans">
+        <div class="o_fin_overview o_fin_plans">
+            <t t-set="d" t-value="state.data"/>
+
+            <div class="o_fin_pl_top">
+                <div class="o_fin_pl_tabs" role="tablist">
+                    <button t-foreach="stages" t-as="stage" t-key="stage.key" type="button" role="tab"
+                            class="o_fin_pl_tab" t-att-class="{ o_active: state.tab == stage.key }"
+                            t-on-click="() => this.setTab(stage.key)">
+                        <i t-attf-class="fa #{stage.icon}" role="img" t-att-title="stage.label"/>
+                        <span t-esc="stage.label"/>
+                        <b class="o_fin_pl_count" t-esc="plansIn(stage.key).length"/>
+                    </button>
+                </div>
+                <button type="button" class="o_fin_pl_new" t-on-click="newPlan">
+                    <i class="fa fa-plus" role="img" title="New plan"/> New plan
+                </button>
+            </div>
+
+            <div t-if="!visiblePlans.length" class="o_fin_panel o_fin_empty">
+                <t t-if="state.tab == 'planning'">No ideas yet. Add a trip or a big purchase and give it a price tag.</t>
+                <t t-elif="state.tab == 'saving'">Nothing is being saved for right now. Start saving for a plan from the Planning tab.</t>
+                <t t-else="">Nothing done yet.</t>
+            </div>
+
+            <div t-foreach="visiblePlans" t-as="plan" t-key="plan.id" class="o_fin_pl_card"
+                 t-att-class="'o_fin_pl_' + plan.state">
+                <div class="o_fin_pl_cover" t-on-click="() => this.openPlan(plan)"
+                     t-att-style="coverStyle(plan)"
+                     t-att-class="{ o_fin_pl_nophoto: !plan.image, o_fin_pl_travel: plan.kind == 'travel' }">
+                    <i t-if="!plan.image" t-attf-class="fa #{plan.kind == 'travel' ? 'fa-plane' : 'fa-shopping-bag'} o_fin_pl_bigicon" role="img" title="Plan"/>
+                    <span class="o_fin_pl_chip">
+                        <i t-attf-class="fa #{plan.kind == 'travel' ? 'fa-plane' : 'fa-shopping-bag'}" role="img" title="Type"/>
+                        <t t-if="plan.kind == 'travel'">Trip</t><t t-else="">Purchase</t>
+                    </span>
+                    <span t-if="plan.target_date" class="o_fin_pl_chip o_when">
+                        <i class="fa fa-calendar" role="img" title="When"/> <t t-esc="shortDate(plan)"/> · <t t-esc="when(plan)"/>
+                    </span>
+                </div>
+
+                <div class="o_fin_pl_body" t-on-click="() => this.openPlan(plan)">
+                    <div class="o_fin_pl_name" t-esc="plan.name"/>
+
+                    <t t-if="plan.budget">
+                        <div class="o_fin_pl_amounts">
+                            <b class="o_fin_pl_saved" t-esc="money(plan.saved)"/>
+                            <span class="o_fin_muted">of <t t-esc="money(plan.budget)"/></span>
+                            <b class="o_fin_pl_pct"><t t-esc="Math.round(plan.progress)"/>%</b>
+                        </div>
+                        <div class="o_fin_progress"><div class="o_fin_progress_bar" t-attf-style="width: #{plan.progress}%"/></div>
+                        <div class="o_fin_pl_hint" t-if="plan.state != 'done'">
+                            <t t-if="plan.missing > 0">Still needed <b t-esc="money(plan.missing)"/></t>
+                            <t t-else=""><i class="fa fa-check-circle o_ok" role="img" title="Enough"/> Enough saved!</t>
+                            <t t-if="plan.per_month and plan.missing > 0"> · <b t-esc="money(plan.per_month)"/> a month to make it</t>
+                        </div>
+                        <div class="o_fin_pl_hint" t-if="plan.state == 'done' and plan.paid">
+                            Paid out of savings <b t-esc="money(plan.paid)"/>
+                        </div>
+                    </t>
+                    <div t-else="" class="o_fin_pl_hint">No price yet - open it to add the budget.</div>
+
+                    <div class="o_fin_pl_people" t-if="plan.by_user.length">
+                        <span t-foreach="plan.by_user" t-as="person" t-key="person.name" class="o_fin_pl_person">
+                            <t t-esc="person.name.split(' ')[0]"/> <b t-esc="money(person.amount)"/>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="o_fin_pl_actions">
+                    <t t-if="plan.state == 'planning'">
+                        <button type="button" class="o_fin_pl_btn o_primary" t-on-click="() => this.setStage(plan, 'saving')">
+                            <i class="fa fa-university" role="img" title="Saving"/> Start saving
+                        </button>
+                    </t>
+                    <t t-if="plan.state == 'saving'">
+                        <button type="button" class="o_fin_pl_btn o_primary" t-on-click="() => this.moveSavings(plan)">
+                            <i class="fa fa-exchange" role="img" title="Move"/> Move savings here
+                        </button>
+                        <button type="button" class="o_fin_pl_btn" t-on-click="() => this.markDone(plan)">
+                            <i class="fa fa-check" role="img" title="Done"/> Done
+                        </button>
+                    </t>
+                    <t t-if="plan.state == 'done'">
+                        <button type="button" class="o_fin_pl_btn" t-on-click="() => this.setStage(plan, 'saving')">
+                            <i class="fa fa-undo" role="img" title="Reopen"/> Reopen
+                        </button>
+                    </t>
+                    <button t-if="plan.state == 'planning'" type="button" class="o_fin_pl_btn"
+                            t-on-click="() => this.moveSavings(plan)">
+                        <i class="fa fa-exchange" role="img" title="Move"/> Move savings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- ===================== Done: was the money spent? ===================== -->
+    <t t-name="family_finance.PlanDoneDialog">
+        <Dialog title="'Mark as done'" size="'md'" contentClass="'o_fin_entry_dialog'" footer="false">
+            <div class="o_fin_ui_form">
+                <div class="o_fin_ui_hero">
+                    <span class="o_fin_ui_hero_icon"><i class="fa fa-check" role="img" title="Done"/></span>
+                    <div class="o_fin_ui_hero_text">
+                        <label>Done</label>
+                        <div class="o_fin_ui_hero_sub" t-esc="props.plan.name"/>
+                    </div>
+                </div>
+                <t t-if="props.plan.saved > 0">
+                    <div class="o_fin_ui_card">
+                        <div class="o_fin_ui_label">What about the money saved for it?</div>
+                        <div class="o_fin_ui_hint">
+                            <b t-esc="props.money(props.plan.saved)"/> is set aside for this plan.
+                        </div>
+                    </div>
+                    <button type="button" class="o_fin_pl_choice" t-on-click="() => this.finish(true)">
+                        <b>It was paid from the savings</b>
+                        <span>Take it out of your savings - the balance goes down.</span>
+                    </button>
+                    <button type="button" class="o_fin_pl_choice" t-on-click="() => this.finish(false)">
+                        <b>Keep it in the savings</b>
+                        <span>Mark the plan done and leave the money where it is.</span>
+                    </button>
+                </t>
+                <button t-else="" type="button" class="o_fin_pl_choice" t-on-click="() => this.finish(false)">
+                    <b>Mark as done</b>
+                </button>
+                <button type="button" class="o_fin_pl_cancel" t-on-click="() => this.props.close()">Cancel</button>
+            </div>
+        </Dialog>
+    </t>
+
+    <!-- ===================== New / edit plan ===================== -->
+    <t t-name="family_finance.PlanDialog">
+        <Dialog title="title" size="'md'" contentClass="'o_fin_entry_dialog'">
+            <div class="o_fin_ui_form">
+                <div t-if="state.error" class="o_fin_ui_error" t-esc="state.error"/>
+
+                <div class="o_fin_ui_hero">
+                    <span class="o_fin_ui_hero_icon"><i t-attf-class="fa #{isTravel ? 'fa-plane' : 'fa-shopping-bag'}" role="img" title="Plan"/></span>
+                    <div class="o_fin_ui_hero_text">
+                        <label for="o_fin_plan_name">What are you planning?</label>
+                        <input id="o_fin_plan_name" type="text" class="o_fin_ui_hero_input" autocomplete="off"
+                               placeholder="Summer in Italy, new car..." t-model="state.name"/>
+                        <div class="o_fin_ui_hint" t-if="budget">Budget <b t-esc="money(budget)"/></div>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Photo</div>
+                    <div t-if="state.preview" class="o_fin_pl_photo" t-attf-style="background-image:url('#{state.preview}')"/>
+                    <div class="o_fin_pl_photo_row">
+                        <button type="button" class="o_fin_pl_soft" t-on-click="pickPhoto">
+                            <i class="fa fa-camera" role="img" title="Photo"/>
+                            <span t-if="state.preview">Change photo</span><span t-else="">Add a photo</span>
+                        </button>
+                        <button t-if="state.preview" type="button" class="o_fin_pl_soft" t-on-click="removePhoto">
+                            <i class="fa fa-times" role="img" title="Remove"/> <span>Remove</span>
+                        </button>
+                    </div>
+                    <input type="file" t-ref="file" accept="image/*" class="d-none" t-on-change="onPhotoChosen"/>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">What kind</div>
+                    <div class="o_fin_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.kind == 'travel' }"
+                                t-on-click="() => state.kind = 'travel'"><i class="fa fa-plane" role="img" title="Trip"/> Trip</button>
+                        <button type="button" t-att-class="{ o_active: state.kind == 'purchase' }"
+                                t-on-click="() => state.kind = 'purchase'"><i class="fa fa-shopping-bag" role="img" title="Purchase"/> Big purchase</button>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label"><t t-if="isTravel">Departure</t><t t-else="">Buy it by</t> (optional)</div>
+                    <input type="date" class="o_fin_ui_date" t-model="state.targetDate"/>
+                    <t t-if="isTravel">
+                        <div class="o_fin_ui_label" style="margin-top:14px">Back on (optional)</div>
+                        <input type="date" class="o_fin_ui_date" t-model="state.dateTo"/>
+                    </t>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Budget</div>
+                    <div t-foreach="state.lines" t-as="line" t-key="line.key" class="o_fin_pl_line">
+                        <input type="text" class="o_fin_ui_input" autocomplete="off"
+                               placeholder="Flights, hotel, the car itself..." t-model="line.name"/>
+                        <div class="o_fin_ui_inline o_amount">
+                            <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0"
+                                   t-att-value="line.amount" t-on-input="(ev) => this.onAmountInput(ev, line)"/>
+                            <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
+                        </div>
+                        <button type="button" class="o_fin_pl_line_remove" aria-label="Remove"
+                                t-on-click="() => this.removeLine(line)"><i class="fa fa-times" role="img" title="Remove"/></button>
+                    </div>
+                    <button type="button" class="o_fin_pl_soft" t-on-click="addLine">
+                        <i class="fa fa-plus" role="img" title="Add"/> <span>Add item</span>
+                    </button>
+                    <div class="o_fin_pl_total" t-if="state.lines.length > 1 and budget">
+                        Total <b t-esc="money(budget)"/>
+                    </div>
+                </div>
+
+                <!-- What has been put aside for it so far -->
+                <div class="o_fin_ui_card" t-if="state.plan">
+                    <div class="o_fin_ui_label">Saved so far</div>
+                    <div class="o_fin_pl_amounts">
+                        <b class="o_fin_pl_saved" t-esc="money(state.plan.saved)"/>
+                        <span class="o_fin_muted" t-if="state.plan.budget">of <t t-esc="money(state.plan.budget)"/></span>
+                    </div>
+                    <div class="o_fin_progress" t-if="state.plan.budget"><div class="o_fin_progress_bar" t-attf-style="width: #{state.plan.progress}%"/></div>
+                    <div class="o_fin_pl_people" t-if="state.plan.by_user.length">
+                        <span t-foreach="state.plan.by_user" t-as="person" t-key="person.name" class="o_fin_pl_person">
+                            <t t-esc="person.name.split(' ')[0]"/> <b t-esc="money(person.amount)"/>
+                        </span>
+                    </div>
+                    <div t-foreach="state.plan.history" t-as="row" t-key="row.id" class="o_fin_pl_hist">
+                        <span class="o_fin_muted" t-esc="row.date"/>
+                        <span class="o_fin_pl_hist_what"><t t-esc="historyLabel(row)"/> · <t t-esc="row.user.split(' ')[0]"/></span>
+                        <b t-attf-class="#{row.kind == 'withdraw' ? 'o_out' : ''}"
+                           t-esc="(row.kind == 'withdraw' ? '−' : '+') + historyMoney(row)"/>
+                    </div>
+                    <button type="button" class="o_fin_pl_soft" t-on-click="moveSavings">
+                        <i class="fa fa-exchange" role="img" title="Move"/> <span>Move savings here</span>
+                    </button>
+                </div>
+
+                <div class="o_fin_ui_card">
+                    <div class="o_fin_ui_label">Notes</div>
+                    <textarea class="o_fin_ui_textarea" rows="2" placeholder="Links, ideas, booking numbers..." t-model="state.notes"/>
+                </div>
+
+                <button t-if="state.plan" type="button" class="o_fin_ui_delete" t-on-click="askDelete">
+                    <i class="fa fa-trash" role="img" title="Delete"/> Delete this plan
+                </button>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving" t-on-click="save">Save</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- ===================== Move savings to / from a plan ===================== -->
+    <t t-name="family_finance.PlanMoveDialog">
+        <Dialog title="'Move savings'" size="'md'" contentClass="'o_fin_entry_dialog'">
+            <div class="o_fin_ui_form">
+                <div t-if="state.error" class="o_fin_ui_error" t-esc="state.error"/>
+
+                <div class="o_fin_ui_hero">
+                    <span class="o_fin_ui_hero_icon"><i class="fa fa-exchange" role="img" title="Move"/></span>
+                    <div class="o_fin_ui_hero_text">
+                        <label>How much</label>
+                        <div class="o_fin_ui_hero_number">
+                            <span class="o_fin_ui_unit" t-if="chosen and chosen.currency.position == 'before'" t-esc="chosen.currency.symbol"/>
+                            <input type="text" inputmode="decimal" autocomplete="off" placeholder="0.00"
+                                   t-att-value="state.amount" t-on-input="onAmountInput"/>
+                            <span class="o_fin_ui_unit" t-if="chosen and chosen.currency.position != 'before'" t-esc="chosen.currency.symbol"/>
+                        </div>
+                        <div class="o_fin_ui_hint" t-if="state.planName">
+                            <t t-if="state.direction == 'in'">to</t><t t-else="">from</t> <b t-esc="state.planName"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card" t-if="!props.plan">
+                    <div class="o_fin_ui_label">Which plan</div>
+                    <div t-if="!state.plans.length" class="o_fin_ui_hint">There is no plan yet - create one on the Plans tab first.</div>
+                    <div class="o_fin_ui_chips">
+                        <button t-foreach="state.plans" t-as="plan" t-key="plan.id" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: state.planId == plan.id }"
+                                t-on-click="() => this.choosePlan(plan)" t-esc="plan.name"/>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card" t-if="state.planId">
+                    <div class="o_fin_ui_label">Direction</div>
+                    <div class="o_fin_ui_toggle">
+                        <button type="button" t-att-class="{ o_active: state.direction == 'in' }"
+                                t-on-click="() => this.setDirection('in')"><i class="fa fa-arrow-right" role="img" title="In"/> To the plan</button>
+                        <button type="button" t-att-class="{ o_active: state.direction == 'out' }"
+                                t-on-click="() => this.setDirection('out')"><i class="fa fa-arrow-left" role="img" title="Out"/> Back to general</button>
+                    </div>
+                </div>
+
+                <div class="o_fin_ui_card" t-if="state.planId">
+                    <div class="o_fin_ui_label"><t t-if="state.direction == 'in'">From whose general savings</t><t t-else="">Whose money</t></div>
+                    <div t-if="!sources.length" class="o_fin_ui_hint">
+                        <t t-if="state.direction == 'in'">There are no general savings to move. Put money aside first with "Transfer from income".</t>
+                        <t t-else="">Nothing is saved for this plan yet.</t>
+                    </div>
+                    <div class="o_fin_ui_chips o_tight">
+                        <button t-foreach="sources" t-as="option" t-key="option_index" type="button" class="o_fin_ui_chip"
+                                t-att-class="{ o_active: chosen.index === option.index }"
+                                t-on-click="() => state.pick = option.index">
+                            <t t-esc="option.user.split(' ')[0]"/> · <t t-esc="money(available(option), option.currency)"/>
+                        </button>
+                    </div>
+                    <button t-if="chosen" type="button" class="o_fin_pl_soft" t-on-click="moveAll">
+                        <span>Move all <t t-esc="money(available(chosen), chosen.currency)"/></span>
+                    </button>
+                    <div class="o_fin_ui_hint">
+                        This only says what the money is for - it is not new saving, so this month's numbers stay as they are.
+                    </div>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-att-disabled="state.saving or !chosen" t-on-click="save">Move</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
