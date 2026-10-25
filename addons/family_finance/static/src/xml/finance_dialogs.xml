@@ -6,23 +6,17 @@
             <div class="o_fin_ui_form">
                 <div t-if="state.error" class="o_fin_ui_error" t-esc="state.error"/>
 
-                <!-- Big coloured header: the amount (or, for a plan, its name). -->
+                <!-- Big coloured header: the amount. -->
                 <div class="o_fin_ui_hero">
                     <span class="o_fin_ui_hero_icon"><i t-attf-class="fa #{cfg.icon}" role="img" title="Icon"/></span>
                     <div class="o_fin_ui_hero_text">
                         <label for="o_fin_main_input" t-esc="cfg.heroLabel"/>
-                        <t t-if="kind == 'plan'">
-                            <input id="o_fin_main_input" type="text" class="o_fin_ui_hero_input" autocomplete="off"
-                                   placeholder="Summer in Italy, new laptop..." t-model="state.planName"/>
-                        </t>
-                        <t t-else="">
-                            <div class="o_fin_ui_hero_number">
-                                <span class="o_fin_ui_unit" t-if="state.currency.position == 'before'" t-esc="state.currency.symbol"/>
-                                <input id="o_fin_main_input" type="text" inputmode="decimal" autocomplete="off"
-                                       placeholder="0.00" t-att-value="state.amount" t-on-input="onAmountInput"/>
-                                <span class="o_fin_ui_unit" t-if="state.currency.position != 'before'" t-esc="state.currency.symbol"/>
-                            </div>
-                        </t>
+                        <div class="o_fin_ui_hero_number">
+                            <span class="o_fin_ui_unit" t-if="state.currency.position == 'before'" t-esc="state.currency.symbol"/>
+                            <input id="o_fin_main_input" type="text" inputmode="decimal" autocomplete="off"
+                                   placeholder="0.00" t-att-value="state.amount" t-on-input="onAmountInput"/>
+                            <span class="o_fin_ui_unit" t-if="state.currency.position != 'before'" t-esc="state.currency.symbol"/>
+                        </div>
                         <div class="o_fin_ui_hint" t-if="isForeign and state.amount and state.rate">
                             ≈ <b t-esc="moneyBase(baseValue)"/>
                         </div>
@@ -35,7 +29,7 @@
                 </div>
 
                 <!-- Income / savings: which currency, and the rate to the base currency -->
-                <div class="o_fin_ui_card" t-if="hasCurrency">
+                <div class="o_fin_ui_card">
                     <div class="o_fin_ui_label">Currency</div>
                     <div class="o_fin_ui_chips">
                         <button t-foreach="state.currencies" t-as="cur" t-key="cur.id" type="button" class="o_fin_ui_chip"
@@ -52,26 +46,6 @@
                         </div>
                         <div class="o_fin_ui_hint" t-esc="state.rateNote"/>
                     </t>
-                </div>
-
-                <!-- Plan: trip or purchase, then a rough budget. -->
-                <div class="o_fin_ui_card" t-if="kind == 'plan'">
-                    <div class="o_fin_ui_label">What kind</div>
-                    <div class="o_fin_ui_toggle">
-                        <button type="button" t-att-class="{ o_active: state.planKind == 'travel' }"
-                                t-on-click="() => state.planKind = 'travel'"><i class="fa fa-plane" title="Travel"/> Trip</button>
-                        <button type="button" t-att-class="{ o_active: state.planKind == 'purchase' }"
-                                t-on-click="() => state.planKind = 'purchase'"><i class="fa fa-shopping-bag" title="Purchase"/> Big purchase</button>
-                    </div>
-                </div>
-                <div class="o_fin_ui_card" t-if="kind == 'plan'">
-                    <div class="o_fin_ui_label">Rough budget (optional)</div>
-                    <div class="o_fin_ui_inline">
-                        <span class="o_fin_ui_unit_dark" t-esc="state.currency.symbol"/>
-                        <input type="text" inputmode="decimal" class="o_fin_ui_input" placeholder="0.00"
-                               t-att-value="state.amount" t-on-input="onAmountInput"/>
-                    </div>
-                    <div class="o_fin_ui_hint">You can split it into flights, hotel... later, on the plan itself.</div>
                 </div>
 
                 <!-- Housing: what + which month -->
@@ -132,7 +106,7 @@
                 </div>
 
                 <!-- Who -->
-                <div class="o_fin_ui_card" t-if="needsWho">
+                <div class="o_fin_ui_card">
                     <div class="o_fin_ui_label" t-esc="whoLabel"/>
                     <div class="o_fin_ui_chips o_tight">
                         <button t-foreach="state.users" t-as="user" t-key="user.id" type="button" class="o_fin_ui_chip"
@@ -173,7 +147,7 @@
                 </div>
 
                 <div class="o_fin_ui_card">
-                    <div class="o_fin_ui_label" t-esc="kind == 'plan' ? 'When (optional)' : 'Date'"/>
+                    <div class="o_fin_ui_label">Date</div>
                     <input type="date" class="o_fin_ui_date" t-model="state.date" t-on-change="onDateChanged"/>
                 </div>
 

@@ -35,6 +35,12 @@ class FinanceSaving(models.Model):
         'finance.plan', string='For plan', ondelete='set null', index=True,
         help='Leave empty for general savings.')
     notes = fields.Char()
+    # Money that only changes its place, not your income: a move between general savings and a
+    # plan ('transfer'), or the plan being paid out of the savings ('payout'). Such entries never
+    # count as "saved this month" and a payout is not part of what the plan has saved.
+    move = fields.Selection(
+        [('transfer', 'Moved between general savings and a plan'), ('payout', 'Paid out for the plan')],
+        index=True)
 
     _sql_constraints = [
         ('amount_positive', 'check(amount > 0)', 'The amount must be positive.'),

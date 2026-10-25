@@ -150,6 +150,13 @@
         </field>
     </record>
 
+    <!-- The Plans tab itself is a client action (finance_plans.js): cards in three stages. The
+         table/kanban below stays as a desktop extra. -->
+    <record id="action_finance_plans" model="ir.actions.client">
+        <field name="name">Plans</field>
+        <field name="tag">family_finance.plans</field>
+    </record>
+
     <record id="action_finance_plan" model="ir.actions.act_window">
         <field name="name">Plans</field>
         <field name="res_model">finance.plan</field>

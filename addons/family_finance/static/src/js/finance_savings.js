@@ -4,6 +4,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { FinanceEntryDialog } from "./finance_dialogs";
+import { PlanDialog, PlanMoveDialog } from "./finance_plans";
 
 // The Savings tab: how much you have put aside, whose income it came from, which plan it is for
 // and the latest transfers. "Transfer" moves money out of this month's income into savings.
@@ -52,18 +53,20 @@ class FinanceSavings extends Component {
         this.openDialog({ defaults: { savingKind: "withdraw" } });
     }
 
+    // A move between general savings and a plan has nothing to edit: it is changed by moving again.
     edit(row) {
-        this.openDialog({ resId: row.id });
+        if (!row.move) {
+            this.openDialog({ resId: row.id });
+        }
     }
 
     openPlan(id) {
-        this.actionService.doAction({
-            type: "ir.actions.act_window",
-            res_model: "finance.plan",
-            res_id: id,
-            views: [[false, "form"]],
-            target: "current",
-        });
+        this.dialogService.add(PlanDialog, { planId: id, onSaved: () => this.load() });
+    }
+
+    // Assign money you already saved to one of the plans (it stays in the savings).
+    moveToPlan() {
+        this.dialogService.add(PlanMoveDialog, { onDone: () => this.load() });
     }
 
     openAll() {

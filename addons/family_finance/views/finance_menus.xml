@@ -14,7 +14,9 @@
     <menuitem id="menu_finance_savings" name="Savings" parent="menu_finance_root"
               action="action_finance_savings" sequence="50"/>
     <menuitem id="menu_finance_plans" name="Plans" parent="menu_finance_root"
-              action="action_finance_plan" sequence="60"/>
+              action="action_finance_plans" sequence="60"/>
+    <menuitem id="menu_finance_plans_table" name="Plans (table)" parent="menu_finance_root"
+              action="action_finance_plan" sequence="65"/>
     <menuitem id="menu_finance_limits" name="Limits" parent="menu_finance_root"
               action="action_finance_budget" sequence="70"/>
     <menuitem id="menu_finance_stores" name="Stores" parent="menu_finance_root"

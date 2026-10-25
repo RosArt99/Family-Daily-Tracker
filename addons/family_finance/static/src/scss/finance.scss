@@ -1185,3 +1185,440 @@ $fin-cat-other: linear-gradient(135deg, #495057, #6c757d);
     -webkit-overflow-scrolling: touch;
     padding-bottom: 40px;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Overview: a card per person - income, what they paid, what is left of it (finance_overview.xml)
+// ---------------------------------------------------------------------------------------------
+.o_fin_pcard {
+    .o_fin_pcard_head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+
+        .o_fin_avatar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: $fin-gradient;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .o_fin_person_name {
+            flex: 1;
+            min-width: 0;
+            font-weight: 700;
+        }
+    }
+
+    .o_fin_pcard_left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        line-height: 1.15;
+
+        b {
+            color: $fin-income;
+            font-size: 22px;
+
+            &.o_negative {
+                color: #d6384b;
+            }
+        }
+    }
+
+    .o_fin_pcard_nums {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        font-size: 13px;
+
+        .o_in { color: $fin-income; }
+        .o_out { color: $fin-spent; }
+        .o_sv { color: var(--fam-color, #4194c8); }
+    }
+
+    .o_fin_pcard_bar {
+        display: flex;
+        height: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+        border-radius: 5px;
+        background: #eef0f2;
+    }
+
+    .o_fin_pcard_seg {
+        height: 100%;
+    }
+
+    .o_fin_pcard_cats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6c757d;
+
+        b {
+            color: #343a40;
+        }
+    }
+
+    .o_fin_pcard_dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        margin-right: 3px;
+        border-radius: 50%;
+    }
+}
+
+// The category colours, as plain backgrounds for the bar segments and legend dots.
+.o_fin_pcard {
+    .o_fin_exp_groceries { background: $fin-cat-groceries; }
+    .o_fin_exp_housing { background: $fin-cat-housing; }
+    .o_fin_exp_personal_care { background: $fin-cat-personal_care; }
+    .o_fin_exp_subscriptions { background: $fin-cat-subscriptions; }
+    .o_fin_exp_restaurants { background: $fin-cat-restaurants; }
+    .o_fin_exp_clothes { background: $fin-cat-clothes; }
+    .o_fin_exp_car { background: $fin-cat-car; }
+    .o_fin_exp_other { background: $fin-cat-other; }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Plans tab (finance_plans.js): three stages, a card per plan
+// ---------------------------------------------------------------------------------------------
+.o_fin_plans {
+    padding-bottom: 110px;       // room for the fixed phone tab bar
+}
+
+.o_fin_pl_top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.o_fin_pl_tabs {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: $fin-shadow;
+
+    .o_fin_pl_tab {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 8px 4px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #6c757d;
+        font-size: 13px;
+        font-weight: 700;
+
+        .fa {
+            font-size: 14px;
+        }
+
+        .o_fin_pl_count {
+            min-width: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: #eef0f2;
+            font-size: 11px;
+            line-height: 18px;
+        }
+
+        &.o_active {
+            background: $fin-gradient;
+            color: #fff;
+
+            .o_fin_pl_count {
+                background: rgba(255, 255, 255, 0.3);
+            }
+        }
+    }
+}
+
+.o_fin_pl_new {
+    flex: none;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: $fin-gradient;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: $fin-shadow;
+}
+
+.o_fin_pl_card {
+    margin-bottom: 16px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+
+    &.o_fin_pl_done .o_fin_pl_cover {
+        filter: grayscale(0.7);
+    }
+}
+
+.o_fin_pl_cover {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    gap: 6px;
+    min-height: 130px;
+    padding: 10px;
+    background-color: #dbe8f2;
+    background-position: center;
+    background-size: cover;
+    cursor: pointer;
+
+    &.o_fin_pl_nophoto {
+        background-image: $fin-gradient;
+    }
+
+    .o_fin_pl_bigicon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -60%);
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 54px;
+    }
+
+    .o_fin_pl_chip .fa { margin-right: 4px; }
+
+    .o_fin_pl_chip {
+        position: relative;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+    }
+}
+
+.o_fin_pl_body {
+    padding: 14px 16px 6px;
+    cursor: pointer;
+
+    .o_fin_pl_name {
+        margin-bottom: 8px;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+}
+
+.o_fin_pl_amounts {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+
+    .o_fin_pl_saved {
+        font-size: 22px;
+        color: var(--fam-color, #4194c8);
+    }
+
+    .o_fin_pl_pct {
+        margin-left: auto;
+    }
+}
+
+.o_fin_pl_hint {
+    margin-top: 8px;
+    color: #6c757d;
+    font-size: 13px;
+
+    b {
+        color: #343a40;
+    }
+
+    .o_ok {
+        color: $fin-income;
+    }
+}
+
+.o_fin_pl_people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+
+    .o_fin_pl_person {
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: #eef6fb;
+        color: #2a6f9c;
+        font-size: 12px;
+    }
+}
+
+.o_fin_pl_actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 16px 14px;
+}
+
+.o_fin_pl_btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 12px;
+    border: 2px solid #d4e4f0;
+    border-radius: 12px;
+    background: #fff;
+    color: #2a6f9c;
+    font-weight: 700;
+
+    &.o_primary {
+        border-color: transparent;
+        background: $fin-gradient;
+        color: #fff;
+    }
+}
+
+// Plan window
+.o_fin_pl_photo {
+    height: 150px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    background-color: #dbe8f2;
+    background-position: center;
+    background-size: cover;
+}
+
+.o_fin_pl_photo_row {
+    display: flex;
+    gap: 8px;
+}
+
+.o_fin_pl_soft {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 14px;
+    border: 2px dashed #b8d6ea;
+    border-radius: 12px;
+    background: #f4f9fd;
+    color: var(--fam-color, #4194c8);
+    font-weight: 700;
+}
+
+.o_fin_pl_photo_row .o_fin_pl_soft {
+    margin-top: 0;
+}
+
+.o_fin_pl_line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    > .o_fin_ui_input {
+        flex: 1 1 0;
+        min-width: 0;
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .o_amount {
+        flex: 0 0 38%;
+        align-items: center;
+    }
+
+    .o_fin_pl_line_remove {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 50%;
+        background: #f1f3f5;
+        color: #868e96;
+    }
+}
+
+.o_fin_pl_total {
+    margin-top: 10px;
+    text-align: right;
+    font-size: 15px;
+}
+
+.o_fin_pl_hist {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid #eef0f2;
+    font-size: 13px;
+
+    &:first-of-type {
+        margin-top: 10px;
+    }
+
+    .o_fin_pl_hist_what {
+        flex: 1;
+        min-width: 0;
+    }
+
+    b.o_out {
+        color: $fin-spent;
+    }
+}
+
+.o_fin_pl_choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #fff;
+    text-align: left;
+    box-shadow: $fin-shadow;
+
+    span {
+        color: #6c757d;
+        font-size: 13px;
+    }
+}
+
+.o_fin_pl_cancel {
+    display: block;
+    margin: 4px auto 0;
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: #e9ecef;
+    color: #495057;
+    font-weight: 700;
+}
+
+// Savings tab: a row that is a move between general savings and a plan, or a payout
+.o_fin_transfer .o_fin_transfer_icon.o_move {
+    background: #e3f0f9;
+    color: #2a6f9c;
+}

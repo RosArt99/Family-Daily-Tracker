@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
@@ -91,9 +92,10 @@ class FinanceOverview(models.AbstractModel):
         amounts['personal_care'] += groceries['personal']
         income = sum(r['amount'] for r in by_user)
         spent = sum(amounts.values())
+        # Moves between general savings and a plan are not new saving (see finance.saving.move).
         saved = sum(
             row['signed_base'] or 0.0 for row in Saving.read_group(
-                [('date', '>=', first), ('date', '<', nxt)], ['signed_base:sum'], []))
+                [('date', '>=', first), ('date', '<', nxt), ('move', '=', False)], ['signed_base:sum'], []))
 
         trend = []
         for back in range(5, -1, -1):
@@ -131,6 +133,7 @@ class FinanceOverview(models.AbstractModel):
             'is_current_month': (first.year, first.month) == (today.year, today.month),
             'currency': self._currency_info(),
             'income': {'total': income, 'by_user': by_user},
+            'people': self._people_summary(first, nxt, by_user),
             'groceries': groceries,
             'expenses': expenses,
             'spent': spent,
@@ -145,6 +148,57 @@ class FinanceOverview(models.AbstractModel):
                 'target_date': fields.Date.to_string(plan.target_date) if plan.target_date else False,
             } for plan in plans],
         }
+
+    def _spending_by_user(self, start, end):
+        """{user id: {category key: amount}} between two dates - what each of you paid, split the
+        way the Overview splits it (personal care on a grocery receipt counts as personal care;
+        housing counts in the month it is for)."""
+        spent = defaultdict(lambda: dict.fromkeys(EXPENSE_CATEGORIES, 0.0))
+        for row in self.env['finance.bill'].read_group(
+                [('date', '>=', start), ('date', '<', end)],
+                ['total_base:sum', 'personal_base:sum'], ['user_id']):
+            mine = spent[row['user_id'][0]]
+            personal = row['personal_base'] or 0.0
+            mine['groceries'] += (row['total_base'] or 0.0) - personal
+            mine['personal_care'] += personal
+        for row in self.env['finance.housing'].read_group(
+                [('period', '>=', start), ('period', '<', end)], ['amount_base:sum'], ['user_id']):
+            spent[row['user_id'][0]]['housing'] += row['amount_base'] or 0.0
+        for row in self.env['finance.expense'].read_group(
+                [('date', '>=', start), ('date', '<', end)], ['amount_base:sum'],
+                ['user_id', 'category'], lazy=False):
+            spent[row['user_id'][0]][row['category']] += row['amount_base'] or 0.0
+        return spent
+
+    def _people_summary(self, start, end, income_by_user):
+        """One card per person: what they earned this month, what they paid (by category), what
+        they put aside, and so what is left of THEIR income."""
+        spent = self._spending_by_user(start, end)
+        income = {row['id']: row['amount'] for row in income_by_user}
+        saved = {
+            row['user_id'][0]: row['signed_base'] or 0.0
+            for row in self.env['finance.saving'].read_group(
+                [('date', '>=', start), ('date', '<', end), ('move', '=', False)],
+                ['signed_base:sum'], ['user_id'])}
+        family = {person['id'] for person in self.get_family_users()}
+        users = self.env['res.users'].browse(sorted(family | set(income) | set(spent) | set(saved)))
+        people = []
+        for user in users:
+            by_category = spent[user.id] if user.id in spent else dict.fromkeys(EXPENSE_CATEGORIES, 0.0)
+            total = sum(by_category.values())
+            people.append({
+                'id': user.id,
+                'name': user.name,
+                'income': income.get(user.id, 0.0),
+                'spent': total,
+                'saved': saved.get(user.id, 0.0),
+                'left': income.get(user.id, 0.0) - total - saved.get(user.id, 0.0),
+                'categories': sorted([{
+                    'key': key, 'label': EXPENSE_CATEGORIES[key][0], 'icon': EXPENSE_CATEGORIES[key][1],
+                    'amount': amount,
+                } for key, amount in by_category.items() if amount > 0], key=lambda c: -c['amount']),
+            })
+        return people
 
     def _plain_expense_totals(self, start, end):
         """Spending per plain category (subscriptions, restaurants, ...) between two dates."""
@@ -184,7 +238,7 @@ class FinanceOverview(models.AbstractModel):
         ]
         by_user.sort(key=lambda r: r['name'])
 
-        plans = self.env['finance.plan'].search([('saving_ids', '!=', False)])
+        plans = self.env['finance.plan'].search([('saving_ids', '!=', False), ('state', '!=', 'done')])
         by_plan = [{
             'id': plan.id, 'name': plan.name, 'kind': plan.kind, 'state': plan.state,
             'saved': plan.saved_amount, 'budget': plan.budget_amount, 'progress': plan.progress,
@@ -194,7 +248,7 @@ class FinanceOverview(models.AbstractModel):
             'id': rec.id, 'date': fields.Date.to_string(rec.date), 'kind': rec.kind,
             'amount': rec.amount, 'currency': self._currency_info(rec.currency_id),
             'is_foreign': rec.is_foreign, 'base': abs(rec.signed_base), 'user': rec.user_id.name,
-            'plan': rec.plan_id.name or '', 'notes': rec.notes or '',
+            'plan': rec.plan_id.name or '', 'notes': rec.notes or '', 'move': rec.move or '',
         } for rec in Saving.search([], limit=10)]
 
         return {

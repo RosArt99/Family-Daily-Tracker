@@ -41,13 +41,6 @@ export const KINDS = {
         heroLabel: _t("Amount"),
         amountField: "amount",
     },
-    plan: {
-        model: "finance.plan",
-        title: _t("Plan"),
-        icon: "fa-plane",
-        heroLabel: _t("What are you planning?"),
-        amountField: null,
-    },
     // The plain expense categories all live in finance.expense, told apart by `category`.
     personal_care: expenseKind("personal_care", _t("Personal care"), "fa-shower", _t("Shower gel, toothpaste..."),
         ["Shower gel", "Toothpaste", "Shampoo", "Deodorant", "Cosmetics", "Pharmacy"]),
@@ -134,7 +127,7 @@ function todayString() {
 }
 
 // A phone photo is 3-6 MB; shrink it to what a receipt needs before it travels to the server.
-function shrinkImage(file) {
+export function shrinkImage(file, maxSide = MAX_PHOTO_SIDE) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = () => reject(reader.error);
@@ -142,7 +135,7 @@ function shrinkImage(file) {
             const img = new Image();
             img.onerror = () => reject(new Error("Not an image"));
             img.onload = () => {
-                const scale = Math.min(1, MAX_PHOTO_SIDE / Math.max(img.width, img.height));
+                const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
                 const canvas = document.createElement("canvas");
                 canvas.width = Math.round(img.width * scale);
                 canvas.height = Math.round(img.height * scale);
@@ -195,7 +188,7 @@ export class FinanceEntryDialog extends Component {
             personal: "",
             storeText: "",
             stores: [],
-            date: this.props.kind === "plan" ? "" : todayString(),
+            date: todayString(),
             period: todayString().slice(0, 7),
             userId: session.uid || session.user_id,
             users: [],
@@ -206,8 +199,6 @@ export class FinanceEntryDialog extends Component {
             savingKind: defaults.savingKind || "deposit",
             planId: false,
             plans: [],
-            planName: "",
-            planKind: "travel",
             notes: "",
             photos: [],
             removedPhotoIds: [],
@@ -242,11 +233,7 @@ export class FinanceEntryDialog extends Component {
                 state.currencies = c.list;
             }),
         ];
-        if (this.kind !== "plan") {
-            jobs.push(
-                this.orm.call("finance.overview", "get_family_users", []).then((users) => (state.users = users))
-            );
-        }
+        jobs.push(this.orm.call("finance.overview", "get_family_users", []).then((users) => (state.users = users)));
         if (this.kind === "bill") {
             jobs.push(this.loadStores());
         }
@@ -263,9 +250,7 @@ export class FinanceEntryDialog extends Component {
         await Promise.all(jobs);
         if (this.isEdit) {
             await this.loadRecord();
-        } else if (this.kind === "plan") {
-            state.planKind = (this.props.defaults || {}).planKind || "travel";
-        } else if (this.hasCurrency) {
+        } else {
             // Salary comes in hryvnias, savings sit in dollars (USDT); spending is zlotys unless
             // you pick another currency (a tutor paid in hryvnias, a dollar subscription...).
             const wanted = { income: "UAH", saving: "USD" }[this.kind];
@@ -324,7 +309,7 @@ export class FinanceEntryDialog extends Component {
     async loadRecord() {
         const { state } = this;
         const [rec] = await this.orm.read(this.cfg.model, [this.props.resId], []);
-        state.amount = this.cfg.amountField ? shown(rec[this.cfg.amountField]) : "";
+        state.amount = shown(rec[this.cfg.amountField]);
         state.notes = rec.notes || "";
         if (rec.date) {
             state.date = rec.date;
@@ -344,11 +329,9 @@ export class FinanceEntryDialog extends Component {
             state.housingKind = rec.kind;
             state.period = rec.period.slice(0, 7);
         }
-        if (this.hasCurrency) {
-            this.applyCurrency(rec.currency_id[0]);
-            state.rate = this.trimRate(rec.rate);
-            state.rateNote = _t("Saved rate");
-        }
+        this.applyCurrency(rec.currency_id[0]);
+        state.rate = this.trimRate(rec.rate);
+        state.rateNote = _t("Saved rate");
         if (this.kind === "income") {
             state.source = rec.source;
         }
@@ -367,13 +350,9 @@ export class FinanceEntryDialog extends Component {
 
     // ------------------------------------------------------------------ input helpers
 
-    // ---- currency & exchange rate (everything except plans, whose budget is in zlotys) ----
-    get hasCurrency() {
-        return this.kind !== "plan";
-    }
-
+    // ---- currency & exchange rate ----
     get isForeign() {
-        return this.hasCurrency && this.state.currencyId !== this.state.base.id;
+        return this.state.currencyId !== this.state.base.id;
     }
 
     get baseValue() {
@@ -424,9 +403,7 @@ export class FinanceEntryDialog extends Component {
     }
 
     onDateChanged() {
-        if (this.hasCurrency) {
-            return this.refreshRate();
-        }
+        return this.refreshRate();
     }
 
     onRateInput(ev) {
@@ -448,10 +425,6 @@ export class FinanceEntryDialog extends Component {
 
     get hasPhotos() {
         return this.kind === "bill" || this.kind === "housing" || this.isExpense;
-    }
-
-    get needsWho() {
-        return this.kind !== "plan";
     }
 
     get whoLabel() {
@@ -606,19 +579,6 @@ export class FinanceEntryDialog extends Component {
                     plan_id: state.planId || false, notes,
                     currency_id: state.currencyId, rate: this.isForeign ? num(state.rate) : 1,
                 };
-            case "plan": {
-                if (!state.planName.trim()) {
-                    throw new Error(_t("Give the plan a name."));
-                }
-                const vals = {
-                    name: state.planName.trim(), kind: state.planKind, notes,
-                    target_date: state.date || false,
-                };
-                if (amount > 0) {
-                    vals.line_ids = [[0, 0, { name: _t("Budget"), amount }]];
-                }
-                return vals;
-            }
         }
     }
 

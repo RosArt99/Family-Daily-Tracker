@@ -1,6 +1,6 @@
 {
     'name': 'Family Finance',
-    'version': '17.0.1.3.0',
+    'version': '17.0.1.4.0',
     'category': 'Productivity',
     'summary': 'Grocery bills, income and savings plans for the family',
     'author': 'Ros',
@@ -23,6 +23,7 @@
         'web.assets_backend': [
             'family_finance/static/src/js/finance_app.js',
             'family_finance/static/src/js/finance_dialogs.js',
+            'family_finance/static/src/js/finance_plans.js',
             'family_finance/static/src/js/finance_views.js',
             'family_finance/static/src/js/finance_overview.js',
             'family_finance/static/src/js/finance_savings.js',
@@ -30,6 +31,7 @@
             'family_finance/static/src/xml/finance_dialogs.xml',
             'family_finance/static/src/xml/finance_overview.xml',
             'family_finance/static/src/xml/finance_savings.xml',
+            'family_finance/static/src/xml/finance_plans.xml',
             'family_finance/static/src/xml/finance_expenses.xml',
             'family_finance/static/src/scss/finance.scss',
         ],

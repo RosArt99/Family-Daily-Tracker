@@ -20,6 +20,9 @@
                     <button type="button" class="o_fin_hero_btn o_secondary" t-on-click="withdraw">
                         <i class="fa fa-arrow-up" role="img" title="Withdraw"/> Withdraw
                     </button>
+                    <button type="button" class="o_fin_hero_btn o_secondary" t-on-click="moveToPlan">
+                        <i class="fa fa-exchange" role="img" title="Move"/> To a plan
+                    </button>
                 </div>
             </div>
 
@@ -64,7 +67,10 @@
                 <div class="o_fin_section_head"><span class="o_fin_section_title">Latest transfers</span></div>
                 <div t-foreach="d.recent" t-as="row" t-key="row.id" class="o_fin_panel o_fin_transfer"
                      t-on-click="() => this.edit(row)">
-                    <span t-attf-class="o_fin_transfer_icon #{row.kind == 'withdraw' ? 'o_out' : ''}">
+                    <span t-if="row.move" class="o_fin_transfer_icon o_move">
+                        <i t-attf-class="fa #{row.move == 'payout' ? 'fa-shopping-bag' : 'fa-exchange'}" role="img" title="Move"/>
+                    </span>
+                    <span t-else="" t-attf-class="o_fin_transfer_icon #{row.kind == 'withdraw' ? 'o_out' : ''}">
                         <i t-attf-class="fa #{row.kind == 'withdraw' ? 'fa-arrow-up' : 'fa-arrow-down'}" role="img" title="Transfer"/>
                     </span>
                     <span class="o_fin_transfer_text">
@@ -72,7 +78,7 @@
                         <span class="o_fin_muted"><t t-esc="row.date"/><t t-if="row.plan"> · <t t-esc="row.plan"/></t><t t-if="row.notes"> · <t t-esc="row.notes"/></t></span>
                     </span>
                     <span class="o_fin_transfer_right">
-                        <b t-attf-class="o_fin_transfer_amount #{row.kind == 'withdraw' ? 'o_out' : ''}"
+                        <b t-attf-class="o_fin_transfer_amount #{row.kind == 'withdraw' and !row.move ? 'o_out' : ''}"
                            t-esc="(row.kind == 'withdraw' ? '−' : '+') + money(row.amount, row.currency)"/>
                         <span t-if="row.is_foreign" class="o_fin_muted">≈ <t t-esc="money(row.base)"/></span>
                     </span>

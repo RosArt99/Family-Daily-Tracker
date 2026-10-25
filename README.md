@@ -51,8 +51,9 @@ their own key.
 - **Goals**: personal targets per person.
 
 ### `family_finance` — Finance
-- **Overview**: one month at a glance - income (per person), grocery spending split into food and
-  household, what is left, a 6-month trend and the plans being saved for.
+- **Overview**: one month at a glance - a card per person: their income minus what *they* paid
+  ("Paid by" on every expense) and put aside = what is left of it, with where it went by category;
+  grocery spending split into food and household, a 6-month trend and the plans being saved for.
 - **Expenses**: seven categories as big buttons - Groceries, Housing, Subscriptions, Restaurants,
   Personal care, Clothes, Car, Other. "+ Add expense" asks for the category first, then opens that category's
   entry window.
@@ -67,8 +68,12 @@ their own key.
 - **Currencies**: books are in PLN; every entry (expenses, income, savings) can be in UAH/USD and is
   converted at the National Bank of Ukraine's official rate for the day (editable). The overview
   and limits always add up in zlotys.
-- **Plans**: trips and big purchases with a budget (flights, hotel, ...), the money put aside so
-  far and a progress bar.
+- **Plans**: trips and big purchases as cards in three stages - **Planning** (an idea with a price
+  tag), **Saving** and **Done**. A plan has a photo, a date, a budget split into items, a progress
+  bar and "X a month to make it". **Move savings here** assigns money you already put aside (from
+  either of you, in any currency) to a plan, or takes it back; Planning turns into Saving by itself.
+  **Done** can take the saved money out of the savings (paid) - reopening gives it back. Moves are
+  not new saving, so the month's numbers do not change.
 - **Limits**: monthly limits per category and for everything together; the overview turns
   amber at 80% and red when you go over.
 

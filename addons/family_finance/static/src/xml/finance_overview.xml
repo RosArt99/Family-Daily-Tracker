@@ -37,19 +37,41 @@
 
             <div class="o_fin_section">
                 <div class="o_fin_section_head">
-                    <span class="o_fin_section_title">Income</span>
+                    <span class="o_fin_section_title">Income &amp; what is left</span>
                     <button type="button" class="o_fin_add" t-on-click="() => this.openNew('income')">
                         <i class="fa fa-plus" role="img" title="Add"/> Add income
                     </button>
                 </div>
-                <div class="o_fin_panel">
-                    <div t-foreach="d.income.by_user" t-as="person" t-key="person.id" class="o_fin_person">
+                <!-- One card per person: their income minus what THEY paid and put aside = what is
+                     left of it, with where the money went. -->
+                <div t-foreach="d.people" t-as="person" t-key="person.id" class="o_fin_panel o_fin_pcard">
+                    <div class="o_fin_pcard_head">
                         <span class="o_fin_avatar" t-esc="initial(person.name)"/>
                         <span class="o_fin_person_name" t-esc="person.name"/>
-                        <b class="o_fin_person_amount" t-esc="money(person.amount)"/>
+                        <span class="o_fin_pcard_left">
+                            <span class="o_fin_muted">left</span>
+                            <b t-attf-class="#{person.left &lt; 0 ? 'o_negative' : ''}" t-esc="money(person.left)"/>
+                        </span>
                     </div>
-                    <div t-if="!d.income.by_user.length" class="o_fin_empty">No income added for this month yet.</div>
+                    <div class="o_fin_pcard_nums">
+                        <span><i class="fa fa-arrow-down o_in" role="img" title="Income"/> <b t-esc="money(person.income)"/><span class="o_fin_muted"> income</span></span>
+                        <span><i class="fa fa-arrow-up o_out" role="img" title="Spent"/> <b t-esc="money(person.spent)"/><span class="o_fin_muted"> spent</span></span>
+                        <span t-if="person.saved"><i class="fa fa-university o_sv" role="img" title="Saved"/> <b t-esc="money(person.saved)"/><span class="o_fin_muted"> saved</span></span>
+                    </div>
+                    <div t-if="person.spent > 0" class="o_fin_pcard_bar">
+                        <span t-foreach="person.categories" t-as="cat" t-key="cat.key"
+                              t-attf-class="o_fin_pcard_seg o_fin_exp_#{cat.key}"
+                              t-att-title="cat.label + ' ' + money(cat.amount)"
+                              t-attf-style="width: #{pct(cat.amount, person.spent)}%"/>
+                    </div>
+                    <div t-if="person.categories.length" class="o_fin_pcard_cats">
+                        <span t-foreach="person.categories" t-as="cat" t-key="cat.key" class="o_fin_pcard_cat">
+                            <i t-attf-class="o_fin_pcard_dot o_fin_exp_#{cat.key}"/>
+                            <t t-esc="cat.label"/> <b t-esc="money(cat.amount)"/>
+                        </span>
+                    </div>
                 </div>
+                <div t-if="!d.people.length" class="o_fin_panel o_fin_empty">No income added for this month yet.</div>
             </div>
 
             <div class="o_fin_section">
@@ -114,7 +136,7 @@
             <div class="o_fin_section">
                 <div class="o_fin_section_head">
                     <span class="o_fin_section_title">Plans</span>
-                    <button type="button" class="o_fin_add" t-on-click="() => this.openNew('plan')">
+                    <button type="button" class="o_fin_add" t-on-click="newPlan">
                         <i class="fa fa-plus" role="img" title="Add"/> New plan
                     </button>
                 </div>
@@ -132,7 +154,7 @@
                     </div>
                 </div>
                 <div t-if="!d.plans.length" class="o_fin_panel o_fin_empty">No active plans. Start one for your next trip or big purchase.</div>
-                <button type="button" class="o_fin_link" t-on-click="() => this.openAction('family_finance.action_finance_plan')">
+                <button type="button" class="o_fin_link" t-on-click="() => this.openAction('family_finance.action_finance_plans')">
                     All plans <i class="fa fa-chevron-right" role="img"/>
                 </button>
             </div>

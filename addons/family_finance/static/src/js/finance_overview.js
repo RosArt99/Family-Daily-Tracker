@@ -4,6 +4,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { FinanceCategoryPicker, FinanceEntryDialog, FinanceLimitsDialog } from "./finance_dialogs";
+import { PlanDialog } from "./finance_plans";
 
 // The Finance landing screen: one month at a glance - what came in, what went on groceries
 // (food vs household), what is left, a 6-month trend and the plans being saved for. All the
@@ -86,12 +87,15 @@ class FinanceOverview extends Component {
     }
 
     openPlan(id) {
-        this.actionService.doAction({
-            type: "ir.actions.act_window",
-            res_model: "finance.plan",
-            res_id: id,
-            views: [[false, "form"]],
-            target: "current",
+        this.dialogService.add(PlanDialog, {
+            planId: id,
+            onSaved: () => this.load(this.state.data.year, this.state.data.month),
+        });
+    }
+
+    newPlan() {
+        this.dialogService.add(PlanDialog, {
+            onSaved: () => this.load(this.state.data.year, this.state.data.month),
         });
     }
 

@@ -7,10 +7,11 @@ import { listView } from "@web/views/list/list_view";
 import { ListController } from "@web/views/list/list_controller";
 import { useService } from "@web/core/utils/hooks";
 import { FinanceCategoryPicker, FinanceEntryDialog, KIND_BY_MODEL } from "./finance_dialogs";
+import { PlanDialog } from "./finance_plans";
 
 // "New" and a tap on a card/row open the friendly Finance dialog (finance_dialogs.js) instead of
-// Odoo's plain form - for every Finance model that has one. Plans are the exception for editing:
-// a plan has a budget table and savings, which the full form handles better than a dialog.
+// Odoo's plain form - for every Finance model that has one. Plans have their own window
+// (finance_plans.js) with the budget table and what has been saved.
 const EDIT_IN_DIALOG = new Set([
     "bill", "housing", "income", "saving", "subscriptions", "restaurants", "clothes", "car", "other",
 ]);
@@ -44,7 +45,15 @@ function withFinanceDialogs(Controller) {
             });
         }
 
+        openPlanDialog(props) {
+            this.financeDialogs.add(PlanDialog, { onSaved: () => this.financeReload(), ...props });
+        }
+
         async createRecord() {
+            if (this.props.resModel === "finance.plan") {
+                this.openPlanDialog({});
+                return;
+            }
             if (this.financeKind) {
                 this.openFinanceDialog({});
                 return;
@@ -59,6 +68,10 @@ function withFinanceDialogs(Controller) {
         }
 
         async openRecord(record) {
+            if (this.props.resModel === "finance.plan") {
+                this.openPlanDialog({ planId: record.resId });
+                return;
+            }
             const kind =
                 this.props.resModel === "finance.expense" ? record.data.category : this.financeKind;
             if (EDIT_IN_DIALOG.has(kind)) {
