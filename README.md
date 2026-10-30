@@ -46,6 +46,8 @@ their own key.
   menus (logos, kcal and macros per portion, menu combos). Under them a **History** of what you
   ate lately (from any source) adds it again with last time's amount. The **Me / other person**
   switch at the top opens the other's diary, so one of you can fill in what the other ate. Recipes
+  can be filed under **categories** (Breakfast, Soups, ... - add, rename or delete your own): My Saved
+  Food has a filter row, groups the dishes by category, and a tag button on each dish files it in one tap.
   can use **other recipes as ingredients** (crepes + a filling; change the filling and every dish
   using it follows) and can be edited right from the open recipe.
 - **Goals**: personal targets per person.

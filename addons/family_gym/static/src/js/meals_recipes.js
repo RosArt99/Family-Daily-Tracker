@@ -42,13 +42,18 @@ export class RecipeFormDialog extends Component {
             description: "",
             servings: "1",
             cookedWeight: "",
+            categoryId: false,
+            categories: [],
+            newCategory: "",
             ingredients: [],
             error: "",
             saving: false,
         });
         onWillStart(async () => {
+            this.state.categories = (await this.orm.call("gym.recipe.category", "get_categories", [])).categories;
             if (this.props.recipeId) {
                 const recipe = await this.orm.call("gym.recipe", "get_recipe", [this.props.recipeId]);
+                this.state.categoryId = recipe.category_id || false;
                 this.state.name = recipe.name;
                 this.state.description = recipe.description;
                 this.state.servings = String(recipe.servings);
@@ -76,6 +81,20 @@ export class RecipeFormDialog extends Component {
             // Products without nutrition data would silently count as 0 kcal.
             missing: !Object.values(per100).some((value) => value > 0),
         };
+    }
+
+    // ---- category: one of the shelves, or a new one typed in ----
+    async addCategory() {
+        const name = this.state.newCategory.trim();
+        if (!name) {
+            return;
+        }
+        const category = await this.orm.call("gym.recipe.category", "create_category", [name]);
+        if (!this.state.categories.some((other) => other.id === category.id)) {
+            this.state.categories.push(category);
+        }
+        this.state.categoryId = category.id;
+        this.state.newCategory = "";
     }
 
     // ---- servings (digits only) ----
@@ -240,6 +259,7 @@ export class RecipeFormDialog extends Component {
                 {
                     id: this.props.recipeId || false,
                     name: state.name,
+                    category_id: state.categoryId,
                     description: state.description,
                     servings: this.servingsCount,
                     cooked_weight_g: num(state.cookedWeight),
@@ -298,6 +318,110 @@ export class RecipePickerDialog extends Component {
     }
 }
 
+// File one saved dish under a category: tap a shelf and it is done (quick when going through many
+// dishes). A new shelf can be typed in on the spot.
+export class RecipeCategoryDialog extends Component {
+    static template = "family_gym.RecipeCategoryDialog";
+    static components = { Dialog };
+    static props = {
+        recipe: Object,
+        onDone: Function,
+        close: Function,
+    };
+
+    setup() {
+        this.orm = useService("orm");
+        this.state = useState({ categories: [], newName: "", error: "" });
+        onWillStart(async () => {
+            this.state.categories = (await this.orm.call("gym.recipe.category", "get_categories", [])).categories;
+        });
+    }
+
+    async choose(categoryId) {
+        await this.orm.call("gym.recipe", "set_category", [this.props.recipe.id, categoryId]);
+        this.props.onDone();
+        this.props.close();
+    }
+
+    async addAndChoose() {
+        const name = this.state.newName.trim();
+        if (!name) {
+            return;
+        }
+        try {
+            const category = await this.orm.call("gym.recipe.category", "create_category", [name]);
+            await this.choose(category.id);
+        } catch (error) {
+            this.state.error = (error.data && error.data.message) || error.message || String(error);
+        }
+    }
+}
+
+// Add, rename and delete categories. Deleting one keeps its dishes: they become "not filed yet".
+export class CategoriesDialog extends Component {
+    static template = "family_gym.CategoriesDialog";
+    static components = { Dialog };
+    static props = {
+        onDone: Function,
+        close: Function,
+    };
+
+    setup() {
+        this.orm = useService("orm");
+        this.dialog = useService("dialog");
+        this.state = useState({ categories: [], newName: "", error: "" });
+        onWillStart(() => this.load());
+    }
+
+    async load() {
+        this.state.categories = (await this.orm.call("gym.recipe.category", "get_categories", [])).categories;
+    }
+
+    async guard(action) {
+        this.state.error = "";
+        try {
+            await action();
+            await this.load();
+            this.props.onDone();
+        } catch (error) {
+            this.state.error = (error.data && error.data.message) || error.message || String(error);
+            await this.load();
+        }
+    }
+
+    add() {
+        const name = this.state.newName.trim();
+        if (!name) {
+            return;
+        }
+        return this.guard(async () => {
+            await this.orm.call("gym.recipe.category", "create_category", [name]);
+            this.state.newName = "";
+        });
+    }
+
+    rename(category, ev) {
+        const name = ev.target.value.trim();
+        if (!name || name === category.name) {
+            ev.target.value = category.name;
+            return;
+        }
+        return this.guard(() => this.orm.call("gym.recipe.category", "rename", [[category.id], name]));
+    }
+
+    remove(category) {
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Delete category"),
+            body: category.count
+                ? _t("Delete %s? Its %s dishes stay, they just have no category.", category.name, category.count)
+                : _t("Delete %s?", category.name),
+            confirmLabel: _t("Delete"),
+            confirm: () => this.guard(() => this.orm.unlink("gym.recipe.category", [category.id])),
+            cancel: () => {},
+        });
+    }
+}
+
 // What the "+" of a meal opens: choose where the food comes from. "My Saved Food" lists the
 // recipes (with "Add New Recipe"), and tapping one asks how many servings you ate.
 export class AddFoodDialog extends Component {
@@ -329,6 +453,11 @@ export class AddFoodDialog extends Component {
             step: this.props.entry || this.props.recipeId ? "servings" : "menu",
             search: "",
             recipes: [],
+            // Saved food is browsed by category: "all", "none" (not filed yet) or a category id.
+            category: "all",
+            categories: [],
+            uncategorized: 0,
+            total: 0,
             history: [],
             recipe: null,
             // How the amount is typed in: grams off the kitchen scale (default) or servings.
@@ -401,7 +530,53 @@ export class AddFoodDialog extends Component {
 
     // ---- saved recipes ----
     async loadRecipes() {
-        this.state.recipes = await this.orm.call("gym.recipe", "get_saved", [this.state.search]);
+        const [recipes, categories] = await Promise.all([
+            this.orm.call("gym.recipe", "get_saved", [this.state.search]),
+            this.orm.call("gym.recipe.category", "get_categories", []),
+        ]);
+        this.state.recipes = recipes;
+        this.state.categories = categories.categories;
+        this.state.uncategorized = categories.uncategorized;
+        this.state.total = categories.total;
+        // A category that was deleted meanwhile no longer filters anything.
+        if (typeof this.state.category === "number" && !categories.categories.some((c) => c.id === this.state.category)) {
+            this.state.category = "all";
+        }
+    }
+
+    setCategory(key) {
+        this.state.category = key;
+    }
+
+    // The dishes of the chosen category, grouped under their category's name when browsing all.
+    get recipeGroups() {
+        const { recipes, category, categories } = this.state;
+        if (category === "none") {
+            return [{ key: "none", title: "", recipes: recipes.filter((r) => !r.category_id) }];
+        }
+        if (category !== "all") {
+            return [{ key: category, title: "", recipes: recipes.filter((r) => r.category_id === category) }];
+        }
+        const groups = categories.map((c) => ({
+            key: c.id,
+            title: c.name,
+            recipes: recipes.filter((r) => r.category_id === c.id),
+        }));
+        groups.push({ key: "none", title: _t("Not filed yet"), recipes: recipes.filter((r) => !r.category_id) });
+        return groups.filter((group) => group.recipes.length);
+    }
+
+    get hasRecipes() {
+        return this.recipeGroups.length > 0;
+    }
+
+    // Pick a shelf for one dish (the tag button on its card).
+    fileRecipe(recipe) {
+        this.dialog.add(RecipeCategoryDialog, { recipe, onDone: () => this.loadRecipes() });
+    }
+
+    manageCategories() {
+        this.dialog.add(CategoriesDialog, { onDone: () => this.loadRecipes() });
     }
 
     onSearchInput(ev) {

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: categories you rename, delete or add are never touched by a module upgrade. -->
+    <data noupdate="1">
+        <record id="recipe_category_breakfast" model="gym.recipe.category">
+            <field name="name">Breakfast</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="recipe_category_soups" model="gym.recipe.category">
+            <field name="name">Soups</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="recipe_category_main" model="gym.recipe.category">
+            <field name="name">Main dishes</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="recipe_category_salads" model="gym.recipe.category">
+            <field name="name">Salads</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="recipe_category_baking" model="gym.recipe.category">
+            <field name="name">Baking &amp; desserts</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="recipe_category_snacks" model="gym.recipe.category">
+            <field name="name">Snacks</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="recipe_category_sauces" model="gym.recipe.category">
+            <field name="name">Sauces &amp; fillings</field>
+            <field name="sequence">70</field>
+        </record>
+    </data>
+</odoo>

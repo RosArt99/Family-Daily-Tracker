@@ -2016,3 +2016,130 @@ $gw-bad: #d9534f;
     font-weight: 600;
     font-size: 13px;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Saved food categories: filter chips, group titles, the filing and management dialogs
+// ---------------------------------------------------------------------------------------------
+.o_gym_cat_chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.o_gym_cat_pick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.o_gym_cat_chip {
+    flex: none;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: #fff;
+    color: #343a40;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: $gym-card-shadow;
+
+    b {
+        margin-left: 4px;
+        color: #868e96;
+        font-size: 12px;
+    }
+
+    &.o_none {
+        color: #b26a00;
+    }
+
+    &.o_manage {
+        color: #6c757d;
+    }
+
+    &.o_active {
+        background: $gym-gradient-light;
+        color: #fff;
+
+        b {
+            color: rgba(255, 255, 255, 0.85);
+        }
+    }
+}
+
+.o_gym_cat_pick .o_gym_cat_chip {
+    background: #f1f3f5;
+    box-shadow: none;
+
+    &.o_active {
+        background: $gym-gradient-light;
+    }
+}
+
+.o_gym_cat_title {
+    margin: 14px 4px 8px;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.o_gym_cat_new,
+.o_gym_cat_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+
+    input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 10px;
+        outline: 0;
+        background: #fff;
+        box-shadow: $gym-card-shadow;
+    }
+
+    button {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #868e96;
+    }
+}
+
+.o_gym_cat_new button {
+    background: $gym-gradient-light;
+    color: #fff;
+}
+
+.o_gym_cat_row {
+    margin-top: 8px;
+
+    .o_gym_cat_count {
+        flex: none;
+        min-width: 24px;
+        color: #868e96;
+        font-size: 13px;
+        text-align: center;
+    }
+}
+
+.o_gym_saved_actions button.o_filed {
+    color: var(--fam-color, #c41e3f);
+}

@@ -10,6 +10,54 @@ NUTRIENTS = (
 )
 
 
+class GymRecipeCategory(models.Model):
+    """A shelf for saved dishes (Soups, Breakfast, Baking...). Shared by the family: either of
+    you can add, rename or remove one; the dishes in a removed category become uncategorized."""
+    _name = 'gym.recipe.category'
+    _description = 'Saved Food Category'
+    _order = 'sequence, name'
+
+    name = fields.Char(required=True)
+    sequence = fields.Integer(default=10)
+    recipe_ids = fields.One2many('gym.recipe', 'category_id', string='Dishes')
+
+    @api.constrains('name')
+    def _check_name_unique(self):
+        for category in self:
+            clash = self.search([('name', '=ilike', category.name.strip()), ('id', '!=', category.id)], limit=1)
+            if clash:
+                raise ValidationError(_('There is already a category called "%s".', clash.name))
+
+    @api.model
+    def get_categories(self):
+        """Every category with its number of dishes, plus how many dishes have none."""
+        counts = {
+            row['category_id'][0]: row['category_id_count']
+            for row in self.env['gym.recipe'].read_group([('category_id', '!=', False)], ['category_id'], ['category_id'])}
+        return {
+            'categories': [{'id': c.id, 'name': c.name, 'count': counts.get(c.id, 0)} for c in self.search([])],
+            'uncategorized': self.env['gym.recipe'].search_count([('category_id', '=', False)]),
+            'total': self.env['gym.recipe'].search_count([]),
+        }
+
+    @api.model
+    def create_category(self, name):
+        """A new category, or the existing one with that name (case does not matter)."""
+        name = (name or '').strip()
+        if not name:
+            raise UserError(_('Give the category a name.'))
+        category = self.search([('name', '=ilike', name)], limit=1) or self.create(
+            {'name': name, 'sequence': (self.search([], order='sequence desc', limit=1).sequence or 0) + 10})
+        return {'id': category.id, 'name': category.name}
+
+    def rename(self, name):
+        name = (name or '').strip()
+        if not name:
+            raise UserError(_('Give the category a name.'))
+        self.write({'name': name})
+        return True
+
+
 class GymRecipe(models.Model):
     """A dish someone cooked ("rice with chicken in sauce"): ingredients from the Groceries
     catalog - or other recipes, e.g. crepes + a filling - with their weight, and a number of
@@ -22,6 +70,7 @@ class GymRecipe(models.Model):
     description = fields.Text()
     user_id = fields.Many2one(
         'res.users', string='Author', default=lambda self: self.env.user, required=True, index=True)
+    category_id = fields.Many2one('gym.recipe.category', string='Category', ondelete='set null', index=True)
     servings = fields.Integer(string='Servings', default=1, required=True)
     # What the finished dish weighs. Cooking changes the weight (water leaves cutlets, rice drinks
     # it), and the scale at the table shows the cooked weight - so per-100 g nutrition has to be
@@ -100,6 +149,8 @@ class GymRecipe(models.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description or '',
+            'category_id': self.category_id.id,
+            'category': self.category_id.name or '',
             'servings': self.servings,
             'per_serving': {key: round(value, 1) for key, value in per.items()},
             'per_100g': {key: round(value, 1) for key, value in self._per_100g().items()},
@@ -118,6 +169,14 @@ class GymRecipe(models.Model):
         recipes = self.search(domain).sorted(
             key=lambda r: (r.user_id != self.env.user, (r.name or '').lower()))
         return [recipe._card() for recipe in recipes]
+
+    @api.model
+    def set_category(self, recipe_id, category_id):
+        """File a dish under a category. Anyone of the family can do it, also for the other's
+        dishes: the category is a label for finding it, not a change of the recipe itself."""
+        category = self.env['gym.recipe.category'].browse(category_id).exists() if category_id else False
+        self.sudo().browse(recipe_id).exists().write({'category_id': category.id if category else False})
+        return True
 
     @api.model
     def get_recipe(self, recipe_id):
@@ -161,6 +220,7 @@ class GymRecipe(models.Model):
             raise UserError(_('Add at least one ingredient.'))
         vals = {
             'name': name,
+            'category_id': int(data['category_id']) if data.get('category_id') else False,
             'description': (data.get('description') or '').strip() or False,
             'servings': servings,
             'cooked_weight_g': cooked,
