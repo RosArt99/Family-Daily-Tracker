@@ -1,6 +1,6 @@
 {
     'name': 'Family Daily Tracker',
-    'version': '17.0.2.3.0',
+    'version': '17.0.2.4.0',
     'category': 'Productivity',
     'summary': 'Track daily family tasks and routines',
     'author': 'Ros',
@@ -10,6 +10,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/groceries_product_views.xml',
+        'views/groceries_off_update_views.xml',
         'views/groceries_stock_entry_views.xml',
         'views/groceries_barcode_scanner_action.xml',
         'views/groceries_menus.xml',

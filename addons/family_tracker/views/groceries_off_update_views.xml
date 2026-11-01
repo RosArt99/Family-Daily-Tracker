@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- What Open Food Facts now says about a product, next to what we have. Nothing changes
+         until one of the two buttons is pressed. -->
+    <record id="view_groceries_off_update_form" model="ir.ui.view">
+        <field name="name">groceries.product.off.update.form</field>
+        <field name="model">groceries.product.off.update</field>
+        <field name="arch" type="xml">
+            <form string="Open Food Facts changed this product" create="false" edit="false">
+                <sheet>
+                    <field name="state" invisible="1"/>
+                    <div class="alert alert-warning" role="alert">
+                        Open Food Facts disagrees with your catalog about:
+                        <b><field name="changed" readonly="1" class="d-inline"/></b>.
+                        Barcodes of store brands are sometimes used for a different product in another
+                        country, so check that this is the same thing before updating.
+                    </div>
+                    <h2><field name="product_id" readonly="1"/> <small class="text-muted"><field name="barcode"/></small></h2>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th/><th>In your catalog</th><th>Open Food Facts</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Name</td><td><field name="old_name"/></td><td><field name="new_name"/></td></tr>
+                            <tr><td>Calories</td><td><field name="old_kcal"/></td><td><field name="new_kcal"/></td></tr>
+                            <tr><td>Protein</td><td><field name="old_protein"/></td><td><field name="new_protein"/></td></tr>
+                            <tr><td>Fat</td><td><field name="old_fat"/></td><td><field name="new_fat"/></td></tr>
+                            <tr><td>Carbs</td><td><field name="old_carbs"/></td><td><field name="new_carbs"/></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex gap-2" invisible="state != 'pending'">
+                        <button name="action_apply" type="object" class="btn btn-primary flex-fill"
+                                string="Update from Open Food Facts"
+                                confirm="Replace the data of this product with what Open Food Facts says?"/>
+                        <button name="action_dismiss" type="object" class="btn btn-secondary flex-fill"
+                                string="Keep what I have"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_groceries_off_update_tree" model="ir.ui.view">
+        <field name="name">groceries.product.off.update.tree</field>
+        <field name="model">groceries.product.off.update</field>
+        <field name="arch" type="xml">
+            <tree string="Open Food Facts changes" create="false" decoration-muted="state != 'pending'">
+                <field name="product_id"/>
+                <field name="changed"/>
+                <field name="new_name" optional="hide"/>
+                <field name="create_date" string="Found" optional="hide"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_groceries_off_update_search" model="ir.ui.view">
+        <field name="name">groceries.product.off.update.search</field>
+        <field name="model">groceries.product.off.update</field>
+        <field name="arch" type="xml">
+            <search string="Open Food Facts changes">
+                <field name="product_id"/>
+                <field name="barcode"/>
+                <filter string="To review" name="filter_pending" domain="[('state', '=', 'pending')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_groceries_off_update" model="ir.actions.act_window">
+        <field name="name">Open Food Facts changes</field>
+        <field name="res_model">groceries.product.off.update</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_groceries_off_update_search"/>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to review</p>
+            <p>When Open Food Facts changes the name or the calories, protein, fat or carbs of a
+               product you have, it shows up here and nothing is replaced until you decide.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_groceries_off_updates" name="Open Food Facts changes" parent="menu_groceries_root"
+              action="action_groceries_off_update" sequence="30"/>
+
+</odoo>

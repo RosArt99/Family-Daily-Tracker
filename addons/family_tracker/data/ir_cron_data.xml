@@ -15,6 +15,18 @@
     </record>
 
     <data noupdate="1">
+        <record id="ir_cron_check_off_changes" model="ir.cron">
+            <field name="name">Groceries: check products for changes on Open Food Facts</field>
+            <field name="model_id" ref="model_groceries_product"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_off_changes()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 01:30:00')"/>
+        </record>
+
         <!-- 03:00 Warsaw time (01:00 UTC in summer, 02:00 UTC in winter) -->
         <record id="ir_cron_refresh_unresolved_products" model="ir.cron">
             <field name="name">Groceries: re-check unresolved products on Open Food Facts</field>

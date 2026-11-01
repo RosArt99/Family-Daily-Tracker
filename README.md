@@ -24,6 +24,11 @@ their own key.
   Safari (camera access needs HTTPS).
 - **Product catalog** auto-filled from Open Food Facts: photo, Nutri-Score, full nutrition
   facts per 100 g/ml. Product photos download in the background so scanning stays fast.
+  Open Food Facts never overwrites what you have on its own: when its name or kcal / protein / fat / carbs
+  differ from yours (it is re-checked nightly, 40 products at a time, and on "Refresh"), you get a banner on
+  Shopping List & Stock, a list under Groceries > Open Food Facts changes, and a side-by-side window with
+  "Update from Open Food Facts" / "Keep what I have". Store-brand codes (8 digits starting with 2) are
+  sometimes reused for different products in other countries, so look before you update.
 - **Shopping list & stock**, kanban or list, with low-stock and essentials tracking.
 - The **shared shell** every other module plugs into: theme colours, the phone bottom tab bar,
   the Home page, and the PWA (`Add to Home Screen` on iPhone gives you a real app icon, no

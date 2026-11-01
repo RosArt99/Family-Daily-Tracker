@@ -35,6 +35,12 @@
                             help="Removes this product and every stock entry / recipe ingredient that uses it. Meal diary entries already logged keep their calories, they just lose the product link."/>
                 </header>
                 <sheet>
+                    <field name="has_pending_off_update" invisible="1"/>
+                    <div class="alert alert-warning d-flex align-items-center" role="alert"
+                         invisible="not has_pending_off_update">
+                        <span class="flex-grow-1">Open Food Facts has a different name or nutrition for this product.</span>
+                        <button name="action_review_off_update" type="object" class="btn btn-warning">Review</button>
+                    </div>
                     <div class="oe_button_box" name="button_box">
                         <field name="auto_restock" invisible="1"/>
                         <button name="action_view_stock_entries" type="object"

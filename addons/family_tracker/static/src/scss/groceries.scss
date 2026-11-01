@@ -834,3 +834,22 @@ $gsc-gradient-find: linear-gradient(135deg, #1f5f99, #3a8fd6);
         filter: brightness(1.08);
     }
 }
+
+// Landing: Open Food Facts changed some of your products - review before anything is replaced
+.o_gsl_off_changes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 14px;
+    background: #fff3cd;
+    color: #7a5b00;
+    text-align: left;
+
+    span {
+        flex: 1;
+    }
+}

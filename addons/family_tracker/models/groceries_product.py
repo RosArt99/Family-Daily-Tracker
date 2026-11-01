@@ -115,6 +115,12 @@ class GroceriesProduct(models.Model):
     sodium_100g = fields.Float(string='Sodium (g/100g)')
     fruits_vegetables_100g = fields.Float(string='Fruits/Vegetables/Legumes (%)')
 
+    # When Open Food Facts last agreed or disagreed with this product (see _cron_check_off_changes),
+    # and what it said that differs from our name/kcal/protein/fat/carbs, waiting for a decision.
+    off_checked_on = fields.Datetime(string='Last checked on OFF', copy=False)
+    off_update_ids = fields.One2many('groceries.product.off.update', 'product_id', string='OFF changes')
+    has_pending_off_update = fields.Boolean(compute='_compute_has_pending_off_update')
+
     stock_entry_ids = fields.One2many('groceries.stock_entry', 'product_id', string='Stock Entries')
     stock_quantity = fields.Float(
         string='Current Stock', compute='_compute_stock_quantity', store=True,
@@ -133,6 +139,11 @@ class GroceriesProduct(models.Model):
                 and 'off_image_source_url' not in vals:
             vals = dict(vals, off_image_source_url=False)
         return super().write(vals)
+
+    @api.depends('off_update_ids.state')
+    def _compute_has_pending_off_update(self):
+        for product in self:
+            product.has_pending_off_update = any(update.state == 'pending' for update in product.off_update_ids)
 
     @api.depends('stock_entry_ids.state', 'stock_entry_ids.quantity')
     def _compute_stock_quantity(self):
@@ -181,8 +192,16 @@ class GroceriesProduct(models.Model):
         uploaded manually is kept."""
         self.ensure_one()
         vals = self._fetch_off_product(self.barcode, raise_on_error=raise_on_error)
+        self.off_checked_on = fields.Datetime.now()
         if not vals:
             return False
+        if self.name != self.barcode:
+            # A product somebody has already named or filled in: if Open Food Facts disagrees about
+            # its name or kcal/protein/fat/carbs, do not apply anything - offer it for a decision.
+            diffs = self.env['groceries.product.off.update']._differences(self, vals)
+            if diffs:
+                self.env['groceries.product.off.update'].propose(self, vals, diffs)
+                return True
         if self.name != self.barcode or vals.get('name') == self.barcode:
             vals.pop('name', None)
         # A photo that came from OFF is replaced when OFF now shows a different one (its URL
@@ -202,6 +221,8 @@ class GroceriesProduct(models.Model):
         except requests.RequestException:
             raise UserError(_('Open Food Facts, Open Products Facts and Open Beauty Facts '
                                'could not be reached. Please try again in a minute.'))
+        if found and self.has_pending_off_update:
+            return self.action_review_off_update()
         if found:
             title, kind = _('Updated from Open Food Facts'), 'success'
             message = _('Data refreshed. A missing photo, if any, will appear in a few seconds.')
@@ -220,6 +241,16 @@ class GroceriesProduct(models.Model):
             },
         }
 
+    def action_review_off_update(self):
+        """Open the window that shows what Open Food Facts changed and asks what to do."""
+        self.ensure_one()
+        update = self.off_update_ids.filtered(lambda u: u.state == 'pending')[:1]
+        return {
+            'type': 'ir.actions.act_window', 'name': _('Open Food Facts changed this product'),
+            'res_model': 'groceries.product.off.update', 'res_id': update.id,
+            'views': [[False, 'form']], 'target': 'new',
+        }
+
     def action_refresh_from_off_bulk(self):
         found = missing = failed = 0
         for product in self.filtered('barcode'):
@@ -230,8 +261,11 @@ class GroceriesProduct(models.Model):
                     missing += 1
             except requests.RequestException:
                 failed += 1
-        message = _('%(found)s updated, %(missing)s not found anywhere yet, %(failed)s failed.',
+        review = len(self.filtered('has_pending_off_update'))
+        message = _('%(found)s checked, %(missing)s not found anywhere yet, %(failed)s failed.',
                     found=found, missing=missing, failed=failed)
+        if review:
+            message += ' ' + _('%s differ from Open Food Facts - see Groceries > Open Food Facts changes.', review)
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -241,6 +275,18 @@ class GroceriesProduct(models.Model):
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             },
         }
+
+    @api.model
+    def _cron_check_off_changes(self):
+        """Nightly: look a few products up on Open Food Facts again (the ones not checked for the
+        longest), so a changed name or nutrition shows up as something to review instead of going
+        unnoticed. Printed kitchen stickers (2999...) are not on OFF."""
+        products = self.search(
+            [('barcode', '!=', False), ('barcode', 'not like', '2999%')],
+            order='off_checked_on asc nulls first, id', limit=40)
+        for product in products.filtered(lambda p: p.name != p.barcode):
+            product._refresh_from_off()
+            self.env.cr.commit()
 
     @api.model
     def _cron_refresh_unresolved_products(self):

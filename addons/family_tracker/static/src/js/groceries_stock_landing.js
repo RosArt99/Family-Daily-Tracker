@@ -42,8 +42,20 @@ class GroceriesStockLanding extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.categories = CATEGORIES;
-        this.state = useState({ counts: {} });
+        this.state = useState({ counts: {}, offChanges: 0 });
         onWillStart(() => this.loadCounts());
+    }
+
+    // Products Open Food Facts now describes differently (name / kcal / protein / fat / carbs):
+    // nothing is replaced until somebody decides, so remind about them here.
+    async loadOffChanges() {
+        this.state.offChanges = await this.orm.searchCount("groceries.product.off.update", [
+            ["state", "=", "pending"],
+        ]);
+    }
+
+    reviewOffChanges() {
+        this.actionService.doAction("family_tracker.action_groceries_off_update");
     }
 
     async loadCounts() {
@@ -53,6 +65,7 @@ class GroceriesStockLanding extends Component {
             counts[row.state] = row.state_count || 0;
         }
         this.state.counts = counts;
+        await this.loadOffChanges();
     }
 
     countFor(category) {
