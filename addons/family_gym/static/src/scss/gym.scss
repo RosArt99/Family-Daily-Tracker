@@ -2143,3 +2143,56 @@ $gw-bad: #d9534f;
 .o_gym_saved_actions button.o_filed {
     color: var(--fam-color, #c41e3f);
 }
+
+// Recipe form: "your unsaved changes are back" (the draft kept on the phone).
+.o_gym_draft_note {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #fff4d6;
+    color: #7a5b00;
+    font-size: 14px;
+
+    span {
+        flex: 1;
+    }
+
+    .btn-link {
+        padding: 0 0 0 8px;
+        color: #7a5b00;
+        font-weight: 700;
+    }
+}
+
+// Recipes screen (its own Home tile): the My Saved Food list as a full, scrollable page.
+.o_gym_recipes_screen {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    > .o_gym_addfood {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 16px 14px 120px;
+    }
+
+    .o_gym_recipes_head {
+        margin-bottom: 12px;
+
+        h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+    }
+
+    .o_gym_recipes_hint {
+        color: #6c757d;
+        font-size: 14px;
+    }
+}
+
+.o_gym_meal_pick {
+    margin-bottom: 12px;
+}

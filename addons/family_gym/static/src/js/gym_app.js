@@ -21,3 +21,18 @@ registry.category("family_apps").add(
     },
     { sequence: 30 }
 );
+
+// Recipes: a Home tile of their own (screen in recipes_screen.js).
+registry.category("family_apps").add(
+    "recipes",
+    {
+        key: "recipes",
+        menuXmlid: "family_gym.menu_recipes_root",
+        icon: "fa-book",
+        color: "#D2691E",
+        pattern: "/family_gym/static/src/img/navbar_pattern_gym.png?v=2",
+        description: "Your dishes - tap to add to the diary",
+        tabs: [],
+    },
+    { sequence: 25 }
+);

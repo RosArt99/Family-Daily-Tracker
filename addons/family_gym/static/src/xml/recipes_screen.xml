@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_gym.RecipesScreen">
+        <div class="o_gym_recipes_screen">
+            <div class="o_gym_addfood">
+                <div class="o_gym_recipes_head">
+                    <h2>Recipes</h2>
+                    <span class="o_gym_recipes_hint">Tap a dish to add it to the diary</span>
+                </div>
+                <div class="o_gym_addfood_saved">
+                    <button type="button" class="o_gym_addfood_new" t-on-click="newRecipe">
+                        <i class="fa fa-plus"/> Add New Recipe
+                    </button>
+                    <input type="search" class="o_gym_addfood_search" placeholder="Search recipes..."
+                           t-att-value="state.search" t-on-input="onSearchInput"/>
+                    <div class="o_gym_cat_chips">
+                        <button type="button" class="o_gym_cat_chip" t-att-class="{ o_active: state.category == 'all' }"
+                                t-on-click="() => this.setCategory('all')">All <b t-esc="state.total"/></button>
+                        <button t-if="state.uncategorized" type="button" class="o_gym_cat_chip o_none"
+                                t-att-class="{ o_active: state.category == 'none' }"
+                                t-on-click="() => this.setCategory('none')">Not filed <b t-esc="state.uncategorized"/></button>
+                        <button t-foreach="state.categories" t-as="cat" t-key="cat.id" type="button" class="o_gym_cat_chip"
+                                t-att-class="{ o_active: state.category == cat.id }"
+                                t-on-click="() => this.setCategory(cat.id)"><t t-esc="cat.name"/> <b t-esc="cat.count"/></button>
+                        <button type="button" class="o_gym_cat_chip o_manage" aria-label="Manage categories" title="Manage categories"
+                                t-on-click="manageCategories"><i class="fa fa-cog" role="img"/></button>
+                    </div>
+                    <div t-if="!hasRecipes" class="o_gym_addfood_empty">
+                        <t t-if="state.search">Nothing matches your search.</t>
+                        <t t-elif="state.category != 'all'">No dishes here yet.</t>
+                        <t t-else="">No recipes yet. Add your first one!</t>
+                    </div>
+                    <t t-foreach="recipeGroups" t-as="group" t-key="group.key">
+                        <div t-if="group.title" class="o_gym_cat_title" t-esc="group.title"/>
+                        <div t-foreach="group.recipes" t-as="recipe" t-key="recipe.id" class="o_gym_saved_card">
+                            <button type="button" class="o_gym_saved_main" t-on-click="() => this.pick(recipe)">
+                                <span class="o_gym_saved_name" t-esc="recipe.name"/>
+                                <span class="o_gym_saved_meta">
+                                    <t t-esc="recipe.servings"/> serving<t t-if="recipe.servings !== 1">s</t>
+                                    · <t t-esc="recipe.ingredient_count"/> ingredient<t t-if="recipe.ingredient_count !== 1">s</t>
+                                    <t t-if="!recipe.mine"> · by <t t-esc="recipe.owner"/></t>
+                                </span>
+                                <span class="o_gym_saved_macros">
+                                    <b><t t-esc="fmt(recipe.per_serving.calories)"/> kcal</b> per serving
+                                    (<t t-esc="fmt(recipe.serving_weight_g)"/> g)
+                                    · P <t t-esc="fmt(recipe.per_serving.protein)"/>
+                                    · C <t t-esc="fmt(recipe.per_serving.carbs)"/>
+                                    · F <t t-esc="fmt(recipe.per_serving.fat)"/>
+                                </span>
+                            </button>
+                            <span class="o_gym_saved_actions">
+                                <button type="button" t-att-class="{ o_filed: recipe.category_id }"
+                                        t-att-title="recipe.category || 'Choose a category'" aria-label="Choose a category"
+                                        t-on-click="() => this.fileRecipe(recipe)"><i class="fa fa-tag"/></button>
+                                <button t-if="recipe.mine" type="button" aria-label="Edit recipe" t-on-click="() => this.editRecipe(recipe)"><i class="fa fa-pencil"/></button>
+                                <button t-if="recipe.mine" type="button" aria-label="Delete recipe" t-on-click="() => this.deleteRecipe(recipe)"><i class="fa fa-trash-o"/></button>
+                            </span>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

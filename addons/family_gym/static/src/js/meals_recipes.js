@@ -1,10 +1,12 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onPatched, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
+import { browser } from "@web/core/browser/browser";
+import { registry } from "@web/core/registry";
 import { useDebounced } from "@web/core/utils/timing";
 import { GroceriesPickerDialog } from "./groceries_picker";
 
@@ -20,6 +22,19 @@ function num(value) {
 
 function fmt(value) {
     return Math.round(value);
+}
+
+// What the meal of "now" probably is, for adding a dish straight from the Recipes screen.
+function mealOfNow() {
+    const hour = new Date().getHours();
+    return hour < 11 ? "breakfast" : hour < 16 ? "lunch" : hour < 21 ? "dinner" : "snack";
+}
+
+const MEAL_LABELS = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", snack: "Snacks" };
+
+function localToday() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 // The recipe form. Same look as the Meals diary (white rounded cards on a light background),
@@ -48,21 +63,93 @@ export class RecipeFormDialog extends Component {
             ingredients: [],
             error: "",
             saving: false,
+            // Unsaved typing from last time was put back (the form was left without saving).
+            restored: false,
         });
+        // Every change is kept on the phone until the recipe is saved, so leaving the form (or
+        // the app) never loses what was typed. One draft per recipe, and one for a new recipe.
+        this.draftKey = `family_gym.recipe_draft.${useService("user").userId}.${this.props.recipeId || "new"}`;
         onWillStart(async () => {
             this.state.categories = (await this.orm.call("gym.recipe.category", "get_categories", [])).categories;
             if (this.props.recipeId) {
-                const recipe = await this.orm.call("gym.recipe", "get_recipe", [this.props.recipeId]);
-                this.state.categoryId = recipe.category_id || false;
-                this.state.name = recipe.name;
-                this.state.description = recipe.description;
-                this.state.servings = String(recipe.servings);
-                this.state.cookedWeight = recipe.cooked_weight_g ? String(recipe.cooked_weight_g) : "";
-                this.state.ingredients = recipe.ingredients.map((line) =>
-                    this.makeIngredient(line.product_id, line.name, line.quantity_g, line.per100, line.sub_recipe_id)
-                );
+                this.loaded = await this.orm.call("gym.recipe", "get_recipe", [this.props.recipeId]);
+                this.applyRecipe(this.loaded);
+            }
+            this.pristine = this.snapshot();
+            const draft = this.readDraft();
+            if (draft && draft.data !== this.pristine) {
+                this.applySnapshot(draft.data);
+                this.state.restored = true;
             }
         });
+        onPatched(() => this.keepDraft());
+        onWillUnmount(() => this.keepDraft());
+    }
+
+    applyRecipe(recipe) {
+        this.state.categoryId = recipe.category_id || false;
+        this.state.name = recipe.name;
+        this.state.description = recipe.description;
+        this.state.servings = String(recipe.servings);
+        this.state.cookedWeight = recipe.cooked_weight_g ? String(recipe.cooked_weight_g) : "";
+        this.state.ingredients = recipe.ingredients.map((line) =>
+            this.makeIngredient(line.product_id, line.name, line.quantity_g, line.per100, line.sub_recipe_id)
+        );
+    }
+
+    // ---- the draft ----
+    snapshot() {
+        const { state } = this;
+        return JSON.stringify({
+            name: state.name,
+            description: state.description,
+            servings: state.servings,
+            cookedWeight: state.cookedWeight,
+            categoryId: state.categoryId,
+            ingredients: state.ingredients.map(({ product_id, sub_recipe_id, name, quantity, per100 }) => ({
+                product_id, sub_recipe_id, name, quantity, per100,
+            })),
+        });
+    }
+
+    applySnapshot(data) {
+        const draft = JSON.parse(data);
+        Object.assign(this.state, {
+            name: draft.name,
+            description: draft.description,
+            servings: draft.servings,
+            cookedWeight: draft.cookedWeight,
+            categoryId: draft.categoryId,
+        });
+        this.state.ingredients = draft.ingredients.map((line) =>
+            this.makeIngredient(line.product_id, line.name, line.quantity, line.per100, line.sub_recipe_id)
+        );
+    }
+
+    readDraft() {
+        try {
+            return JSON.parse(browser.localStorage.getItem(this.draftKey) || "null");
+        } catch {
+            return null;
+        }
+    }
+
+    keepDraft() {
+        if (this.saved || this.pristine === undefined) {
+            return;
+        }
+        const data = this.snapshot();
+        if (data === this.pristine) {
+            browser.localStorage.removeItem(this.draftKey);
+        } else {
+            browser.localStorage.setItem(this.draftKey, JSON.stringify({ data, at: Date.now() }));
+        }
+    }
+
+    discardDraft() {
+        browser.localStorage.removeItem(this.draftKey);
+        this.applySnapshot(this.pristine);
+        this.state.restored = false;
     }
 
     get title() {
@@ -270,6 +357,8 @@ export class RecipeFormDialog extends Component {
                     })),
                 },
             ]);
+            this.saved = true;
+            browser.localStorage.removeItem(this.draftKey);
             if (this.props.onSaved) {
                 this.props.onSaved(recipe);
             }
@@ -449,6 +538,7 @@ export class AddFoodDialog extends Component {
     setup() {
         this.orm = useService("orm");
         this.dialog = useService("dialog");
+        this.uid = useService("user").userId;
         this.state = useState({
             step: this.props.entry || this.props.recipeId ? "servings" : "menu",
             search: "",
@@ -468,9 +558,18 @@ export class AddFoodDialog extends Component {
             grams: "",
             servings: this.props.entry ? String(this.props.entry.servings) : "1",
             busy: false,
+            // Opened from the Recipes screen (not from a meal of the diary): which meal and whose
+            // diary are chosen here.
+            meal: this.props.meal || mealOfNow(),
+            people: [],
+            userId: this.props.userId || false,
         });
         this.searchDebounced = useDebounced(() => this.loadRecipes(), 250);
         onWillStart(async () => {
+            if (this.choosesMeal) {
+                this.state.people = await this.orm.call("gym.meal_log", "get_family_users", []);
+                this.state.userId = this.state.userId || this.uid;
+            }
             const known = this.props.entry || this.props.recipeId;
             if (known) {
                 this.state.recipe = await this.orm.call("gym.recipe", "get_recipe", [
@@ -481,6 +580,18 @@ export class AddFoodDialog extends Component {
                 this.state.history = await this.orm.call("gym.meal_log", "get_history", [this.props.userId || false]);
             }
         });
+    }
+
+    get choosesMeal() {
+        return !this.props.meal && !this.props.entry;
+    }
+
+    get meals() {
+        return Object.entries(MEAL_LABELS).map(([key, label]) => ({ key, label }));
+    }
+
+    get mealLabel() {
+        return this.props.mealLabel || MEAL_LABELS[this.state.meal];
     }
 
     // Back is for dialogs that opened at the menu; one opened on a recipe is simply closed.
@@ -711,8 +822,8 @@ export class AddFoodDialog extends Component {
                 await this.orm.call(
                     "gym.meal_log",
                     "log_recipe",
-                    [this.state.recipe.id, this.props.meal, this.props.date],
-                    { ...amount, user_id: this.props.userId || false }
+                    [this.state.recipe.id, this.state.meal, this.props.date || localToday()],
+                    { ...amount, user_id: this.state.userId || false }
                 );
             }
             this.props.onDone();

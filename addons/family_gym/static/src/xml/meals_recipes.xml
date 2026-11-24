@@ -5,6 +5,11 @@
     <t t-name="family_gym.RecipeFormDialog">
         <Dialog title="title" size="'lg'" contentClass="'o_gym_recipe_dialog'">
             <div class="o_gym_ui_form">
+                <div t-if="state.restored" class="o_gym_draft_note">
+                    <i class="fa fa-history me-2"/>
+                    <span>Your unsaved changes are back.</span>
+                    <button type="button" class="btn btn-link" t-on-click="discardDraft">Discard</button>
+                </div>
                 <div t-if="state.error" class="o_gym_ui_error" t-esc="state.error"/>
 
                 <div class="o_gym_ui_hero">
@@ -313,6 +318,19 @@
 
                 <!-- 3. how much did you eat -->
                 <div t-if="state.step === 'servings'" class="o_gym_addfood_servings">
+                    <t t-if="choosesMeal">
+                        <div class="o_gym_ui_label">Meal (today)</div>
+                        <div class="o_gym_cat_chips o_gym_meal_pick">
+                            <button t-foreach="meals" t-as="meal" t-key="meal.key" type="button" class="o_gym_cat_chip"
+                                    t-att-class="{ o_active: state.meal === meal.key }"
+                                    t-on-click="() => state.meal = meal.key" t-esc="meal.label"/>
+                        </div>
+                        <div t-if="state.people.length > 1" class="o_gym_ui_toggle">
+                            <button t-foreach="state.people" t-as="person" t-key="person.id" type="button"
+                                    t-att-class="{ o_active: state.userId === person.id }"
+                                    t-on-click="() => state.userId = person.id" t-esc="person.name"/>
+                        </div>
+                    </t>
                     <div t-if="state.recipe.mine" class="d-flex">
                         <button type="button" class="o_gym_saved_edit" t-on-click="editOpenRecipe">
                             <i class="fa fa-pencil"/> Edit recipe
@@ -351,7 +369,7 @@
                     <button type="button" class="btn btn-primary o_gym_addfood_confirm"
                             t-att-disabled="state.busy or gramsEaten lte 0" t-on-click="confirm">
                         <t t-if="props.entry">Save</t>
-                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                        <t t-else="">Add to <t t-esc="mealLabel"/></t>
                     </button>
                 </div>
             </div>
@@ -391,7 +409,7 @@
                     <button type="button" class="btn btn-primary o_gym_addfood_confirm"
                             t-att-disabled="state.busy or gramsEaten lte 0" t-on-click="confirm">
                         <t t-if="props.entry">Save</t>
-                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                        <t t-else="">Add to <t t-esc="mealLabel"/></t>
                     </button>
                 </div>
             </div>
@@ -480,7 +498,7 @@
                     <button type="button" class="btn btn-primary o_gym_addfood_confirm"
                             t-att-disabled="state.busy or servingsEaten lte 0" t-on-click="confirm">
                         <t t-if="props.entry">Save</t>
-                        <t t-else="">Add to <t t-esc="props.mealLabel"/></t>
+                        <t t-else="">Add to <t t-esc="mealLabel"/></t>
                     </button>
                 </div>
             </div>

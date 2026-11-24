@@ -66,6 +66,11 @@ their own key.
   Food has a filter row, groups the dishes by category, and a tag button on each dish files it in one tap.
   can use **other recipes as ingredients** (crepes + a filling; change the filling and every dish
   using it follows) and can be edited right from the open recipe.
+- **Recipes** (a Home tile of their own): the family's dishes without going Meals > + > My Saved Food -
+  search, categories, add / edit / delete, and tap a dish to put it into today's diary (grams or
+  servings, the meal - preselected from the time of day - and whose diary). The recipe form keeps an
+  unsaved draft on the phone after every change: leave it without saving and the next time it opens
+  with "Your unsaved changes are back" (or Discard).
 - **Goals**: personal targets per person.
 
 ### `family_finance` — Finance
