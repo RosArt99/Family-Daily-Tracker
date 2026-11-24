@@ -204,3 +204,69 @@
         font-weight: 600;
     }
 }
+
+// Section titles: the departments, in the order you walk through the store.
+.o_shopping .o_shopping_section {
+    margin: 18px 4px 8px;
+    color: var(--fam-color, #2E8B47);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.o_shopping .o_shopping_count .o_shopping_more {
+    width: 28px;
+    color: #9aa4ad;
+}
+
+// "Move to section" sheet.
+.o_shopping_sheet_backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1046;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.o_shopping_sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1047;
+    max-height: 75vh;
+    padding: 8px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    border-radius: 18px 18px 0 0;
+    background: #fff;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+
+    .o_shopping_sheet_title {
+        padding: 10px 18px;
+        color: #6c757d;
+        font-weight: 700;
+    }
+
+    .o_shopping_sheet_item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 13px 18px;
+        border: 0;
+        border-top: 1px solid #f0f0f0;
+        background: none;
+        font-size: 17px;
+        text-align: left;
+
+        &.active {
+            color: #2E8B47;
+            font-weight: 700;
+        }
+    }
+
+    .o_shopping_sheet_danger {
+        justify-content: flex-start;
+        color: #c0392b;
+    }
+}

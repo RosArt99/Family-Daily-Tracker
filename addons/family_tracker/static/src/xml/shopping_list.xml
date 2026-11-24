@@ -34,34 +34,59 @@
                 The list is empty. Type what to buy, or scan a barcode for a specific product.
             </p>
 
-            <ul class="o_shopping_lines">
-                <li t-foreach="state.lines" t-as="line" t-key="line.key"
-                    class="o_shopping_line" t-att-class="{'o_done': line.done}">
-                    <button type="button" class="o_shopping_tap" t-on-click="() => this.toggle(line)">
-                        <span class="o_shopping_box"><i t-if="line.done" class="fa fa-check"/></span>
-                        <img t-if="line.image" t-att-src="imageUrl(line)" class="o_shopping_thumb" alt=""/>
-                        <span class="o_shopping_text">
-                            <span class="o_shopping_name" t-esc="line.name"/>
-                            <span class="o_shopping_meta" t-if="line.kind === 'product' and !line.done">scanned product</span>
-                        </span>
-                    </button>
-                    <div class="o_shopping_count" t-if="!line.done">
-                        <button type="button" class="btn btn-sm" t-on-click="() => this.minus(line)"
-                                t-att-aria-label="line.count > 1 ? 'Less' : 'Remove'">
-                            <i t-attf-class="fa {{ line.count > 1 ? 'fa-minus' : 'fa-trash-o' }}"/>
+            <t t-foreach="groups" t-as="group" t-key="group.id">
+                <h5 class="o_shopping_section" t-esc="group.name"/>
+                <ul class="o_shopping_lines">
+                    <li t-foreach="group.lines" t-as="line" t-key="line.key"
+                        class="o_shopping_line" t-att-class="{'o_done': line.done}">
+                        <button type="button" class="o_shopping_tap" t-on-click="() => this.toggle(line)">
+                            <span class="o_shopping_box"><i t-if="line.done" class="fa fa-check"/></span>
+                            <img t-if="line.image" t-att-src="imageUrl(line)" class="o_shopping_thumb" alt=""/>
+                            <span class="o_shopping_text">
+                                <span class="o_shopping_name" t-esc="line.name"/>
+                                <span class="o_shopping_meta" t-if="line.kind === 'product' and !line.done">scanned product</span>
+                            </span>
                         </button>
-                        <span class="o_shopping_qty" t-esc="line.count"/>
-                        <button type="button" class="btn btn-sm" t-on-click="() => this.plus(line)" aria-label="More">
-                            <i class="fa fa-plus"/>
-                        </button>
-                    </div>
-                    <span class="o_shopping_qty o_shopping_qty_done" t-elif="line.count > 1">×<t t-esc="line.count"/></span>
-                </li>
-            </ul>
+                        <div class="o_shopping_count" t-if="!line.done">
+                            <button type="button" class="btn btn-sm" t-on-click="() => this.minus(line)"
+                                    t-att-aria-label="line.count > 1 ? 'Less' : 'Remove'">
+                                <i t-attf-class="fa {{ line.count > 1 ? 'fa-minus' : 'fa-trash-o' }}"/>
+                            </button>
+                            <span class="o_shopping_qty" t-esc="line.count"/>
+                            <button type="button" class="btn btn-sm" t-on-click="() => this.plus(line)" aria-label="More">
+                                <i class="fa fa-plus"/>
+                            </button>
+                            <button type="button" class="btn btn-sm o_shopping_more" t-on-click="() => this.openMove(line)"
+                                    aria-label="Move to another section">
+                                <i class="fa fa-ellipsis-v"/>
+                            </button>
+                        </div>
+                        <span class="o_shopping_qty o_shopping_qty_done" t-elif="line.count > 1">×<t t-esc="line.count"/></span>
+                    </li>
+                </ul>
+            </t>
 
             <button type="button" class="btn o_shopping_clear" t-if="doneCount" t-on-click="clearDone">
                 <i class="fa fa-eraser me-1"/> Clear ticked (<t t-esc="doneCount"/>)
             </button>
+
+            <t t-if="state.moving">
+                <div class="o_shopping_sheet_backdrop" t-on-click="closeMove"/>
+                <div class="o_shopping_sheet">
+                    <div class="o_shopping_sheet_title">
+                        Move «<t t-esc="state.moving.name"/>» to
+                    </div>
+                    <button t-foreach="state.sections" t-as="section" t-key="section.id" type="button"
+                            class="o_shopping_sheet_item" t-att-class="{'active': section.id === state.moving.section_id}"
+                            t-on-click="() => this.moveTo(section)">
+                        <t t-esc="section.name"/>
+                        <i t-if="section.id === state.moving.section_id" class="fa fa-check"/>
+                    </button>
+                    <button type="button" class="o_shopping_sheet_item o_shopping_sheet_danger" t-on-click="removeMoving">
+                        <i class="fa fa-trash-o me-2"/> Remove from the list
+                    </button>
+                </div>
+            </t>
         </div>
     </t>
 </templates>

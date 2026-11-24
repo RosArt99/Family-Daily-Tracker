@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Drag the rows into the order you walk through the store. -->
+    <record id="view_shopping_section_tree" model="ir.ui.view">
+        <field name="name">groceries.shopping_section.tree</field>
+        <field name="model">groceries.shopping_section</field>
+        <field name="arch" type="xml">
+            <tree string="Store sections" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="hint" string="What goes here (helps the assistant)"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_shopping_section" model="ir.actions.act_window">
+        <field name="name">Store sections</field>
+        <field name="res_model">groceries.shopping_section</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <menuitem id="menu_groceries_shopping_sections" name="Store sections" parent="menu_groceries_root"
+              action="action_shopping_section" sequence="90"/>
+
+</odoo>

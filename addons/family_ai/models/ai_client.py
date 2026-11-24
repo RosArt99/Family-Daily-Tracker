@@ -27,10 +27,11 @@ class FamilyAi(models.AbstractModel):
         return bool(os.environ.get('ANTHROPIC_API_KEY'))
 
     @api.model
-    def _ask(self, prompt, system=None, max_tokens=1500, effort='low'):
+    def _ask(self, prompt, system=None, max_tokens=1500, effort='low', schema=None):
         """Send one prompt and return Claude's text, or None when it could not answer (no key,
         network error, refusal...). Callers decide what to do without a text, so a cron never
-        crashes because the API had a bad minute."""
+        crashes because the API had a bad minute. With `schema` (a JSON schema) the answer is
+        guaranteed to be JSON of that shape."""
         if not self._is_configured():
             _logger.warning('family_ai: ANTHROPIC_API_KEY is not set, skipping the Claude call.')
             return None
@@ -42,7 +43,7 @@ class FamilyAi(models.AbstractModel):
                 model=MODEL,
                 max_tokens=max_tokens,
                 system=BASE_SYSTEM + ('\n\n' + system if system else ''),
-                output_config={'effort': effort},
+                output_config=dict({'effort': effort}, **({'format': {'type': 'json_schema', 'schema': schema}} if schema else {})),
                 messages=[{'role': 'user', 'content': prompt}],
             )
         except anthropic.AuthenticationError as e:

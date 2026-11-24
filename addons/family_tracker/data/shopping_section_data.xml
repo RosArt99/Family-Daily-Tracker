@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Store departments in the order Ruslana walks through the store. Reorder or rename them
+         under Groceries > Configuration > Store sections; `hint` tells the assistant what goes where. -->
+    <data noupdate="1">
+        <record id="section_produce" model="groceries.shopping_section">
+            <field name="name">Fruit &amp; veg</field>
+            <field name="sequence">10</field>
+            <field name="hint">fresh vegetables, fruit, herbs, garlic, onions, potatoes, salad, mushrooms</field>
+        </record>
+        <record id="section_meat" model="groceries.shopping_section">
+            <field name="name">Meat &amp; fish</field>
+            <field name="sequence">20</field>
+            <field name="hint">fresh meat, poultry (chicken thighs, breast), minced meat, sausages, ham, fish</field>
+        </record>
+        <record id="section_dairy" model="groceries.shopping_section">
+            <field name="name">Dairy</field>
+            <field name="sequence">30</field>
+            <field name="hint">milk, kefir, yogurt, cottage cheese, cheese, butter, cream, skyr</field>
+        </record>
+        <record id="section_flour" model="groceries.shopping_section">
+            <field name="name">Flour &amp; baking</field>
+            <field name="sequence">40</field>
+            <field name="hint">flour, sugar, yeast, baking powder, starch, cocoa, vanilla sugar</field>
+        </record>
+        <record id="section_eggs" model="groceries.shopping_section">
+            <field name="name">Eggs</field>
+            <field name="sequence">50</field>
+            <field name="hint">eggs</field>
+        </record>
+        <record id="section_frozen" model="groceries.shopping_section">
+            <field name="name">Frozen</field>
+            <field name="sequence">60</field>
+            <field name="hint">frozen vegetables, frozen berries, ice cream, dumplings, frozen fish</field>
+        </record>
+        <record id="section_grains" model="groceries.shopping_section">
+            <field name="name">Pasta &amp; grains</field>
+            <field name="sequence">70</field>
+            <field name="hint">pasta, rice, buckwheat, oats, groats, lentils, beans, cereals</field>
+        </record>
+        <record id="section_water" model="groceries.shopping_section">
+            <field name="name">Water &amp; drinks</field>
+            <field name="sequence">80</field>
+            <field name="hint">water, juice, soda, beer, tea, coffee</field>
+        </record>
+        <record id="section_sweets" model="groceries.shopping_section">
+            <field name="name">Sweets &amp; snacks</field>
+            <field name="sequence">90</field>
+            <field name="hint">chocolate, candy, cookies, chips, nuts, popcorn</field>
+        </record>
+        <record id="section_household" model="groceries.shopping_section">
+            <field name="name">Household</field>
+            <field name="sequence">100</field>
+            <field name="hint">cleaning, toilet paper, dish soap, laundry, toiletries, shampoo</field>
+        </record>
+        <record id="section_other" model="groceries.shopping_section">
+            <field name="name">Other</field>
+            <field name="sequence">999</field>
+            <field name="hint">anything that fits nowhere else: bread, sauces, spices, canned food, oil</field>
+        </record>
+    </data>
+</odoo>

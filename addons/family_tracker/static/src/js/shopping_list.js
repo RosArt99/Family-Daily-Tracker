@@ -21,17 +21,58 @@ export class ShoppingList extends Component {
         this.dialog = useService("dialog");
         this.notification = useService("notification");
         this.inputRef = useRef("input");
-        this.state = useState({ lines: [], query: "", suggestions: [] });
+        this.state = useState({ lines: [], sections: [], query: "", suggestions: [], moving: null });
         this.searchTimer = null;
         onWillStart(() => this.load());
     }
 
+    apply(data) {
+        this.state.lines = data.lines;
+        this.state.sections = data.sections;
+    }
+
     async load() {
-        this.state.lines = (await this.orm.call(MODEL, "get_list", [])).lines;
+        this.apply(await this.orm.call(MODEL, "get_list", []));
     }
 
     async call(method, args) {
-        this.state.lines = (await this.orm.call(MODEL, method, args)).lines;
+        this.apply(await this.orm.call(MODEL, method, args));
+    }
+
+    // Lines come sorted by store section (the way through the store); show a title per section.
+    get groups() {
+        const names = Object.fromEntries(this.state.sections.map((s) => [s.id, s.name]));
+        const groups = [];
+        for (const line of this.state.lines) {
+            let group = groups[groups.length - 1];
+            if (!group || group.id !== line.section_id) {
+                group = { id: line.section_id, name: names[line.section_id] || "", lines: [] };
+                groups.push(group);
+            }
+            group.lines.push(line);
+        }
+        return groups;
+    }
+
+    // ---- moving a line to another section (remembered for that word next time)
+    openMove(line) {
+        this.state.moving = line;
+    }
+
+    closeMove() {
+        this.state.moving = null;
+    }
+
+    async moveTo(section) {
+        const line = this.state.moving;
+        this.state.moving = null;
+        await this.call("set_section", [line.kind, line.id, section.id]);
+    }
+
+    async removeMoving() {
+        const line = this.state.moving;
+        this.state.moving = null;
+        await this.call("remove", [line.kind, line.id]);
     }
 
     get left() {

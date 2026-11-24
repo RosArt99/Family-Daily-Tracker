@@ -36,6 +36,11 @@ their own key.
   product instead. Tapping a line strikes it through in place with a green tick (tap again to undo);
   for a scanned product that also means bought (it goes In Stock, and scanning it In Stock at
   checkout ticks it too). Ticked lines stay until "Clear ticked" or the next day.
+  The list is laid out by **store section**, in the order Ruslana walks through the store (Fruit &
+  veg, Meat & fish, Dairy, Flour & baking, Eggs, Frozen, Pasta & grains, Water & drinks, then
+  Sweets, Household, Other - reorder/rename under Groceries > Store sections). A word goes where it
+  went last time; a new one ("куриные бедра", "garlic") is sorted by the assistant once and
+  remembered; "⋮" on a line moves it (and that word from then on) to another section.
 - The **shared shell** every other module plugs into: theme colours, the phone bottom tab bar,
   the Home page, and the PWA (`Add to Home Screen` on iPhone gives you a real app icon, no
   Safari chrome).

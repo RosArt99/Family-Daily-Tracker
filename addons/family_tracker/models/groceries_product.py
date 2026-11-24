@@ -87,6 +87,9 @@ class GroceriesProduct(models.Model):
         help='When a pack of this product is marked Consumed, immediately add a fresh one '
              'to the shopping list (To Buy) - for things you always keep around.')
 
+    # Where it sits in the store, for the Shopping List (decided once, can be changed there).
+    shopping_section_id = fields.Many2one('groceries.shopping_section', string='Store section', ondelete='set null')
+
     is_food = fields.Boolean(
         string='Food Item', default=True,
         help='Unchecked for household/non-food products (cleaning supplies, toilet paper, ...). '
