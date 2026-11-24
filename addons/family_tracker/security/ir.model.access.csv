@@ -3,3 +3,4 @@ access_groceries_product,groceries.product,model_groceries_product,base.group_us
 access_groceries_stock_entry,groceries.stock_entry,model_groceries_stock_entry,base.group_user,1,1,1,1
 access_groceries_off_update,groceries.product.off.update,model_groceries_product_off_update,base.group_user,1,1,1,1
 access_groceries_product_category,groceries.product.category,model_groceries_product_category,base.group_user,1,1,1,1
+access_groceries_shopping_item,groceries.shopping_item,model_groceries_shopping_item,base.group_user,1,1,1,1

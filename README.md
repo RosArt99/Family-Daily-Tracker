@@ -30,11 +30,12 @@ their own key.
   "Update from Open Food Facts" / "Keep what I have". Store-brand codes (8 digits starting with 2) are
   sometimes reused for different products in other countries, so look before you update.
 - **Shopping list & stock**, kanban or list, with low-stock and essentials tracking.
-- **Список покупок** (its own Home tile): a plain checklist for the store, meant to replace a note
-  on the phone. Type to add (suggests what you have bought before, or adds a new name as is) or scan
-  a barcode; split into food and household things; +/- per product. Tapping a line in the store
-  ticks it off = bought (it goes In Stock); "Куплено сегодня" lists today's ticks, a tap puts one
-  back. Scanning a pack In Stock at checkout takes it off the list too.
+- **Shopping List** (its own green Home tile): a plain checklist for the store, meant to replace a
+  note on the phone. Lines are plain words ("milk", "garlic", "buckwheat" - whichever milk is on the
+  shelf), with suggestions from what was written before; scanning a barcode adds a specific
+  product instead. Tapping a line strikes it through in place with a green tick (tap again to undo);
+  for a scanned product that also means bought (it goes In Stock, and scanning it In Stock at
+  checkout ticks it too). Ticked lines stay until "Clear ticked" or the next day.
 - The **shared shell** every other module plugs into: theme colours, the phone bottom tab bar,
   the Home page, and the PWA (`Add to Home Screen` on iPhone gives you a real app icon, no
   Safari chrome).
@@ -111,8 +112,8 @@ their own key.
 - **Chat** (the speech-bubble icon in the top bar, or "Спросить помощника" on Home): ask in plain
   Russian - "что у нас есть сладкого?", "есть безалкогольное пиво?", "сколько белка мне осталось?",
   "сколько потратили на рестораны в октябре?". Claude looks things up with read-only tools (stock,
-  shopping list, food diary, weight, month finances, individual payments) and can add products to
-  the shopping list - only after you say yes. One conversation per person, kept for 6 hours of quiet.
+  shopping list, food diary, weight, month finances, individual payments) and can add plain words
+  ("milk", "eggs") to the shopping list - only after you say yes. One conversation per person, kept for 6 hours of quiet.
 - One hourly cron runs it all; every message is sent once (`period_key`). To try one by hand:
   `env['family.ai.jobs'].run_now('protein' | 'forecast' | 'month', user_id)` in `odoo shell`.
 - Messages are written in Russian by **Claude Haiku** (`claude-haiku-5-5`) from numbers the app

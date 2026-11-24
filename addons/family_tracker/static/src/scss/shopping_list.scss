@@ -3,8 +3,12 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 640px;
+    height: 100%;
     margin: 0 auto;
-    padding: 16px 14px 96px;
+    padding: 16px 14px 110px;
+    // The action area itself does not scroll: the screen has to.
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
     .o_shopping_head {
         display: flex;
@@ -24,11 +28,7 @@
     }
 
     .o_shopping_add {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        padding: 6px 0 10px;
-        background: inherit;
+        margin-bottom: 14px;
     }
 
     .o_shopping_add_row {
@@ -38,85 +38,45 @@
 
     .o_shopping_input {
         flex: 1;
+        min-width: 0;
         height: 46px;
         border-radius: 14px;
         font-size: 17px; // >= 16px: iOS Safari does not zoom in on focus
     }
 
-    .o_shopping_scan {
-        width: 52px;
+    .o_shopping_btn {
+        flex: none;
+        width: 48px;
         height: 46px;
         border-radius: 14px;
-        background: var(--fam-color, #E07A2E);
+        background: var(--fam-color, #347136);
         color: #fff;
         font-size: 20px;
-    }
 
-    .o_shopping_suggestions {
-        margin-top: 6px;
-        border-radius: 14px;
-        background: #fff;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-        overflow: hidden;
-    }
-
-    .o_shopping_suggestion {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 10px 12px;
-        border: 0;
-        border-bottom: 1px solid #f0f0f0;
-        background: none;
-        text-align: left;
-
-        &:last-child {
-            border-bottom: 0;
+        &:disabled {
+            opacity: 0.45;
         }
     }
 
-    .o_shopping_suggestion_new .o_shopping_name {
-        color: var(--fam-color-dark, #c4651f);
-        font-weight: 600;
-    }
-
-    .o_shopping_thumb {
-        flex: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        object-fit: contain;
-        background: #fff;
-    }
-
-    .o_shopping_thumb_empty {
+    .o_shopping_suggestions {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f3f5f7;
-        color: #9aa4ad;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .o_shopping_chip {
+        padding: 6px 12px;
+        border: 1px solid #d6dbe0;
+        border-radius: 16px;
+        background: #fff;
+        font-size: 15px;
     }
 
     .o_shopping_empty {
         margin: 28px 0;
         color: #6c757d;
         text-align: center;
-    }
-
-    .o_shopping_group {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin: 18px 4px 8px;
-        padding: 0;
-        border: 0;
-        background: none;
-        color: #6c757d;
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
     }
 
     .o_shopping_lines {
@@ -132,6 +92,7 @@
         border-radius: 14px;
         background: #fff;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        transition: background-color 0.15s;
     }
 
     .o_shopping_tap {
@@ -140,7 +101,7 @@
         align-items: center;
         gap: 12px;
         min-width: 0;
-        min-height: 60px;
+        min-height: 56px;
         padding: 8px 12px;
         border: 0;
         background: none;
@@ -152,17 +113,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         border: 2px solid #b8c0c7;
         border-radius: 50%;
         color: #fff;
-        font-size: 13px;
+        font-size: 14px;
+        transition: background-color 0.15s, border-color 0.15s;
     }
 
-    .o_shopping_box_done {
-        border-color: #3a9a4a;
-        background: #3a9a4a;
+    .o_shopping_thumb {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: contain;
+        background: #fff;
     }
 
     .o_shopping_text {
@@ -173,7 +139,7 @@
 
     .o_shopping_name {
         overflow: hidden;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 600;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -203,20 +169,38 @@
         text-align: center;
     }
 
-    .o_shopping_lines_done {
-        .o_shopping_line {
-            background: #f6f7f8;
-            box-shadow: none;
+    .o_shopping_qty_done {
+        padding-right: 14px;
+        color: #9aa4ad;
+    }
+
+    // Ticked: stays where it is, struck through, with a filled green circle.
+    .o_shopping_line.o_done {
+        background: #f6f7f8;
+        box-shadow: none;
+
+        .o_shopping_box {
+            border-color: #2e9b47;
+            background: #2e9b47;
         }
 
         .o_shopping_name {
-            color: #8a949c;
+            color: #9aa4ad;
             font-weight: 500;
             text-decoration: line-through;
         }
 
-        .o_shopping_tap {
-            min-height: 48px;
+        .o_shopping_thumb {
+            opacity: 0.5;
         }
+    }
+
+    .o_shopping_clear {
+        display: block;
+        margin: 16px auto 0;
+        border-radius: 14px;
+        background: #eef0f2;
+        color: #5c6670;
+        font-weight: 600;
     }
 }

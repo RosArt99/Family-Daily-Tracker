@@ -7,9 +7,10 @@ import { BarcodeScanDialog } from "./barcode_scan_dialog";
 
 const MODEL = "groceries.shopping_list";
 
-// The Shopping List: a plain checklist meant to replace a note on the phone. Type or scan to
-// add, tap a line in the store to tick it off (= bought, it goes In Stock), tap a ticked line
-// to take it back. Packs scanned In Stock anywhere else drop off this list by themselves.
+// The Shopping List: a plain checklist meant to replace a note on the phone. Lines are plain
+// words ("milk", "garlic") - in the store you take whichever milk is there - or, when scanned,
+// a specific product. Tapping a line strikes it through in place (for a scanned product that
+// also means bought: it goes In Stock); tap again to undo. "Clear ticked" tidies up.
 export class ShoppingList extends Component {
     static template = "family_tracker.ShoppingList";
     static props = ["*"];
@@ -20,78 +21,46 @@ export class ShoppingList extends Component {
         this.dialog = useService("dialog");
         this.notification = useService("notification");
         this.inputRef = useRef("input");
-        this.state = useState({
-            toBuy: [],
-            bought: [],
-            query: "",
-            suggestions: [],
-            busy: false,
-            showBought: true,
-        });
+        this.state = useState({ lines: [], query: "", suggestions: [] });
         this.searchTimer = null;
         onWillStart(() => this.load());
     }
 
-    apply(data) {
-        this.state.toBuy = data.to_buy;
-        this.state.bought = data.bought;
-    }
-
     async load() {
-        this.apply(await this.orm.call(MODEL, "get_list", []));
+        this.state.lines = (await this.orm.call(MODEL, "get_list", [])).lines;
     }
 
     async call(method, args) {
-        this.state.busy = true;
-        try {
-            this.apply(await this.orm.call(MODEL, method, args));
-        } finally {
-            this.state.busy = false;
-        }
+        this.state.lines = (await this.orm.call(MODEL, method, args)).lines;
     }
 
-    // ---- sections: food first, then household things, like walking through a store
-    get groups() {
-        const food = this.state.toBuy.filter((l) => l.is_food);
-        const home = this.state.toBuy.filter((l) => !l.is_food);
-        const groups = [];
-        if (food.length) {
-            groups.push({ key: "food", title: home.length ? "Еда" : "", lines: food });
-        }
-        if (home.length) {
-            groups.push({ key: "home", title: "Для дома", lines: home });
-        }
-        return groups;
+    get left() {
+        return this.state.lines.filter((l) => !l.done).length;
     }
 
-    get total() {
-        return this.state.toBuy.reduce((sum, line) => sum + line.count, 0);
+    get doneCount() {
+        return this.state.lines.filter((l) => l.done).length;
     }
 
     imageUrl(line) {
         return `/web/image/groceries.product/${line.product_id}/image/128`;
     }
 
-    // ---- adding
+    // ---- adding plain words
     onInput(ev) {
         this.state.query = ev.target.value;
         clearTimeout(this.searchTimer);
         const query = this.state.query.trim();
-        if (query.length < 2) {
+        if (!query) {
             this.state.suggestions = [];
             return;
         }
         this.searchTimer = setTimeout(async () => {
-            const found = await this.orm.call(MODEL, "search_products", [query]);
+            const found = await this.orm.call(MODEL, "suggest", [query]);
             if (this.state.query.trim() === query) {
-                this.state.suggestions = found;
+                this.state.suggestions = found.filter((name) => name.toLowerCase() !== query.toLowerCase());
             }
-        }, 250);
-    }
-
-    get exactMatch() {
-        const query = this.state.query.trim().toLowerCase();
-        return this.state.suggestions.some((s) => s.name.toLowerCase() === query);
+        }, 200);
     }
 
     clearInput() {
@@ -102,68 +71,58 @@ export class ShoppingList extends Component {
         }
     }
 
-    async addProduct(product) {
-        this.clearInput();
-        await this.call("add", [product.id]);
-    }
-
-    async addTyped() {
-        const name = this.state.query.trim();
+    async add(name) {
+        name = (name ?? this.state.query).trim();
         if (!name) {
             return;
         }
         this.clearInput();
-        await this.call("add", [false, name]);
+        await this.call("add_item", [name]);
+        // Keep the keyboard up: usually several things are typed in a row.
+        if (this.inputRef.el) {
+            this.inputRef.el.focus();
+        }
     }
 
     onKeydown(ev) {
         if (ev.key === "Enter") {
             ev.preventDefault();
-            this.addTyped();
+            this.add();
         }
     }
 
+    // ---- adding a specific product
     scan() {
         this.dialog.add(BarcodeScanDialog, {
-            title: "Добавить в список",
+            title: "Add to the list",
             onScan: async (barcode) => {
                 const result = await this.rpc("/groceries/scan", { barcode, action: "to_buy" });
                 if (result.error) {
                     this.notification.add(result.error, { type: "danger" });
                     return;
                 }
-                this.notification.add(`В списке: ${result.product_name}`, { type: "success" });
+                this.notification.add(`Added: ${result.product_name}`, { type: "success" });
                 await this.load();
             },
         });
     }
 
     // ---- in the store
-    check(line) {
-        // Feels instant: move the line first, then let the server confirm.
-        this.state.toBuy = this.state.toBuy.filter((l) => l !== line);
-        this.state.bought = [line, ...this.state.bought];
-        return this.call("check", [line.entry_ids]);
-    }
-
-    uncheck(line) {
-        return this.call("uncheck", [line.entry_ids]);
+    toggle(line) {
+        line.done = !line.done; // strike it through right away, the server confirms
+        return this.call("toggle", [line.kind, line.id, line.entry_ids || []]);
     }
 
     plus(line) {
-        return this.call("change_count", [line.product_id, 1]);
+        return this.call("change_count", [line.kind, line.id, 1]);
     }
 
     minus(line) {
-        return this.call("change_count", [line.product_id, -1]);
+        return this.call("change_count", [line.kind, line.id, -1]);
     }
 
-    remove(line) {
-        return this.call("remove", [line.product_id]);
-    }
-
-    toggleBought() {
-        this.state.showBought = !this.state.showBought;
+    clearDone() {
+        return this.call("clear_done", []);
     }
 }
 

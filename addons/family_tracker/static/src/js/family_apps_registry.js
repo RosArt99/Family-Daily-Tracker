@@ -26,9 +26,9 @@ apps.add(
         key: "shopping",
         menuXmlid: "family_tracker.menu_shopping_root",
         icon: "fa-check-square-o",
-        color: "#E07A2E",
+        color: "#2E8B47",
         pattern: "/family_tracker/static/src/img/navbar_pattern.png",
-        description: "Отмечай галочками в магазине",
+        description: "Tick things off in the store",
         tabs: [],
     },
     { sequence: 15 }

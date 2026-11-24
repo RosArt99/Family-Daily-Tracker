@@ -21,11 +21,11 @@ CHAT_SYSTEM = """You are the family assistant inside a private home app used by 
 You can look things up with tools: what is in stock at home (groceries), the shopping list, meals and nutrition, weight, and family finances (amounts in the family's base currency).
 
 How to answer:
-- Always answer in Russian, informal ("ты"), short and to the point: usually 1-5 sentences or a short list. Plain text: no markdown headings, no tables, no bold.
+- Always answer in Russian, informal ("ты"); speak of yourself in the masculine ("добавил", "нашёл"). Short and to the point: usually 1-5 sentences or a short list. Plain text: no markdown headings, no tables, no bold.
 - Look things up before answering questions about data; never guess numbers or products. Quote numbers exactly as the tools give them; if you add things up, say it is approximate.
 - Product names in the data are often Polish or English: understand them and you may translate them in your answer.
 - For "what do we have ..." questions, check the stock (call stock_products once without a search to see everything, then pick what fits).
-- Shopping list: when it would help (something is missing, running out, or the user plans to cook), you may suggest adding products and ASK. Call add_to_shopping_list only after the user clearly agreed in their latest message ("да", "добавь" ...), and only with the products they agreed to.
+- Shopping list: when it would help (something is missing, running out, or the user plans to cook), you may suggest adding things and ASK. Call add_to_shopping_list only after the user clearly agreed in their latest message ("да", "добавь" ...), and only with what they agreed to. The list holds plain generic words in English, lowercase, the way the family writes it ("milk", "eggs", "garlic", "buckwheat", "chicken breast") - never brands or exact product names, and do not ask which brand.
 - You cannot change anything else (meals, finances, stock). If asked, say where in the app to do it.
 """
 
@@ -55,7 +55,7 @@ TOOLS = [
             'type': 'object',
             'properties': {
                 'names': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1,
-                          'description': 'Product names; use the exact name from the stock data when it is a product the family already buys.'},
+                          'description': 'Plain generic English words, lowercase: "milk", "eggs", "garlic". No brands.'},
             },
             'required': ['names'],
             'additionalProperties': False,
@@ -253,6 +253,8 @@ class FamilyAiChat(models.Model):
             tool_uses = [b for b in response.content if b.type == 'tool_use']
             if response.stop_reason != 'tool_use' or not tool_uses:
                 text = ''.join(b.text for b in response.content if b.type == 'text').strip()
+                # The chat shows plain text: drop markdown emphasis if the model used it anyway.
+                text = text.replace('**', '').replace('__', '')
                 return text or '…', messages, changed
             results = []
             for tool in tool_uses:
@@ -312,11 +314,11 @@ class FamilyAiChat(models.Model):
         return '%d products in stock:\n%s' % (len(lines), '\n'.join(lines))
 
     def _tool_shopping_list(self):
-        data = self.env['groceries.shopping_list'].with_user(self.user_id).get_list()
-        if not data['to_buy']:
+        lines = self.env['groceries.shopping_list'].with_user(self.user_id).get_list()['lines']
+        if not lines:
             return 'The shopping list is empty.'
-        return 'On the shopping list:\n' + '\n'.join(
-            '- %s x%s' % (line['name'], line['count']) for line in data['to_buy'])
+        return 'On the shopping list:\n' + '\n'.join('- %s x%s%s' % (
+            line['name'], line['count'], ' (already bought today)' if line['done'] else '') for line in lines)
 
     def _tool_add(self, names):
         added = self.env['groceries.shopping_list'].with_user(self.user_id).add_names(names)
