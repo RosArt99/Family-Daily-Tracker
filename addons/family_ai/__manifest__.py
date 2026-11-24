@@ -1,6 +1,6 @@
 {
     'name': 'Family Assistant',
-    'version': '17.0.1.2.0',
+    'version': '17.0.1.3.0',
     'category': 'Productivity',
     'summary': 'Claude-written tips and reports for the family, delivered as iPhone push notifications',
     'author': 'Ros',

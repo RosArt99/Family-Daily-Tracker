@@ -1,11 +1,13 @@
 /** @odoo-module **/
 
-import { Component, onMounted, onPatched, onWillStart, useRef, useState } from "@odoo/owl";
-import { Dialog } from "@web/core/dialog/dialog";
+import { Component, onMounted, onPatched, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 
 const MODEL = "family.ai.chat";
+// Anything (e.g. the Home card's "Спросить помощника") can open the chat with
+// env.bus.trigger(OPEN_CHAT_EVENT).
+export const OPEN_CHAT_EVENT = "FAMILY_AI:OPEN_CHAT";
 
 const EXAMPLES = [
     "Что у нас есть сладкого?",
@@ -14,10 +16,9 @@ const EXAMPLES = [
     "Что есть на ужин с высоким белком?",
 ];
 
-// The assistant chat: ask about stock, meals, weight or money in plain words.
-export class FamilyChatDialog extends Component {
-    static template = "family_ai.ChatDialog";
-    static components = { Dialog };
+// The chat itself: a sheet over the lower part of the screen.
+export class FamilyChatPanel extends Component {
+    static template = "family_ai.ChatPanel";
     static props = { close: Function };
 
     setup() {
@@ -25,15 +26,51 @@ export class FamilyChatDialog extends Component {
         this.notification = useService("notification");
         this.listRef = useRef("list");
         this.inputRef = useRef("input");
+        this.panelRef = useRef("panel");
         this.examples = EXAMPLES;
-        this.state = useState({ messages: [], text: "", sending: false, configured: true });
+        this.state = useState({ messages: [], text: "", sending: false, configured: true, loaded: false });
         onWillStart(async () => {
             const data = await this.orm.call(MODEL, "get_chat", []);
             this.state.messages = data.messages;
             this.state.configured = data.configured;
+            this.state.loaded = true;
         });
-        onMounted(() => this.scrollDown());
+        onMounted(() => {
+            this.scrollDown();
+            this.followKeyboard();
+        });
         onPatched(() => this.scrollDown());
+        onWillUnmount(() => this.stopFollowingKeyboard());
+    }
+
+    // iOS keeps fixed elements at the bottom of the *layout* viewport, i.e. behind the keyboard.
+    // Lift the sheet by the keyboard's height (and cap it to what is visible) while it is open.
+    followKeyboard() {
+        const vv = window.visualViewport;
+        if (!vv) {
+            return;
+        }
+        this.onViewport = () => {
+            const el = this.panelRef.el;
+            if (!el) {
+                return;
+            }
+            const keyboard = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+            el.style.setProperty("--fam-ai-keyboard", `${keyboard}px`);
+            el.style.setProperty("--fam-ai-visible", `${vv.height}px`);
+            this.scrollDown();
+        };
+        vv.addEventListener("resize", this.onViewport);
+        vv.addEventListener("scroll", this.onViewport);
+        this.onViewport();
+    }
+
+    stopFollowingKeyboard() {
+        const vv = window.visualViewport;
+        if (vv && this.onViewport) {
+            vv.removeEventListener("resize", this.onViewport);
+            vv.removeEventListener("scroll", this.onViewport);
+        }
     }
 
     scrollDown() {
@@ -45,6 +82,9 @@ export class FamilyChatDialog extends Component {
 
     onInput(ev) {
         this.state.text = ev.target.value;
+        // Grow with the text, up to the CSS max-height.
+        ev.target.style.height = "auto";
+        ev.target.style.height = `${ev.target.scrollHeight}px`;
     }
 
     onKeydown(ev) {
@@ -62,6 +102,7 @@ export class FamilyChatDialog extends Component {
         this.state.text = "";
         if (this.inputRef.el) {
             this.inputRef.el.value = "";
+            this.inputRef.el.style.height = "";
         }
         // Show the question right away, with a "typing" bubble until the answer arrives.
         this.state.messages = [...this.state.messages, { role: "user", text: question }];
@@ -70,7 +111,7 @@ export class FamilyChatDialog extends Component {
             const result = await this.orm.call(MODEL, "send", [question]);
             this.state.messages = result.messages;
             if (result.changed) {
-                this.notification.add("Список покупок обновлён", { type: "success" });
+                this.notification.add("Shopping List обновлён", { type: "success" });
             }
         } catch (error) {
             this.state.messages = [
@@ -89,18 +130,24 @@ export class FamilyChatDialog extends Component {
     }
 }
 
-// Speech-bubble icon in the top bar: the chat is one tap away from every screen.
-export class FamilyChatSystray extends Component {
-    static template = "family_ai.ChatSystray";
+// Round button with Claude's mark, bottom-right over every screen; opens the chat sheet.
+export class FamilyChatFab extends Component {
+    static template = "family_ai.ChatFab";
+    static components = { FamilyChatPanel };
     static props = {};
 
     setup() {
-        this.dialog = useService("dialog");
+        this.state = useState({ open: false });
+        useBus(this.env.bus, OPEN_CHAT_EVENT, () => this.open());
     }
 
     open() {
-        this.dialog.add(FamilyChatDialog, {});
+        this.state.open = true;
+    }
+
+    close() {
+        this.state.open = false;
     }
 }
 
-registry.category("systray").add("family_ai.chat", { Component: FamilyChatSystray }, { sequence: 1 });
+registry.category("main_components").add("FamilyChatFab", { Component: FamilyChatFab });

@@ -69,53 +69,169 @@
     }
 }
 
-// ---- Chat with the assistant
-.o_family_ai_chat_dialog {
-    .modal-body {
-        padding: 0;
-    }
+// ---- Chat with the assistant: a round button over every screen, the chat as a bottom sheet.
+$fam-ai: #8827e8;
+$fam-ai-dark: darken($fam-ai, 8%);
+$fam-ai-soft: #f4ecfd;
 
-    .modal-footer {
-        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+.o_fam_ai_mark {
+    display: block;
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    -webkit-mask: url("/family_ai/static/src/img/claude.svg") center / contain no-repeat;
+    mask: url("/family_ai/static/src/img/claude.svg") center / contain no-repeat;
+}
+
+.o_fam_ai_fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 1040;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: $fam-ai;
+    box-shadow: 0 6px 16px rgba($fam-ai, 0.45), 0 2px 4px rgba(0, 0, 0, 0.2);
+
+    &:active {
+        transform: scale(0.94);
     }
 }
 
-.o_family_ai_chat_list {
+// Above the phone tab bar of the family apps.
+@media (max-width: 767.98px) {
+    body.o_family_theme .o_fam_ai_fab {
+        bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+.o_fam_ai_backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1044;
+    background: rgba(20, 10, 35, 0.35);
+}
+
+.o_fam_ai_panel {
+    --fam-ai-keyboard: 0px;
+    --fam-ai-visible: 100vh;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--fam-ai-keyboard);
+    z-index: 1045;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    height: 60vh;
-    padding: 14px 12px;
-    overflow-y: auto;
-    background: #f3f5f7;
+    // libsass would try to evaluate min() itself: pass it through to the browser as is.
+    height: unquote("min(55vh, calc(var(--fam-ai-visible) - 40px))");
+    min-height: 320px;
+    max-height: calc(var(--fam-ai-visible) - 20px);
+    border-radius: 20px 20px 0 0;
+    background: #fff;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
 
-    @media (max-width: 767.98px) {
-        height: calc(100vh - 160px);
+    // On a wide screen: a chat window in the corner.
+    @media (min-width: 768px) {
+        left: auto;
+        right: 20px;
+        bottom: 20px;
+        width: 420px;
+        height: unquote("min(620px, 75vh)");
+        border-radius: 20px;
     }
 }
 
-.o_family_ai_chat_note {
+.o_fam_ai_head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px 10px 14px;
+    background: $fam-ai;
+    color: #fff;
+
+    .o_fam_ai_head_mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+
+        .o_fam_ai_mark {
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    .o_fam_ai_title {
+        flex: 1;
+        font-size: 17px;
+        font-weight: 700;
+    }
+}
+
+.o_fam_ai_icon_btn {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #fff;
+    font-size: 18px;
+
+    &:active {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+.o_fam_ai_list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    padding: 14px 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: $fam-ai-soft;
+}
+
+.o_fam_ai_note {
     margin: 0;
-    color: #6c757d;
+    color: #6b5c80;
     text-align: center;
 }
 
-.o_family_ai_chat_examples {
+.o_fam_ai_examples {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
 }
 
-.o_family_ai_chat_example {
+.o_fam_ai_example {
     padding: 8px 12px;
-    border: 1px solid #d6dbe0;
+    border: 1px solid rgba($fam-ai, 0.35);
     border-radius: 16px;
     background: #fff;
+    color: $fam-ai-dark;
     font-size: 14px;
 }
 
-.o_family_ai_bubble {
+.o_fam_ai_bubble {
     max-width: 85%;
     padding: 9px 13px;
     border-radius: 18px;
@@ -125,63 +241,84 @@
     overflow-wrap: anywhere;
 }
 
-.o_family_ai_bubble_user {
+.o_fam_ai_bubble_user {
     align-self: flex-end;
     border-bottom-right-radius: 6px;
-    background: #3B4A54;
+    background: $fam-ai;
     color: #fff;
 }
 
-.o_family_ai_bubble_assistant {
+.o_fam_ai_bubble_assistant {
     align-self: flex-start;
     border-bottom-left-radius: 6px;
     background: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.o_family_ai_typing span {
+.o_fam_ai_typing span {
     display: inline-block;
     width: 7px;
     height: 7px;
     margin: 0 2px;
     border-radius: 50%;
-    background: #9aa4ad;
-    animation: o_family_ai_blink 1.2s infinite ease-in-out;
+    background: $fam-ai;
+    animation: o_fam_ai_blink 1.2s infinite ease-in-out;
 
     &:nth-child(2) { animation-delay: 0.2s; }
     &:nth-child(3) { animation-delay: 0.4s; }
 }
 
-@keyframes o_family_ai_blink {
-    0%, 80%, 100% { opacity: 0.3; }
+@keyframes o_fam_ai_blink {
+    0%, 80%, 100% { opacity: 0.25; }
     40% { opacity: 1; }
 }
 
-.o_family_ai_chat_input {
+.o_fam_ai_input {
     display: flex;
+    flex: none;
     align-items: flex-end;
-    gap: 6px;
-    width: 100%;
+    gap: 8px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #eee6f8;
+    background: #fff;
 
     textarea {
         flex: 1;
-        min-height: 42px;
+        min-width: 0;
+        height: 44px;
         max-height: 120px;
-        border-radius: 20px;
+        padding: 10px 14px;
+        border: 1px solid #d9cdea;
+        border-radius: 14px;
+        outline: none;
         font-size: 16px; // no iOS zoom-in on focus
+        line-height: 1.4;
         resize: none;
+
+        &:focus {
+            border-color: $fam-ai;
+            box-shadow: 0 0 0 3px rgba($fam-ai, 0.15);
+        }
     }
 }
 
-.o_family_ai_chat_send {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-}
+.o_fam_ai_send {
+    flex: none;
+    width: 48px;
+    height: 44px;
+    border: 0;
+    border-radius: 14px;
+    background: $fam-ai;
+    color: #fff;
+    font-size: 18px;
 
-.o_family_ai_chat_new {
-    height: 42px;
-    color: #6c757d;
+    &:active {
+        background: $fam-ai-dark;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+    }
 }
 
 .o_family_ai_card .o_family_ai_ask {
@@ -189,8 +326,8 @@
     margin: 4px 0 12px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #f3f5f7;
-    color: #3B4A54;
+    background: #f4ecfd;
+    color: #8827e8;
     font-weight: 600;
     text-align: left;
 }
