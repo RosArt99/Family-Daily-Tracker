@@ -22,6 +22,12 @@ class FamilyHome extends Component {
             .filter((app) => app.menu);
     }
 
+    // Extra blocks other addons put on Home above the tiles (e.g. family_ai's notifications
+    // card): registry.category("family_home_widgets").add("key", Component, { sequence }).
+    get widgets() {
+        return registry.category("family_home_widgets").getEntries().map(([key, Component]) => ({ key, Component }));
+    }
+
     tileStyle(app) {
         return `--tile-color: ${app.color};`;
     }

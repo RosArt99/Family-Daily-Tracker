@@ -4,6 +4,9 @@
         <div class="o_family_home">
             <h2 class="o_family_home_title">Family</h2>
             <p class="o_family_home_hello" t-if="userName">Hi, <t t-esc="userName"/></p>
+            <t t-foreach="widgets" t-as="widget" t-key="widget.key">
+                <t t-component="widget.Component"/>
+            </t>
             <div class="o_family_home_grid">
                 <button t-foreach="apps" t-as="app" t-key="app.key" type="button"
                         class="o_family_tile" t-att-style="tileStyle(app)"

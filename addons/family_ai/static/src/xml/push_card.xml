@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_ai.PushCard">
+        <div class="o_family_ai_card">
+            <div class="o_family_ai_card_head">
+                <i class="fa fa-bell" role="img"/>
+                <span class="o_family_ai_card_title">Помощник</span>
+                <button type="button" class="btn btn-link o_family_ai_link" t-on-click="openMessages">
+                    Сообщения
+                </button>
+            </div>
+
+            <t t-if="state.status === 'not_installed'">
+                <p class="o_family_ai_hint">
+                    Чтобы получать уведомления, открой Family с иконки на главном экране
+                    (Safari → Поделиться → На экран «Домой»). Нужен iOS 16.4 или новее.
+                </p>
+            </t>
+            <t t-elif="state.status === 'unsupported'">
+                <p class="o_family_ai_hint">Этот браузер не поддерживает push-уведомления.</p>
+            </t>
+            <t t-elif="state.status === 'denied'">
+                <p class="o_family_ai_hint">
+                    Уведомления запрещены. Включи их в Настройки → Уведомления → Family
+                    и открой приложение заново.
+                </p>
+            </t>
+            <t t-elif="state.status === 'off'">
+                <p class="o_family_ai_hint">Советы по белку и итоги по финансам будут приходить на этот телефон.</p>
+                <button type="button" class="btn btn-primary o_family_ai_btn" t-att-disabled="state.busy"
+                        t-on-click="enable">
+                    <i class="fa fa-bell-o me-1"/> Включить уведомления
+                </button>
+            </t>
+            <t t-else="">
+                <p class="o_family_ai_hint">
+                    <i class="fa fa-check-circle text-success me-1"/> Уведомления включены на этом телефоне.
+                </p>
+                <p class="o_family_ai_hint text-warning" t-if="!state.aiConfigured">
+                    На сервере не задан ключ ANTHROPIC_API_KEY: помощник пока молчит.
+                </p>
+                <div class="o_family_ai_actions">
+                    <button type="button" class="btn btn-secondary o_family_ai_btn" t-att-disabled="state.busy"
+                            t-on-click="sendTest">
+                        <i t-attf-class="fa {{ state.busy ? 'fa-spinner fa-spin' : 'fa-paper-plane-o' }} me-1"/>
+                        Тестовое уведомление
+                    </button>
+                    <button type="button" class="btn btn-link o_family_ai_link" t-att-disabled="state.busy"
+                            t-on-click="disable">
+                        Выключить
+                    </button>
+                </div>
+                <p class="o_family_ai_last" t-if="state.lastText" t-esc="state.lastText"/>
+            </t>
+        </div>
+    </t>
+</templates>

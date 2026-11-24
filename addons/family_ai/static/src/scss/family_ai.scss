@@ -1,0 +1,70 @@
+// Home page "Помощник" card, sits above the app tiles.
+.o_family_ai_card {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+    .o_family_ai_card_head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+
+        .fa-bell {
+            color: #3B4A54;
+        }
+    }
+
+    .o_family_ai_card_title {
+        flex: 1;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .o_family_ai_link {
+        padding: 0;
+        font-weight: 600;
+    }
+
+    .o_family_ai_hint {
+        margin-bottom: 10px;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .o_family_ai_actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .o_family_ai_btn {
+        border-radius: 12px;
+        padding: 8px 14px;
+    }
+
+    .o_family_ai_last {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f3f5f7;
+        font-size: 14px;
+    }
+}
+
+// Full message opened from a push notification.
+.o_family_ai_message_form {
+    .o_family_ai_message_meta {
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .o_family_ai_message_body {
+        display: block;
+        font-size: 16px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+}

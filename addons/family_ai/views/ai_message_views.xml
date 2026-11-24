@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Opened by tapping a push notification (/web#model=family.ai.message&id=...). -->
+    <record id="view_family_ai_message_form" model="ir.ui.view">
+        <field name="name">family.ai.message.form</field>
+        <field name="model">family.ai.message</field>
+        <field name="arch" type="xml">
+            <form string="Сообщение" create="false" edit="false" class="o_family_ai_message_form">
+                <sheet>
+                    <div class="o_family_ai_message_meta">
+                        <field name="create_date" readonly="1" widget="datetime"/>
+                    </div>
+                    <h2><field name="title" readonly="1"/></h2>
+                    <field name="body" readonly="1" class="o_family_ai_message_body"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_family_ai_message_tree" model="ir.ui.view">
+        <field name="name">family.ai.message.tree</field>
+        <field name="model">family.ai.message</field>
+        <field name="arch" type="xml">
+            <tree string="Сообщения помощника" create="false" decoration-bf="not is_read">
+                <field name="create_date" string="Когда" widget="datetime"/>
+                <field name="title" string="Тема"/>
+                <field name="body" string="Текст"/>
+                <field name="is_read" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_family_ai_messages" model="ir.actions.act_window">
+        <field name="name">Сообщения помощника</field>
+        <field name="res_model">family.ai.message</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

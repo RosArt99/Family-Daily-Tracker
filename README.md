@@ -87,6 +87,16 @@ their own key.
 - **Limits**: monthly limits per category and for everything together; the overview turns
   amber at 80% and red when you go over.
 
+### `family_ai` — Assistant (Claude)
+- **Push notifications on the iPhone**: the "Помощник" card on Home turns them on for this phone
+  (open Family from its home-screen icon, iOS 16.4+). It uses the web push Odoo's mail module
+  already has, so there is no extra push service. "Тестовое уведомление" asks Claude for a hello and pushes it;
+  tapping a notification opens the whole message, and "Сообщения" lists them all.
+- Messages are written in Russian by **Claude Haiku** (`claude-haiku-5-5`) from numbers the app
+  computes itself, so the model never does the maths. Each of you only sees your own messages.
+- The API key is read from `ANTHROPIC_API_KEY` (put it in `.env` next to `docker-compose.yml`).
+  Without it the app keeps working and the assistant just stays quiet.
+
 ### Automatic weight sync (Zepp Life → Odoo)
 1. Zepp Life syncs your weigh-ins to **Apple Health**.
 2. An **iPhone Shortcut** reads the latest Health weight sample and POSTs it to
@@ -110,10 +120,11 @@ See [`visit_sync.py`](addons/family_gym/controllers/visit_sync.py).
 ## Running it
 
 ```bash
-docker compose up -d
+echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env   # optional, for family_ai
+docker compose up -d --build
 ```
 
-This starts Postgres and Odoo (`odoo:17.0`), with `addons/` mounted as extra addons and the
+This starts Postgres and Odoo (`odoo:17.0` plus the `anthropic` package, see `Dockerfile`), with `addons/` mounted as extra addons and the
 database `family_tracker_db`. First run: open `http://localhost:8069`, create the database, then
 install **Family Daily Tracker** and **Family Gym & Fit** from Apps.
 

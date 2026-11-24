@@ -11,11 +11,17 @@ services:
       - odoo_db_data:/var/lib/postgresql/data
 
   odoo:
-    image: odoo:17.0
+    # odoo:17.0 + extra Python packages (see Dockerfile).
+    build: .
+    image: family-odoo:17.0
     depends_on:
       - db
     ports:
       - "8069:8069"
+    environment:
+      # Claude API key for family_ai. Put ANTHROPIC_API_KEY=sk-ant-... into the .env file next
+      # to this one (it is git-ignored); docker compose reads it from there.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - ./addons:/mnt/extra-addons
       - odoo_web_data:/var/lib/odoo

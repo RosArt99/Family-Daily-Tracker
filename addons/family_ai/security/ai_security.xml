@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Assistant messages are personal (your protein, your income): each of you sees only your own. -->
+    <record id="rule_family_ai_message_own" model="ir.rule">
+        <field name="name">Assistant messages: only your own</field>
+        <field name="model_id" ref="model_family_ai_message"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+</odoo>
