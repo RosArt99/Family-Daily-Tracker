@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_shopping_list" model="ir.actions.client">
+        <field name="name">Список покупок</field>
+        <field name="tag">family_tracker.shopping_list</field>
+    </record>
+
+    <!-- Its own app (a Home tile of its own), not buried under Groceries: it is the screen
+         used most, in the store, with one hand. -->
+    <menuitem id="menu_shopping_root" name="Список покупок" action="action_shopping_list" sequence="5"/>
+
+</odoo>

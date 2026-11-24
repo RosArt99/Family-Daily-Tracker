@@ -1,6 +1,6 @@
 {
     'name': 'Family Assistant',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.2.0',
     'category': 'Productivity',
     'summary': 'Claude-written tips and reports for the family, delivered as iPhone push notifications',
     'author': 'Ros',
@@ -10,12 +10,15 @@
     'data': [
         'security/ir.model.access.csv',
         'security/ai_security.xml',
+        'data/ir_cron_data.xml',
         'views/ai_message_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'family_ai/static/src/js/push_card.js',
+            'family_ai/static/src/js/chat.js',
             'family_ai/static/src/xml/push_card.xml',
+            'family_ai/static/src/xml/chat.xml',
             'family_ai/static/src/scss/family_ai.scss',
         ],
     },

@@ -30,6 +30,11 @@ their own key.
   "Update from Open Food Facts" / "Keep what I have". Store-brand codes (8 digits starting with 2) are
   sometimes reused for different products in other countries, so look before you update.
 - **Shopping list & stock**, kanban or list, with low-stock and essentials tracking.
+- **Список покупок** (its own Home tile): a plain checklist for the store, meant to replace a note
+  on the phone. Type to add (suggests what you have bought before, or adds a new name as is) or scan
+  a barcode; split into food and household things; +/- per product. Tapping a line in the store
+  ticks it off = bought (it goes In Stock); "Куплено сегодня" lists today's ticks, a tap puts one
+  back. Scanning a pack In Stock at checkout takes it off the list too.
 - The **shared shell** every other module plugs into: theme colours, the phone bottom tab bar,
   the Home page, and the PWA (`Add to Home Screen` on iPhone gives you a real app icon, no
   Safari chrome).
@@ -92,6 +97,24 @@ their own key.
   (open Family from its home-screen icon, iOS 16.4+). It uses the web push Odoo's mail module
   already has, so there is no extra push service. "Тестовое уведомление" asks Claude for a hello and pushes it;
   tapping a notification opens the whole message, and "Сообщения" lists them all.
+- **Evening protein tip** (19:00-21:00 your time, once a day, only when you logged something
+  today and are 20 g+ below your protein goal): a realistic set of normal portions of what is
+  **in stock at home** (best protein per kcal first, one protein shake at most), with grams, protein
+  and kcal, keeping an eye on the calories you have left.
+- **Finance, mid-month (the 15th)**: silent when all is fine; otherwise which categories are heading
+  over their limit (or, without a limit, well above last month). Only groceries, restaurants and
+  personal care are projected by pace - rent, subscriptions, clothes, car and other are paid in lumps
+  and count as paid.
+- **Finance, month report (the 1st)**: excellent / good / tight / in the red (decided by the
+  share of income left after spending: 30% / 15% / 0%), main categories and what changed versus a
+  fully tracked previous month, your own numbers, the plans being saved for, and one tip.
+- **Chat** (the speech-bubble icon in the top bar, or "Спросить помощника" on Home): ask in plain
+  Russian - "что у нас есть сладкого?", "есть безалкогольное пиво?", "сколько белка мне осталось?",
+  "сколько потратили на рестораны в октябре?". Claude looks things up with read-only tools (stock,
+  shopping list, food diary, weight, month finances, individual payments) and can add products to
+  the shopping list - only after you say yes. One conversation per person, kept for 6 hours of quiet.
+- One hourly cron runs it all; every message is sent once (`period_key`). To try one by hand:
+  `env['family.ai.jobs'].run_now('protein' | 'forecast' | 'month', user_id)` in `odoo shell`.
 - Messages are written in Russian by **Claude Haiku** (`claude-haiku-5-5`) from numbers the app
   computes itself, so the model never does the maths. Each of you only sees your own messages.
 - The API key is read from `ANTHROPIC_API_KEY` (put it in `.env` next to `docker-compose.yml`).

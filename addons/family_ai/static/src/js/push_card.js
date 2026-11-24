@@ -3,6 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onWillStart, useState } from "@odoo/owl";
+import { FamilyChatDialog } from "./chat";
 
 // Odoo serves its service worker (with mail's push handlers appended) here, scoped to /web.
 const SW_URL = "/web/service-worker.js";
@@ -35,6 +36,7 @@ export class FamilyPushCard extends Component {
         this.rpc = useService("rpc");
         this.action = useService("action");
         this.notification = useService("notification");
+        this.dialog = useService("dialog");
         this.state = useState({
             // unsupported | not_installed | denied | off | on
             status: "off",
@@ -161,6 +163,10 @@ export class FamilyPushCard extends Component {
         } finally {
             this.state.busy = false;
         }
+    }
+
+    openChat() {
+        this.dialog.add(FamilyChatDialog, {});
     }
 
     openMessages() {

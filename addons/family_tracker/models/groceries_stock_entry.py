@@ -31,6 +31,10 @@ class GroceriesStockEntry(models.Model):
     auto_restock = fields.Boolean(related='product_id.auto_restock', readonly=True)
     is_food = fields.Boolean(related='product_id.is_food', readonly=True, store=True)
 
+    # Set when a "to buy" entry gets bought (ticked on the Shopping List or scanned at checkout),
+    # so the list can show "bought today" and take a tick back.
+    bought_from_list = fields.Boolean(copy=False, readonly=True)
+
     purchase_date = fields.Date(string='Purchase Date')
     expiration_date = fields.Date(string='Expiration Date')
     consumed_date = fields.Date(string='Consumed / Discarded Date')
@@ -57,7 +61,14 @@ class GroceriesStockEntry(models.Model):
         return None
 
     def write(self, vals):
+        was_listed = self.browse()
+        if vals.get('state') == 'in_stock':
+            was_listed = self.filtered(lambda e: e.state == 'to_buy')
+        elif vals.get('state') == 'to_buy':
+            vals = dict(vals, bought_from_list=False)
         res = super().write(vals)
+        if was_listed:
+            super(GroceriesStockEntry, was_listed).write({'bought_from_list': True})
         # Dragging a kanban card only writes `state`; keep the dates the buttons/scanner set.
         today = fields.Date.context_today(self)
         if vals.get('state') == 'in_stock':

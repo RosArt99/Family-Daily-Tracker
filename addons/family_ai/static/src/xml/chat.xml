@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_ai.ChatSystray">
+        <div class="o_family_ai_systray">
+            <button type="button" class="btn o_nav_entry" title="Помощник" aria-label="Помощник" t-on-click="open">
+                <i class="fa fa-comments fa-lg"/>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="family_ai.ChatDialog">
+        <Dialog title="'Помощник'" size="'lg'" contentClass="'o_family_ai_chat_dialog'">
+            <div class="o_family_ai_chat">
+                <div class="o_family_ai_chat_list" t-ref="list">
+                    <div t-if="!state.configured" class="o_family_ai_chat_note">
+                        На сервере не задан ключ ANTHROPIC_API_KEY, помощник пока не отвечает.
+                    </div>
+                    <t t-if="!state.messages.length">
+                        <p class="o_family_ai_chat_note">
+                            Спроси про продукты дома, список покупок, питание, вес или деньги.
+                        </p>
+                        <div class="o_family_ai_chat_examples">
+                            <button t-foreach="examples" t-as="example" t-key="example" type="button"
+                                    class="o_family_ai_chat_example" t-on-click="() => this.send(example)">
+                                <t t-esc="example"/>
+                            </button>
+                        </div>
+                    </t>
+                    <div t-foreach="state.messages" t-as="message" t-key="message_index"
+                         t-attf-class="o_family_ai_bubble o_family_ai_bubble_{{ message.role }}">
+                        <t t-esc="message.text"/>
+                    </div>
+                    <div t-if="state.sending" class="o_family_ai_bubble o_family_ai_bubble_assistant o_family_ai_typing">
+                        <span/><span/><span/>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <div class="o_family_ai_chat_input">
+                    <button type="button" class="btn btn-link o_family_ai_chat_new" title="Новый разговор"
+                            aria-label="Новый разговор" t-on-click="newChat" t-att-disabled="state.sending">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                    <textarea t-ref="input" rows="1" class="form-control" placeholder="Спроси что-нибудь…"
+                              enterkeyhint="send" t-on-input="onInput" t-on-keydown="onKeydown"/>
+                    <button type="button" class="btn btn-primary o_family_ai_chat_send" aria-label="Отправить"
+                            t-att-disabled="state.sending or !state.text.trim()" t-on-click="() => this.send()">
+                        <i class="fa fa-paper-plane"/>
+                    </button>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+</templates>

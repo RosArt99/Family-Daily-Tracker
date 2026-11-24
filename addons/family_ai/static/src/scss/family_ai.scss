@@ -68,3 +68,129 @@
         white-space: pre-wrap;
     }
 }
+
+// ---- Chat with the assistant
+.o_family_ai_chat_dialog {
+    .modal-body {
+        padding: 0;
+    }
+
+    .modal-footer {
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+}
+
+.o_family_ai_chat_list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 60vh;
+    padding: 14px 12px;
+    overflow-y: auto;
+    background: #f3f5f7;
+
+    @media (max-width: 767.98px) {
+        height: calc(100vh - 160px);
+    }
+}
+
+.o_family_ai_chat_note {
+    margin: 0;
+    color: #6c757d;
+    text-align: center;
+}
+
+.o_family_ai_chat_examples {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.o_family_ai_chat_example {
+    padding: 8px 12px;
+    border: 1px solid #d6dbe0;
+    border-radius: 16px;
+    background: #fff;
+    font-size: 14px;
+}
+
+.o_family_ai_bubble {
+    max-width: 85%;
+    padding: 9px 13px;
+    border-radius: 18px;
+    font-size: 16px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.o_family_ai_bubble_user {
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+    background: #3B4A54;
+    color: #fff;
+}
+
+.o_family_ai_bubble_assistant {
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.o_family_ai_typing span {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: #9aa4ad;
+    animation: o_family_ai_blink 1.2s infinite ease-in-out;
+
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+@keyframes o_family_ai_blink {
+    0%, 80%, 100% { opacity: 0.3; }
+    40% { opacity: 1; }
+}
+
+.o_family_ai_chat_input {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    width: 100%;
+
+    textarea {
+        flex: 1;
+        min-height: 42px;
+        max-height: 120px;
+        border-radius: 20px;
+        font-size: 16px; // no iOS zoom-in on focus
+        resize: none;
+    }
+}
+
+.o_family_ai_chat_send {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
+
+.o_family_ai_chat_new {
+    height: 42px;
+    color: #6c757d;
+}
+
+.o_family_ai_card .o_family_ai_ask {
+    width: 100%;
+    margin: 4px 0 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #f3f5f7;
+    color: #3B4A54;
+    font-weight: 600;
+    text-align: left;
+}

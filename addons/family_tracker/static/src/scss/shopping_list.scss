@@ -1,0 +1,222 @@
+// Shopping List: a big-thumb checklist for the store.
+.o_shopping {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px 14px 96px;
+
+    .o_shopping_head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .o_shopping_title {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .o_shopping_total {
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .o_shopping_add {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 6px 0 10px;
+        background: inherit;
+    }
+
+    .o_shopping_add_row {
+        display: flex;
+        gap: 8px;
+    }
+
+    .o_shopping_input {
+        flex: 1;
+        height: 46px;
+        border-radius: 14px;
+        font-size: 17px; // >= 16px: iOS Safari does not zoom in on focus
+    }
+
+    .o_shopping_scan {
+        width: 52px;
+        height: 46px;
+        border-radius: 14px;
+        background: var(--fam-color, #E07A2E);
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .o_shopping_suggestions {
+        margin-top: 6px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    .o_shopping_suggestion {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        border: 0;
+        border-bottom: 1px solid #f0f0f0;
+        background: none;
+        text-align: left;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    .o_shopping_suggestion_new .o_shopping_name {
+        color: var(--fam-color-dark, #c4651f);
+        font-weight: 600;
+    }
+
+    .o_shopping_thumb {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: contain;
+        background: #fff;
+    }
+
+    .o_shopping_thumb_empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f5f7;
+        color: #9aa4ad;
+    }
+
+    .o_shopping_empty {
+        margin: 28px 0;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    .o_shopping_group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 18px 4px 8px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: #6c757d;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .o_shopping_lines {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .o_shopping_line {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .o_shopping_tap {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        min-height: 60px;
+        padding: 8px 12px;
+        border: 0;
+        background: none;
+        text-align: left;
+    }
+
+    .o_shopping_box {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: 2px solid #b8c0c7;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 13px;
+    }
+
+    .o_shopping_box_done {
+        border-color: #3a9a4a;
+        background: #3a9a4a;
+    }
+
+    .o_shopping_text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .o_shopping_name {
+        overflow: hidden;
+        font-size: 16px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_shopping_meta {
+        color: #8a949c;
+        font-size: 12px;
+    }
+
+    .o_shopping_count {
+        display: flex;
+        flex: none;
+        align-items: center;
+        padding-right: 6px;
+
+        .btn {
+            width: 34px;
+            height: 34px;
+            color: #6c757d;
+        }
+    }
+
+    .o_shopping_qty {
+        min-width: 20px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_shopping_lines_done {
+        .o_shopping_line {
+            background: #f6f7f8;
+            box-shadow: none;
+        }
+
+        .o_shopping_name {
+            color: #8a949c;
+            font-weight: 500;
+            text-decoration: line-through;
+        }
+
+        .o_shopping_tap {
+            min-height: 48px;
+        }
+    }
+}

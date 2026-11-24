@@ -25,12 +25,21 @@ class FamilyAiMessage(models.Model):
     body = fields.Text(required=True)
     is_read = fields.Boolean(default=False)
     pushed = fields.Boolean(string='Push sent', readonly=True)
+    # What the message is about, e.g. "protein:2026-11-24" or "finance_month:2026-10": the hourly
+    # cron checks it so nobody gets the same message twice.
+    period_key = fields.Char(index=True, readonly=True)
 
     @api.model
-    def _post(self, user, kind, title, body, push=True):
+    def _already_sent(self, user, period_key):
+        return bool(self.sudo().search_count([('user_id', '=', user.id), ('period_key', '=', period_key)]))
+
+    @api.model
+    def _post(self, user, kind, title, body, push=True, period_key=False):
         """Store a message for `user` and (by default) send it to every phone they enabled
         notifications on. Runs as superuser: crons and other people's actions create these."""
-        message = self.sudo().create({'user_id': user.id, 'kind': kind, 'title': title, 'body': body})
+        message = self.sudo().create({
+            'user_id': user.id, 'kind': kind, 'title': title, 'body': body, 'period_key': period_key,
+        })
         if push:
             message._push()
         return message

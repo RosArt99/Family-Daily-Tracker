@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_tracker.ShoppingList">
+        <div class="o_shopping">
+            <div class="o_shopping_head">
+                <h2 class="o_shopping_title">Список покупок</h2>
+                <span class="o_shopping_total" t-if="total">
+                    <t t-esc="total"/> шт.
+                </span>
+            </div>
+
+            <div class="o_shopping_add">
+                <div class="o_shopping_add_row">
+                    <input t-ref="input" type="text" class="form-control o_shopping_input"
+                           placeholder="Что купить?" autocomplete="off" enterkeyhint="done"
+                           t-on-input="onInput" t-on-keydown="onKeydown"/>
+                    <button type="button" class="btn o_shopping_scan" t-on-click="scan" aria-label="Сканировать">
+                        <i class="fa fa-barcode"/>
+                    </button>
+                </div>
+                <div class="o_shopping_suggestions" t-if="state.query.trim().length >= 2">
+                    <button t-foreach="state.suggestions" t-as="product" t-key="product.id" type="button"
+                            class="o_shopping_suggestion" t-on-click="() => this.addProduct(product)">
+                        <img t-if="product.image" t-att-src="'/web/image/groceries.product/' + product.id + '/image/128'"
+                             class="o_shopping_thumb" alt=""/>
+                        <span t-else="" class="o_shopping_thumb o_shopping_thumb_empty"><i class="fa fa-shopping-basket"/></span>
+                        <span class="o_shopping_name" t-esc="product.name"/>
+                        <span class="o_shopping_meta" t-if="product.stock">дома: <t t-esc="product.stock"/></span>
+                    </button>
+                    <button t-if="!exactMatch" type="button" class="o_shopping_suggestion o_shopping_suggestion_new"
+                            t-on-click="addTyped">
+                        <span class="o_shopping_thumb o_shopping_thumb_empty"><i class="fa fa-plus"/></span>
+                        <span class="o_shopping_name">Добавить «<t t-esc="state.query.trim()"/>»</span>
+                    </button>
+                </div>
+            </div>
+
+            <p class="o_shopping_empty" t-if="!state.toBuy.length">
+                Список пуст. Напиши, что купить, или отсканируй штрих-код.
+            </p>
+
+            <t t-foreach="groups" t-as="group" t-key="group.key">
+                <h5 class="o_shopping_group" t-if="group.title" t-esc="group.title"/>
+                <ul class="o_shopping_lines">
+                    <li t-foreach="group.lines" t-as="line" t-key="line.product_id" class="o_shopping_line">
+                        <button type="button" class="o_shopping_tap" t-on-click="() => this.check(line)">
+                            <span class="o_shopping_box"/>
+                            <img t-if="line.image" t-att-src="imageUrl(line)" class="o_shopping_thumb" alt=""/>
+                            <span class="o_shopping_text">
+                                <span class="o_shopping_name" t-esc="line.name"/>
+                                <span class="o_shopping_meta">
+                                    <t t-if="line.stock">дома ещё <t t-esc="line.stock"/></t>
+                                    <t t-if="line.stock and line.added_by"> · </t>
+                                    <t t-if="line.added_by">добавил(а) <t t-esc="line.added_by"/></t>
+                                </span>
+                            </span>
+                        </button>
+                        <div class="o_shopping_count">
+                            <button type="button" class="btn btn-sm" t-on-click="() => this.minus(line)"
+                                    t-att-aria-label="line.count > 1 ? 'Меньше' : 'Убрать'">
+                                <i t-attf-class="fa {{ line.count > 1 ? 'fa-minus' : 'fa-trash-o' }}"/>
+                            </button>
+                            <span class="o_shopping_qty" t-esc="line.count"/>
+                            <button type="button" class="btn btn-sm" t-on-click="() => this.plus(line)" aria-label="Больше">
+                                <i class="fa fa-plus"/>
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </t>
+
+            <t t-if="state.bought.length">
+                <button type="button" class="o_shopping_group o_shopping_group_toggle" t-on-click="toggleBought">
+                    Куплено сегодня (<t t-esc="state.bought.length"/>)
+                    <i t-attf-class="fa {{ state.showBought ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                </button>
+                <ul class="o_shopping_lines o_shopping_lines_done" t-if="state.showBought">
+                    <li t-foreach="state.bought" t-as="line" t-key="line.product_id" class="o_shopping_line">
+                        <button type="button" class="o_shopping_tap" t-on-click="() => this.uncheck(line)"
+                                title="Вернуть в список">
+                            <span class="o_shopping_box o_shopping_box_done"><i class="fa fa-check"/></span>
+                            <span class="o_shopping_text">
+                                <span class="o_shopping_name" t-esc="line.name"/>
+                            </span>
+                            <span class="o_shopping_qty" t-if="line.count > 1">×<t t-esc="line.count"/></span>
+                        </button>
+                    </li>
+                </ul>
+            </t>
+        </div>
+    </t>
+</templates>

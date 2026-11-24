@@ -10,6 +10,10 @@
                 </button>
             </div>
 
+            <button type="button" class="btn o_family_ai_ask" t-on-click="openChat">
+                <i class="fa fa-comments me-2"/> Спросить помощника
+            </button>
+
             <t t-if="state.status === 'not_installed'">
                 <p class="o_family_ai_hint">
                     Чтобы получать уведомления, открой Family с иконки на главном экране
