@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="family_finance.FinanceCrypto">
+        <div class="o_fin_overview o_fin_crypto">
+            <t t-set="d" t-value="state.data"/>
+
+            <div class="o_fin_hero">
+                <div class="o_fin_hero_top">
+                    <div class="o_fin_hero_label">Portfolio value</div>
+                    <button type="button" class="o_fin_hero_chip" t-on-click="load" t-att-disabled="state.loading">
+                        <i t-attf-class="fa fa-refresh #{state.loading ? 'fa-spin' : ''}"/> <t t-esc="updated"/>
+                    </button>
+                </div>
+                <div class="o_fin_hero_amount">$<t t-esc="usd(d.value)"/></div>
+                <div class="o_fin_hero_row">
+                    <span>Invested <b>$<t t-esc="usd(d.cost)"/></b></span>
+                    <span t-attf-class="o_crypto_hero_pnl #{pnlClass(d.pnl)}">
+                        <t t-esc="sign(d.pnl)"/>$<t t-esc="usd(Math.abs(d.pnl))"/>
+                        (<t t-esc="sign(d.pnl)"/><t t-esc="Math.abs(d.pnl_pct).toFixed(2)"/>%)
+                    </span>
+                </div>
+                <button t-if="d.can_edit" type="button" class="o_fin_hero_btn" t-on-click="() => this.addLot()">
+                    <i class="fa fa-plus"/> Add purchase
+                </button>
+            </div>
+
+            <!-- value over time, one line per coin -->
+            <t t-set="c" t-value="chart"/>
+            <div class="o_fin_section" t-if="c">
+                <div class="o_fin_section_head">
+                    <span class="o_fin_section_title">Value over time</span>
+                    <div class="o_crypto_periods">
+                        <button t-foreach="periods" t-as="p" t-key="p.key" type="button"
+                                t-att-class="{ o_active: state.period === p.key }"
+                                t-on-click="() => this.setPeriod(p.key)" t-esc="p.label"/>
+                    </div>
+                </div>
+                <div class="o_fin_panel o_crypto_chart">
+                    <svg t-att-viewBox="'0 0 ' + c.width + ' ' + (c.height + 18)" preserveAspectRatio="none" class="o_crypto_svg">
+                        <t t-foreach="c.grid" t-as="g" t-key="g_index">
+                            <line x1="0" t-att-x2="c.width" t-att-y1="g.y" t-att-y2="g.y" class="o_crypto_grid"/>
+                        </t>
+                        <line x1="0" t-att-x2="c.width" t-att-y1="c.height" t-att-y2="c.height" class="o_crypto_axis"/>
+                        <polyline t-foreach="c.lines" t-as="line" t-key="line.symbol" t-att-points="line.points"
+                                  fill="none" t-att-stroke="line.color" stroke-width="2.2" stroke-linejoin="round"
+                                  vector-effect="non-scaling-stroke"/>
+                    </svg>
+                    <div class="o_crypto_ylabels">
+                        <span t-foreach="c.grid" t-as="g" t-key="g_index" t-attf-style="top: #{g.y / (c.height + 18) * 100}%">$<t t-esc="g.label"/></span>
+                    </div>
+                    <div class="o_crypto_xlabels">
+                        <span t-foreach="c.xLabels" t-as="l" t-key="l_index" t-esc="l"/>
+                    </div>
+                    <div class="o_crypto_legend">
+                        <span t-foreach="c.lines" t-as="line" t-key="line.symbol">
+                            <i class="o_crypto_dot" t-attf-style="background: #{line.color}"/>
+                            <t t-esc="line.symbol"/> <b>$<t t-esc="usd(line.last, 0)"/></b>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- coins -->
+            <div class="o_fin_section">
+                <div class="o_fin_section_head">
+                    <span class="o_fin_section_title">Coins</span>
+                </div>
+                <div t-if="!coinsHeld.length" class="o_fin_panel o_fin_empty">
+                    No purchases yet.<t t-if="d.can_edit"> Add the first one with “Add purchase”.</t>
+                </div>
+                <div t-foreach="coinsHeld" t-as="coin" t-key="coin.id" class="o_fin_panel o_crypto_coin">
+                    <button type="button" class="o_crypto_coin_head" t-on-click="() => this.toggle(coin)">
+                        <span class="o_crypto_badge" t-attf-style="background: #{coin.color}" t-esc="coin.symbol"/>
+                        <span class="o_crypto_coin_main">
+                            <b t-esc="coin.name"/>
+                            <span class="o_fin_muted"><t t-esc="qty(coin.held)"/> <t t-esc="coin.symbol"/> · $<t t-esc="price(coin.price)"/></span>
+                        </span>
+                        <span class="o_crypto_coin_side">
+                            <b>$<t t-esc="usd(coin.value)"/></b>
+                            <span t-attf-class="o_crypto_pnl #{pnlClass(coin.pnl)}">
+                                <t t-esc="sign(coin.pnl)"/>$<t t-esc="usd(Math.abs(coin.pnl))"/>
+                                (<t t-esc="sign(coin.pnl)"/><t t-esc="Math.abs(coin.pnl_pct).toFixed(1)"/>%)
+                            </span>
+                        </span>
+                        <i t-attf-class="fa #{state.open[coin.id] ? 'fa-chevron-up' : 'fa-chevron-down'} o_fin_muted"/>
+                    </button>
+
+                    <div t-if="state.open[coin.id]" class="o_crypto_lots">
+                        <div class="o_crypto_lots_summary o_fin_muted">
+                            Invested $<t t-esc="usd(coin.cost)"/> · average price $<t t-esc="price(coin.avg_price)"/>
+                            · <t t-esc="coin.lots.length"/> purchase<t t-if="coin.lots.length !== 1">s</t>
+                        </div>
+                        <div t-foreach="coin.lots" t-as="lot" t-key="lot.id" class="o_crypto_lot">
+                            <div class="o_crypto_lot_top">
+                                <span class="o_crypto_lot_date" t-esc="lotDate(lot.date)"/>
+                                <span t-attf-class="o_crypto_pnl #{pnlClass(lot.pnl)}">
+                                    <t t-esc="sign(lot.pnl)"/>$<t t-esc="usd(Math.abs(lot.pnl))"/>
+                                    (<t t-esc="sign(lot.pnl)"/><t t-esc="Math.abs(lot.pnl_pct).toFixed(1)"/>%)
+                                </span>
+                            </div>
+                            <div class="o_crypto_lot_line">
+                                <t t-esc="qty(lot.net_quantity)"/> <t t-esc="coin.symbol"/> @ $<t t-esc="price(lot.price)"/>
+                            </div>
+                            <div class="o_crypto_lot_line o_fin_muted">
+                                Paid $<t t-esc="usd(lot.cost)"/> <t t-esc="lot.quote"/> → now $<t t-esc="usd(lot.value)"/>
+                                <t t-if="lot.fee"> · fee <t t-esc="qty(lot.fee)"/> <t t-esc="lot.fee_in === 'coin' ? coin.symbol : 'USD'"/></t>
+                            </div>
+                            <div t-if="d.can_edit" class="o_crypto_lot_actions">
+                                <button type="button" aria-label="Edit" t-on-click="() => this.editLot(coin, lot)"><i class="fa fa-pencil"/></button>
+                                <button type="button" aria-label="Delete" t-on-click="() => this.deleteLot(coin, lot)"><i class="fa fa-trash-o"/></button>
+                            </div>
+                        </div>
+                        <button t-if="d.can_edit" type="button" class="o_fin_link" t-on-click="() => this.addLot(coin.id)">
+                            <i class="fa fa-plus"/> Add <t t-esc="coin.symbol"/> purchase
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="family_finance.CryptoLotDialog">
+        <Dialog title="props.lot ? 'Edit purchase' : 'Add purchase'" size="'md'" footer="false" contentClass="'o_crypto_dialog'">
+            <div class="o_crypto_form">
+                <div t-if="state.error" class="alert alert-danger py-2" t-esc="state.error"/>
+
+                <div class="o_crypto_coin_pick">
+                    <button t-foreach="props.coins" t-as="coin" t-key="coin.id" type="button"
+                            t-att-class="{ o_active: state.assetId === coin.id }"
+                            t-attf-style="--coin: #{coin.color}" t-on-click="() => state.assetId = coin.id">
+                        <t t-esc="coin.symbol"/>
+                    </button>
+                </div>
+
+                <label>Bought on</label>
+                <input type="datetime-local" class="form-control" t-model="state.date"/>
+
+                <div class="o_crypto_row">
+                    <div>
+                        <label>Amount (<t t-esc="coin.symbol"/>)</label>
+                        <input type="text" inputmode="decimal" class="form-control" placeholder="0.01306"
+                               t-att-value="state.quantity" t-on-input="(ev) => this.onNumber(ev, 'quantity')"/>
+                    </div>
+                    <div>
+                        <label>Price (USD)</label>
+                        <input type="text" inputmode="decimal" class="form-control" placeholder="77130.02"
+                               t-att-value="state.price" t-on-input="(ev) => this.onNumber(ev, 'price')"/>
+                    </div>
+                </div>
+
+                <div class="o_crypto_row">
+                    <div>
+                        <label>Fee</label>
+                        <input type="text" inputmode="decimal" class="form-control" placeholder="0.00001306"
+                               t-att-value="state.fee" t-on-input="(ev) => this.onNumber(ev, 'fee')"/>
+                    </div>
+                    <div>
+                        <label>Fee paid in</label>
+                        <div class="o_crypto_toggle">
+                            <button type="button" t-att-class="{ o_active: state.feeIn === 'coin' }" t-on-click="() => state.feeIn = 'coin'" t-esc="coin.symbol"/>
+                            <button type="button" t-att-class="{ o_active: state.feeIn === 'usd' }" t-on-click="() => state.feeIn = 'usd'">USD</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_crypto_row">
+                    <div>
+                        <label>Total paid</label>
+                        <input type="text" inputmode="decimal" class="form-control"
+                               t-att-placeholder="estimatedTotal ? usd(estimatedTotal) : '1007.32'"
+                               t-att-value="state.total" t-on-input="(ev) => this.onNumber(ev, 'total')"/>
+                    </div>
+                    <div>
+                        <label>Paid with</label>
+                        <div class="o_crypto_toggle">
+                            <button t-foreach="['USDT', 'USDC', 'USD']" t-as="q" t-key="q" type="button"
+                                    t-att-class="{ o_active: state.quote === q }" t-on-click="() => state.quote = q" t-esc="q"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="o_crypto_row">
+                    <div>
+                        <label>Order type</label>
+                        <div class="o_crypto_toggle">
+                            <button type="button" t-att-class="{ o_active: state.orderType === 'market' }" t-on-click="() => state.orderType = 'market'">Market</button>
+                            <button type="button" t-att-class="{ o_active: state.orderType === 'limit' }" t-on-click="() => state.orderType = 'limit'">Limit</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Order No.</label>
+                        <input type="text" inputmode="numeric" class="form-control" t-model="state.orderNo"/>
+                    </div>
+                </div>
+
+                <label>Notes</label>
+                <input type="text" class="form-control" t-model="state.notes"/>
+
+                <button type="button" class="btn o_crypto_save" t-att-disabled="state.busy" t-on-click="save">
+                    <t t-if="props.lot">Save</t><t t-else="">Add purchase</t>
+                </button>
+            </div>
+        </Dialog>
+    </t>
+</templates>

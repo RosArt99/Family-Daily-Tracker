@@ -129,7 +129,7 @@ $fam-ai-soft: #f4ecfd;
     display: flex;
     flex-direction: column;
     // libsass would try to evaluate min() itself: pass it through to the browser as is.
-    height: unquote("min(55vh, calc(var(--fam-ai-visible) - 40px))");
+    height: unquote("min(75vh, calc(var(--fam-ai-visible) - 40px))");
     min-height: 320px;
     max-height: calc(var(--fam-ai-visible) - 20px);
     border-radius: 20px 20px 0 0;
@@ -278,7 +278,8 @@ $fam-ai-soft: #f4ecfd;
     flex: none;
     align-items: flex-end;
     gap: 8px;
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    // Kept well above the bottom edge / home indicator, so the box is easy to reach.
+    padding: 10px 12px calc(22px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid #eee6f8;
     background: #fff;
 
@@ -330,4 +331,19 @@ $fam-ai-soft: #f4ecfd;
     color: #8827e8;
     font-weight: 600;
     text-align: left;
+}
+
+// Notifications settings, opened with the bell in the chat header.
+.o_fam_ai_push {
+    flex: none;
+    padding: 10px 12px 0;
+    background: $fam-ai-soft;
+
+    .o_family_ai_card {
+        margin-bottom: 0;
+    }
+}
+
+.o_fam_ai_icon_btn.o_active {
+    background: rgba(255, 255, 255, 0.22);
 }

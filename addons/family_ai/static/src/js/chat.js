@@ -3,6 +3,7 @@
 import { Component, onMounted, onPatched, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
+import { FamilyPushCard } from "./push_card";
 
 const MODEL = "family.ai.chat";
 // Anything (e.g. the Home card's "Спросить помощника") can open the chat with
@@ -19,6 +20,7 @@ const EXAMPLES = [
 // The chat itself: a sheet over the lower part of the screen.
 export class FamilyChatPanel extends Component {
     static template = "family_ai.ChatPanel";
+    static components = { FamilyPushCard };
     static props = { close: Function };
 
     setup() {
@@ -28,7 +30,7 @@ export class FamilyChatPanel extends Component {
         this.inputRef = useRef("input");
         this.panelRef = useRef("panel");
         this.examples = EXAMPLES;
-        this.state = useState({ messages: [], text: "", sending: false, configured: true, loaded: false });
+        this.state = useState({ messages: [], text: "", sending: false, configured: true, loaded: false, showPush: false });
         onWillStart(async () => {
             const data = await this.orm.call(MODEL, "get_chat", []);
             this.state.messages = data.messages;
@@ -122,6 +124,10 @@ export class FamilyChatPanel extends Component {
         } finally {
             this.state.sending = false;
         }
+    }
+
+    togglePush() {
+        this.state.showPush = !this.state.showPush;
     }
 
     async newChat() {

@@ -76,7 +76,7 @@ their own key.
 ### `family_finance` — Finance
 - **Overview**: one month at a glance - a card per person: their income minus what *they* paid
   ("Paid by" on every expense) and put aside = what is left of it, with where it went by category;
-  grocery spending split into food and household, a 6-month trend and the plans being saved for.
+  grocery spending split into food and household, a 6-month trend and the crypto portfolio.
 - **Expenses**: seven categories as big buttons - Groceries, Housing, Subscriptions, Restaurants,
   Personal care, Clothes, Car, Other. "+ Add expense" asks for the category first, then opens that category's
   entry window.
@@ -86,25 +86,23 @@ their own key.
   - **Housing**: rent and utilities, counted in the month they are *for*, with receipt photos.
 - **Income**: each payment as it arrives (salary varies), for each of you, in the currency you
   got it in (hryvnias, zlotys...). Both of you see everything, each can only edit their own.
-- **Savings**: move money from your income into savings (general, or for a plan) and take it out
-  again; kept per currency (dollars/USDT), with what it is worth in zlotys today.
 - **Currencies**: books are in PLN; every entry (expenses, income, savings) can be in UAH/USD and is
   converted at the National Bank of Ukraine's official rate for the day (editable). The overview
   and limits always add up in zlotys.
-- **Plans**: trips and big purchases as cards in three stages - **Planning** (an idea with a price
-  tag), **Saving** and **Done**. A plan has a photo, a date, a budget split into items, a progress
-  bar and "X a month to make it". **Move savings here** assigns money you already put aside (from
-  either of you, in any currency) to a plan, or takes it back; Planning turns into Saving by itself.
-  **Done** can take the saved money out of the savings (paid) - reopening gives it back. Moves are
-  not new saving, so the month's numbers do not change.
-- **Savings limit**: a transfer from income cannot be more than what is left of that person's income
-  in the month (income - what they paid - already saved). The Savings tab lists "You can transfer" per
-  person and the transfer window shows the limit with a "Use all" button.
+- **Crypto** (a Finance tab and its own Home tile, in Binance yellow): BTC, ETH and XRP bought on the
+  exchange, in US dollars. Total value, what was invested and the profit/loss; a chart of what you
+  hold of each coin over time (BTC orange, ETH purple, XRP grey; 1M / 3M / 6M / All); every coin with
+  its average price and **every purchase (lot) on its own** - a buy at 77 000 and one at 55 000 each
+  show how far they are up or down. Prices come from Binance's public API (no key): refreshed when the
+  screen opens (if older than 5 minutes) and every 6 hours; daily closes are stored for the chart.
+  The fee Binance takes in the coin is subtracted from the amount held. Only Settings users (Rostyslav)
+  can add, edit or delete purchases; everyone else sees them read-only.
+- Savings and Plans were taken off the menus (not used); their models and data are still there.
 - **Limits**: monthly limits per category and for everything together; the overview turns
   amber at 80% and red when you go over.
 
 ### `family_ai` — Assistant (Claude)
-- **Push notifications on the iPhone**: the "Помощник" card on Home turns them on for this phone
+- **Push notifications on the iPhone**: the bell in the assistant chat header turns them on for this phone
   (open Family from its home-screen icon, iOS 16.4+). It uses the web push Odoo's mail module
   already has, so there is no extra push service. "Тестовое уведомление" asks Claude for a hello and pushes it;
   tapping a notification opens the whole message, and "Сообщения" lists them all.

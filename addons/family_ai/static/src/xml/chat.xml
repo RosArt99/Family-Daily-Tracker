@@ -15,6 +15,10 @@
             <div class="o_fam_ai_head">
                 <span class="o_fam_ai_head_mark"><span class="o_fam_ai_mark"/></span>
                 <span class="o_fam_ai_title">Помощник</span>
+                <button type="button" class="o_fam_ai_icon_btn" t-att-class="{ o_active: state.showPush }"
+                        title="Уведомления" aria-label="Уведомления" t-on-click="togglePush">
+                    <i class="fa fa-bell"/>
+                </button>
                 <button type="button" class="o_fam_ai_icon_btn" title="Новый разговор" aria-label="Новый разговор"
                         t-on-click="newChat" t-att-disabled="state.sending">
                     <i class="fa fa-refresh"/>
@@ -22,6 +26,10 @@
                 <button type="button" class="o_fam_ai_icon_btn" aria-label="Закрыть" t-on-click="props.close">
                     <i class="fa fa-times"/>
                 </button>
+            </div>
+
+            <div t-if="state.showPush" class="o_fam_ai_push">
+                <FamilyPushCard/>
             </div>
 
             <div class="o_fam_ai_list" t-ref="list">

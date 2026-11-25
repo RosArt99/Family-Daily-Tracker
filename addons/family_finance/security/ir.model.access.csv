@@ -10,3 +10,9 @@ access_finance_plan,finance.plan,model_finance_plan,base.group_user,1,1,1,1
 access_finance_plan_line,finance.plan.line,model_finance_plan_line,base.group_user,1,1,1,1
 access_finance_budget,finance.budget,model_finance_budget,base.group_user,1,1,1,1
 access_finance_fx_rate,finance.fx.rate,model_finance_fx_rate,base.group_user,1,0,0,0
+access_finance_crypto_asset_read,finance.crypto.asset read,model_finance_crypto_asset,base.group_user,1,0,0,0
+access_finance_crypto_asset_admin,finance.crypto.asset admin,model_finance_crypto_asset,base.group_system,1,1,1,1
+access_finance_crypto_price_read,finance.crypto.price read,model_finance_crypto_price,base.group_user,1,0,0,0
+access_finance_crypto_price_admin,finance.crypto.price admin,model_finance_crypto_price,base.group_system,1,1,1,1
+access_finance_crypto_lot_read,finance.crypto.lot read,model_finance_crypto_lot,base.group_user,1,0,0,0
+access_finance_crypto_lot_admin,finance.crypto.lot admin,model_finance_crypto_lot,base.group_system,1,1,1,1

@@ -18,7 +18,7 @@ NEW_CHAT_AFTER = timedelta(hours=6)   # a question after a long pause starts a f
 WEEKDAYS_RU = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']
 
 CHAT_SYSTEM = """You are the family assistant inside a private home app used by two people (a couple) on their iPhones.
-You can look things up with tools: what is in stock at home (groceries), the shopping list, meals and nutrition, weight, and family finances (amounts in the family's base currency).
+You can look things up with tools: what is in stock at home (groceries), the shopping list, meals and nutrition, weight, family finances (amounts in the family's base currency) and the crypto portfolio (in US dollars).
 
 How to answer:
 - Always answer in Russian, informal ("ты"); speak of yourself in the masculine ("добавил", "нашёл"). Short and to the point: usually 1-5 sentences or a list. Plain text: no markdown headings, no tables, no bold.
@@ -37,6 +37,12 @@ How to answer:
 """
 
 TOOLS = [
+    {
+        'name': 'crypto',
+        'description': 'The crypto portfolio (BTC, ETH, XRP) in US dollars: value now, invested, profit/loss '
+                       'per coin and per purchase (lot).',
+        'input_schema': {'type': 'object', 'properties': {}, 'additionalProperties': False},
+    },
     {
         'name': 'stock_products',
         'description': 'Products currently in stock at home (packs not yet finished), with categories and '
@@ -98,7 +104,7 @@ TOOLS = [
     {
         'name': 'finance_month',
         'description': 'Family finances for one calendar month: income (total and per person), spending by '
-                       'category with limits, money put into savings, what is left per person, plans being saved for.',
+                       'category with limits, what is left per person.',
         'input_schema': {
             'type': 'object',
             'properties': {
@@ -295,6 +301,7 @@ class FamilyAiChat(models.Model):
             'weight': self._tool_weight,
             'finance_month': self._tool_finance_month,
             'expenses': self._tool_expenses,
+            'crypto': self._tool_crypto,
         }.get(name)
         if not handler:
             raise ValueError('unknown tool %s' % name)
@@ -387,9 +394,22 @@ class FamilyAiChat(models.Model):
             out.append('%s: income %s, paid %s, saved %s, left %s.' % (
                 person['name'].split(' ')[0], _money(person['income'], symbol), _money(person['spent'], symbol),
                 _money(person['saved'], symbol), _money(person['left'], symbol)))
-        for plan in data['plans']:
-            out.append('Plan "%s": saved %s of %s (%d%%).' % (
-                plan['name'], _money(plan['saved'], symbol), _money(plan['budget'], symbol), round(plan['progress'] or 0)))
+        return '\n'.join(out)
+
+    def _tool_crypto(self):
+        data = self.env['finance.crypto.lot'].with_user(self.user_id).get_portfolio()
+        if not any(coin['lots'] for coin in data['coins']):
+            return 'No crypto purchases recorded.'
+        out = ['Crypto portfolio (USD): value %.2f, invested %.2f, profit/loss %+.2f (%+.1f%%).' % (
+            data['value'], data['cost'], data['pnl'], data['pnl_pct'])]
+        for coin in data['coins']:
+            if not coin['lots']:
+                continue
+            out.append('%s: holding %s, price now %s, value %.2f, invested %.2f, P/L %+.2f (%+.1f%%), avg buy price %.4f' % (
+                coin['symbol'], coin['held'], coin['price'], coin['value'], coin['cost'], coin['pnl'], coin['pnl_pct'], coin['avg_price']))
+            for lot in coin['lots']:
+                out.append('  - bought %s (UTC): %s @ %s, paid %.2f %s, now %.2f, P/L %+.2f (%+.1f%%)' % (
+                    lot['date'], lot['net_quantity'], lot['price'], lot['cost'], lot['quote'], lot['value'], lot['pnl'], lot['pnl_pct']))
         return '\n'.join(out)
 
     def _tool_expenses(self, date_from, date_to, category=None):

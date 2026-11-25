@@ -4,22 +4,22 @@
     <menuitem id="menu_finance_root" name="Finance" sequence="40"/>
 
     <!-- Phone tab bar order (see finance_app.js): Overview, Expenses (big category buttons ->
-         Groceries, Housing, Subscriptions, ...), Income, Savings, Plans. Limits and Stores are desktop extras. -->
+         Groceries, Housing, Subscriptions, ...), Income, Crypto. Limits and Stores are desktop extras.
+         Savings and Plans were taken off (not used); their data and models are still there. -->
     <menuitem id="menu_finance_overview" name="Overview" parent="menu_finance_root"
               action="action_finance_overview" sequence="10"/>
     <menuitem id="menu_finance_expenses" name="Expenses" parent="menu_finance_root"
               action="action_finance_expenses" sequence="20"/>
     <menuitem id="menu_finance_income" name="Income" parent="menu_finance_root"
               action="action_finance_income" sequence="40"/>
-    <menuitem id="menu_finance_savings" name="Savings" parent="menu_finance_root"
-              action="action_finance_savings" sequence="50"/>
-    <menuitem id="menu_finance_plans" name="Plans" parent="menu_finance_root"
-              action="action_finance_plans" sequence="60"/>
-    <menuitem id="menu_finance_plans_table" name="Plans (table)" parent="menu_finance_root"
-              action="action_finance_plan" sequence="65"/>
+    <menuitem id="menu_finance_crypto" name="Crypto" parent="menu_finance_root"
+              action="action_finance_crypto" sequence="50"/>
     <menuitem id="menu_finance_limits" name="Limits" parent="menu_finance_root"
               action="action_finance_budget" sequence="70"/>
     <menuitem id="menu_finance_stores" name="Stores" parent="menu_finance_root"
               action="action_finance_store" sequence="80"/>
+
+    <!-- Crypto also as an app of its own on Home (same screen). -->
+    <menuitem id="menu_crypto_root" name="Crypto" action="action_finance_crypto" sequence="45"/>
 
 </odoo>

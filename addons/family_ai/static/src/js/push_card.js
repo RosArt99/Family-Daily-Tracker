@@ -3,7 +3,6 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onWillStart, useState } from "@odoo/owl";
-import { OPEN_CHAT_EVENT } from "./chat";
 
 // Odoo serves its service worker (with mail's push handlers appended) here, scoped to /web.
 const SW_URL = "/web/service-worker.js";
@@ -27,7 +26,7 @@ function isStandalone() {
     return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 }
 
-// "Notifications" card on the Home page: turn push on for this phone, send a test, open the feed.
+// Notifications for this phone: turn push on, send a test, open the feed (bell in the chat header).
 export class FamilyPushCard extends Component {
     static template = "family_ai.PushCard";
     static props = {};
@@ -164,13 +163,9 @@ export class FamilyPushCard extends Component {
         }
     }
 
-    openChat() {
-        this.env.bus.trigger(OPEN_CHAT_EVENT);
-    }
-
     openMessages() {
         this.action.doAction("family_ai.action_family_ai_messages");
     }
 }
 
-registry.category("family_home_widgets").add("family_ai_push", FamilyPushCard, { sequence: 10 });
+// No longer on the Home page: it lives behind the bell in the assistant chat (chat.js).

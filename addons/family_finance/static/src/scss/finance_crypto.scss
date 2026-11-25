@@ -1,0 +1,346 @@
+// Crypto screen (finance_crypto.js): the Finance cards, in Binance yellow - also when it is opened
+// from the Finance tab bar, so the colour is set here and not only by the Crypto app's theme.
+$crypto: #F0B90B;
+$crypto-ink: #1e2026;
+$crypto-up: #0ecb81;
+$crypto-down: #f6465d;
+
+.o_fin_crypto {
+    --fam-color: #{$crypto};
+    --fam-color-lighter: #f8d33a;
+    padding-bottom: 120px;
+
+    .o_fin_hero {
+        color: $crypto-ink;
+
+        .o_fin_hero_chip {
+            color: $crypto-ink;
+        }
+
+        .o_fin_hero_btn {
+            margin-top: 14px;
+            padding: 9px 16px;
+            border: 0;
+            border-radius: 999px;
+            background: $crypto-ink;
+            color: $crypto;
+            font-weight: 700;
+        }
+    }
+
+    .o_crypto_hero_pnl {
+        padding: 1px 8px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.7);
+        font-weight: 700;
+
+        &.o_up { color: #0a8f5b; }
+        &.o_down { color: #d0263c; }
+    }
+
+    .o_crypto_pnl {
+        font-weight: 700;
+        white-space: nowrap;
+
+        &.o_up { color: $crypto-up; }
+        &.o_down { color: $crypto-down; }
+    }
+
+    // ---- chart
+    .o_crypto_periods {
+        display: flex;
+        gap: 4px;
+
+        button {
+            padding: 3px 9px;
+            border: 0;
+            border-radius: 8px;
+            background: #fff;
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+            &.o_active {
+                background: $crypto;
+                color: $crypto-ink;
+            }
+        }
+    }
+
+    .o_crypto_chart {
+        position: relative;
+        padding: 14px 12px 10px;
+    }
+
+    .o_crypto_svg {
+        display: block;
+        width: 100%;
+        height: 200px;
+        overflow: visible;
+    }
+
+    .o_crypto_grid {
+        stroke: #eceff2;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .o_crypto_axis {
+        stroke: #d6dbe0;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .o_crypto_ylabels {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        height: 200px;
+        pointer-events: none;
+
+        span {
+            position: absolute;
+            transform: translateY(-110%);
+            color: #9aa4ad;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+    }
+
+    .o_crypto_xlabels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: -14px;
+        color: #9aa4ad;
+        font-size: 11px;
+    }
+
+    .o_crypto_legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .o_crypto_dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        border-radius: 50%;
+    }
+
+    // ---- coins
+    .o_crypto_coin {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .o_crypto_coin_head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 14px;
+        border: 0;
+        background: none;
+        text-align: left;
+    }
+
+    .o_crypto_badge {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .o_crypto_coin_main {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+        font-size: 16px;
+
+        .o_fin_muted {
+            font-size: 13px;
+        }
+    }
+
+    .o_crypto_coin_side {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: 16px;
+
+        .o_crypto_pnl {
+            font-size: 13px;
+        }
+    }
+
+    .o_crypto_lots {
+        padding: 4px 14px 12px;
+        border-top: 1px solid #f0f0f0;
+        background: #fbfbfc;
+    }
+
+    .o_crypto_lots_summary {
+        padding: 8px 0;
+        font-size: 13px;
+    }
+
+    .o_crypto_lot {
+        position: relative;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .o_crypto_lot_top {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 2px;
+    }
+
+    .o_crypto_lot_date {
+        font-weight: 700;
+    }
+
+    .o_crypto_lot_line {
+        font-size: 14px;
+    }
+
+    .o_crypto_lot_actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-top: 4px;
+
+        button {
+            width: 34px;
+            height: 30px;
+            border: 0;
+            border-radius: 8px;
+            background: #f3f5f7;
+            color: #6c757d;
+        }
+    }
+}
+
+// ---- add / edit a purchase
+.o_crypto_form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+        margin: 6px 0 0;
+        color: #6c757d;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .form-control {
+        height: 44px;
+        border-radius: 12px;
+        font-size: 16px; // no iOS zoom-in on focus
+    }
+
+    .o_crypto_row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+
+        > div {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+    }
+
+    .o_crypto_coin_pick {
+        display: flex;
+        gap: 8px;
+
+        button {
+            flex: 1;
+            height: 44px;
+            border: 2px solid var(--coin);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--coin);
+            font-weight: 800;
+
+            &.o_active {
+                background: var(--coin);
+                color: #fff;
+            }
+        }
+    }
+
+    .o_crypto_toggle {
+        display: flex;
+        height: 44px;
+        padding: 3px;
+        border-radius: 12px;
+        background: #f0f2f4;
+
+        button {
+            flex: 1;
+            border: 0;
+            border-radius: 9px;
+            background: none;
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 700;
+
+            &.o_active {
+                background: #fff;
+                color: $crypto-ink;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            }
+        }
+    }
+
+    .o_crypto_save {
+        margin-top: 14px;
+        height: 48px;
+        border-radius: 14px;
+        background: $crypto;
+        color: $crypto-ink;
+        font-size: 17px;
+        font-weight: 700;
+    }
+}
+
+// Finance Overview: small crypto card that opens the Crypto screen.
+.o_fin_crypto_mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+
+    .o_fin_crypto_mini_value {
+        flex: 1;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .o_fin_crypto_mini_pnl {
+        font-weight: 700;
+
+        &.o_up { color: $crypto-up; }
+        &.o_down { color: $crypto-down; }
+    }
+}

@@ -127,6 +127,7 @@ class FinanceOverview(models.AbstractModel):
         plans = self.env['finance.plan'].search([('state', 'in', ('planning', 'saving'))], limit=5)
 
         return {
+            'crypto': self.env['finance.crypto.lot'].get_summary(),
             'year': first.year,
             'month': first.month,
             'label': first.strftime('%B %Y'),

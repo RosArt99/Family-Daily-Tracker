@@ -10,3 +10,4 @@ from . import finance_saving
 from . import finance_plan
 from . import finance_budget
 from . import finance_overview
+from . import finance_crypto

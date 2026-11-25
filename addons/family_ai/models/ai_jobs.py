@@ -327,14 +327,11 @@ class FamilyAiJobs(models.AbstractModel):
             over = (' - лимит %s превышен' % _money(limit, symbol)) if limit and row['amount'] > limit else ''
             cat_lines.append('- %s: %s%s%s' % (CATEGORY_RU[row['key']], _money(row['amount'], symbol), change, over))
         me = next((p for p in data['people'] if p['id'] == user.id), None)
-        plans = ['- %s: накоплено %s из %s (%s%%)' % (
-            p['name'], _money(p['saved'], symbol), _money(p['budget'], symbol), round(p['progress'] or 0))
-            for p in data['plans'] if p['budget']]
+        crypto = data.get('crypto') or {}
         month = MONTHS_RU[last.month]
         facts = [
             'Месяц: %s %s.' % (month, last.year),
-            'Доход семьи: %s, траты семьи: %s, отложено в накопления: %s.' % (
-                _money(income, symbol), _money(spent, symbol), _money(saved, symbol)),
+            'Доход семьи: %s, траты семьи: %s.' % (_money(income, symbol), _money(spent, symbol)),
         ]
         if prev_tracked:
             facts.append('Месяцем раньше: доход %s, траты %s.' % (
@@ -344,19 +341,22 @@ class FamilyAiJobs(models.AbstractModel):
         else:
             facts.append('Дохода в этом месяце не записано, оценку не ставим.')
         if me:
-            paid, put = ('заплатила', 'отложила') if self._is_female(user) else ('заплатил', 'отложил')
-            facts.append('Лично %s: доход %s, %s %s, %s %s, осталось %s.' % (
+            paid = 'заплатила' if self._is_female(user) else 'заплатил'
+            facts.append('Лично %s: доход %s, %s %s, осталось %s.' % (
                 user.name.split(' ')[0], _money(me['income'], symbol), paid, _money(me['spent'], symbol),
-                put, _money(me['saved'], symbol), _money(me['left'], symbol)))
+                _money(me['left'], symbol)))
+        if crypto.get('has_lots'):
+            facts.append('Крипто-портфель сейчас: $%s, вложено $%s, результат %s$%s (%+.1f%%).' % (
+                '{:,.0f}'.format(crypto['value']).replace(',', ' '), '{:,.0f}'.format(crypto['cost']).replace(',', ' '),
+                '+' if crypto['pnl'] >= 0 else '-', '{:,.0f}'.format(abs(crypto['pnl'])).replace(',', ' '), crypto['pnl_pct']))
         prompt = (
             "Итог месяца по финансам семьи. {person}\n{facts}\nТраты по категориям:\n{cats}\n"
-            "Планы (на что копим):\n{plans}\n\n"
+            "\n"
             "Напиши итог в 4-6 предложениях: начни с оценки месяца (используй её как есть), "
             "назови 1-2 главные категории и что заметно выросло или снизилось, скажи пару слов "
-            "о личных цифрах и о планах, закончи одним коротким советом на новый месяц. "
+            "о личных цифрах (и о крипте одной фразой, если она есть), закончи одним коротким советом на новый месяц. "
             "Используй только эти цифры, ничего не пересчитывай."
-        ).format(person=self._person_line(user), facts='\n'.join(facts), cats='\n'.join(cat_lines) or '-',
-                 plans='\n'.join(plans) or '-')
+        ).format(person=self._person_line(user), facts='\n'.join(facts), cats='\n'.join(cat_lines) or '-')
         text = self.env['family.ai']._ask(prompt, max_tokens=1500)
         if not text:
             text = '\n'.join(facts[1:] + cat_lines)

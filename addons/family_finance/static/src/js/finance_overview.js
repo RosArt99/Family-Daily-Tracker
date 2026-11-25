@@ -28,6 +28,10 @@ class FinanceOverview extends Component {
         return this.load(d.getFullYear(), d.getMonth() + 1);
     }
 
+    usd(value) {
+        return Math.round(value || 0).toLocaleString("en-US");
+    }
+
     money(value) {
         const { symbol, position, decimals } = this.state.data.currency;
         const text = Math.abs(value || 0).toLocaleString(undefined, {

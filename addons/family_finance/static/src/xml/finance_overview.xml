@@ -25,7 +25,6 @@
                 <div class="o_fin_hero_row">
                     <span><i class="fa fa-arrow-down" role="img" title="Income"/> Income <b t-esc="money(d.income.total)"/></span>
                     <span><i class="fa fa-shopping-basket" role="img" title="Expenses"/> Expenses <b t-esc="money(d.spent)"/></span>
-                    <span><i class="fa fa-university" role="img" title="Saved"/> Saved <b t-esc="money(d.saved)"/></span>
                 </div>
                 <t t-if="d.limits.total.limit">
                     <div class="o_fin_hero_limit">
@@ -133,30 +132,19 @@
                 </div>
             </div>
 
-            <div class="o_fin_section">
+            <div class="o_fin_section" t-if="d.crypto and d.crypto.has_lots">
                 <div class="o_fin_section_head">
-                    <span class="o_fin_section_title">Plans</span>
-                    <button type="button" class="o_fin_add" t-on-click="newPlan">
-                        <i class="fa fa-plus" role="img" title="Add"/> New plan
-                    </button>
+                    <span class="o_fin_section_title">Crypto</span>
+                    <span class="o_fin_muted">now, in USD</span>
                 </div>
-                <div t-foreach="d.plans" t-as="plan" t-key="plan.id" class="o_fin_panel o_fin_plan"
-                     t-on-click="() => this.openPlan(plan.id)">
-                    <div class="o_fin_plan_head">
-                        <i t-attf-class="fa #{plan.kind == 'travel' ? 'fa-plane' : 'fa-shopping-bag'}" role="img"/>
-                        <b class="o_fin_plan_name" t-esc="plan.name"/>
-                        <span t-if="plan.target_date" class="o_fin_muted" t-esc="plan.target_date"/>
+                <div class="o_fin_panel o_fin_crypto_mini" t-on-click="() => this.openAction('family_finance.action_finance_crypto')">
+                    <div class="o_fin_crypto_mini_value">$<t t-esc="usd(d.crypto.value)"/></div>
+                    <div t-attf-class="o_fin_crypto_mini_pnl #{d.crypto.pnl &lt; 0 ? 'o_down' : 'o_up'}">
+                        <t t-esc="d.crypto.pnl &lt; 0 ? '−' : '+'"/>$<t t-esc="usd(Math.abs(d.crypto.pnl))"/>
+                        (<t t-esc="d.crypto.pnl_pct.toFixed(1)"/>%)
                     </div>
-                    <div class="o_fin_progress"><div class="o_fin_progress_bar" t-attf-style="width: #{plan.progress}%"/></div>
-                    <div class="o_fin_plan_foot">
-                        <span><b t-esc="money(plan.saved)"/> of <t t-esc="money(plan.budget)"/></span>
-                        <span class="o_fin_muted"><t t-esc="Math.round(plan.progress)"/>%</span>
-                    </div>
+                    <i class="fa fa-chevron-right o_fin_muted"/>
                 </div>
-                <div t-if="!d.plans.length" class="o_fin_panel o_fin_empty">No active plans. Start one for your next trip or big purchase.</div>
-                <button type="button" class="o_fin_link" t-on-click="() => this.openAction('family_finance.action_finance_plans')">
-                    All plans <i class="fa fa-chevron-right" role="img"/>
-                </button>
             </div>
         </div>
     </t>
